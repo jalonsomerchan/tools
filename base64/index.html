@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Base64 encoder y decoder | Alon Tools</title>
+  <meta name="description" content="Herramienta online gratuita para codificar y decodificar texto en Base64 directamente desde el navegador." />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <main class="page-shell">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="eyebrow">Alon Tools</div>
+      <h1 id="page-title">Codificador y decodificador Base64</h1>
+      <p class="hero-text">Convierte texto plano a Base64 y decodifica cadenas Base64 al instante. Compatible con UTF-8, emojis y caracteres especiales.</p>
+    </section>
+
+    <section class="tool-card" aria-label="Herramienta Base64">
+      <div class="toolbar" role="group" aria-label="Acciones de conversión">
+        <button class="primary" id="encodeBtn" type="button">Codificar</button>
+        <button id="decodeBtn" type="button">Decodificar</button>
+        <button id="swapBtn" type="button">Intercambiar</button>
+        <button id="clearBtn" type="button">Limpiar</button>
+      </div>
+
+      <div class="workspace">
+        <label class="panel">
+          <span>Entrada</span>
+          <textarea id="input" spellcheck="false" placeholder="Escribe o pega aquí el texto que quieres convertir..."></textarea>
+        </label>
+
+        <label class="panel">
+          <span>Resultado</span>
+          <textarea id="output" spellcheck="false" readonly placeholder="Aquí aparecerá el resultado..."></textarea>
+        </label>
+      </div>
+
+      <div class="footer-actions">
+        <p id="status" class="status">Listo para convertir.</p>
+        <button class="ghost" id="copyBtn" type="button">Copiar resultado</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const input = document.getElementById('input');
+    const output = document.getElementById('output');
+    const statusElement = document.getElementById('status');
+
+    function setStatus(message, isError = false) {
+      statusElement.textContent = message;
+      statusElement.style.color = isError ? '#fca5a5' : '';
+    }
+
+    function encodeBase64(text) {
+      return btoa(unescape(encodeURIComponent(text)));
+    }
+
+    function decodeBase64(text) {
+      return decodeURIComponent(escape(atob(text)));
+    }
+
+    document.getElementById('encodeBtn').addEventListener('click', () => {
+      try {
+        output.value = encodeBase64(input.value);
+        setStatus('Texto codificado correctamente.');
+      } catch (error) {
+        setStatus('Error al codificar el texto.', true);
+      }
+    });
+
+    document.getElementById('decodeBtn').addEventListener('click', () => {
+      try {
+        output.value = decodeBase64(input.value.trim());
+        setStatus('Texto decodificado correctamente.');
+      } catch (error) {
+        setStatus('La cadena Base64 no es válida.', true);
+      }
+    });
+
+    document.getElementById('swapBtn').addEventListener('click', () => {
+      const currentInput = input.value;
+      input.value = output.value;
+      output.value = currentInput;
+      setStatus('Contenido intercambiado.');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      input.value = '';
+      output.value = '';
+      setStatus('Contenido eliminado.');
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      if (!output.value) {
+        setStatus('No hay contenido para copiar.', true);
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(output.value);
+        setStatus('Resultado copiado al portapapeles.');
+      } catch (error) {
+        setStatus('No se pudo copiar el resultado.', true);
+      }
+    });
+  </script>
+</body>
+</html>
