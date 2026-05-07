@@ -1,43 +1,112 @@
-# Astro Starter Kit: Minimal
+# Alon Tools
 
-```sh
-npm create astro@latest -- --template minimal
+Colección de herramientas online rápidas, privadas y gratuitas creadas con Astro y desplegadas en GitHub Pages.
+
+## Objetivo
+
+Crear un directorio de pequeñas utilidades web centradas en:
+
+- productividad
+- desarrollo
+- imágenes
+- texto
+- datos
+- mapas
+- IA
+- utilidades rápidas
+
+Todas las herramientas funcionan completamente en el navegador, sin backend y sin enviar información a servidores externos.
+
+## Tecnologías
+
+- Astro
+- JavaScript
+- GitHub Pages
+- HTML5
+- CSS moderno
+
+## Herramientas disponibles
+
+### Base64 encoder y decoder
+
+Convierte texto plano a Base64 y decodifica cadenas Base64 con soporte UTF-8.
+
+Ruta:
+
+```txt
+/base64/
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Próximas herramientas
 
-## 🚀 Project Structure
+### Texto y desarrollo
 
-Inside of your Astro project, you'll see the following folders and files:
+- JSON formatter
+- JWT decoder
+- URL encoder / decoder
+- Hash generator
+- UUID generator
+- Cron parser
+- Regex tester
+- Diff checker
+- Markdown preview
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+### Imágenes
+
+- Image compressor
+- Image converter
+- Background remover
+- SVG optimizer
+- Pixel art tools
+- Palette extractor
+
+### Mapas y GPS
+
+- GPX viewer
+- GPX optimizer
+- Elevation viewer
+- Coordinate converter
+- GeoJSON viewer
+
+### Vídeo y multimedia
+
+- Video trimmer
+- Thumbnail extractor
+- Subtitle converter
+- Audio converter
+
+### IA y automatización
+
+- Prompt formatter
+- AI text cleaner
+- RSS to JSON
+- RSS reader
+- Feed generator
+
+## Roadmap
+
+- Sistema de búsqueda de herramientas
+- Categorías
+- Tema claro/oscuro
+- PWA
+- Favoritos
+- Historial local
+- Compartir configuraciones por URL
+- Soporte offline
+
+## Desarrollo
+
+```bash
+npm install
+npm run dev
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Build
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+```bash
+npm run build
+```
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Licencia
 
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+MIT
