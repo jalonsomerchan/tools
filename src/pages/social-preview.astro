@@ -1,0 +1,286 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Preview social de URLs';
+---
+
+<Layout title={title}>
+  <section style="padding: 4rem 0;">
+    <div class="eyebrow">Alon Tools</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Comprueba cómo se vería una URL al compartirse en redes sociales analizando Open Graph, Twitter Cards y metadatos SEO.
+    </p>
+
+    <div class="warning-box">
+      ⚠️ La URL introducida será consultada desde tu navegador para leer sus metadatos públicos.
+    </div>
+
+    <section class="tool-card">
+      <div class="toolbar">
+        <input id="urlInput" type="text" placeholder="https://example.com" />
+
+        <button class="primary" id="analyzeBtn">
+          Analizar URL
+        </button>
+      </div>
+
+      <div id="results" hidden>
+        <div class="preview-grid">
+          <div class="preview-card twitter-preview">
+            <span class="preview-label">Twitter / X</span>
+            <img id="twitterImage" hidden />
+            <strong id="twitterTitle">Sin título</strong>
+            <p id="twitterDescription">Sin descripción</p>
+            <small id="twitterDomain">example.com</small>
+          </div>
+
+          <div class="preview-card facebook-preview">
+            <span class="preview-label">Facebook / WhatsApp</span>
+            <img id="facebookImage" hidden />
+            <strong id="facebookTitle">Sin título</strong>
+            <p id="facebookDescription">Sin descripción</p>
+            <small id="facebookDomain">example.com</small>
+          </div>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-card">
+            <span>og:title</span>
+            <strong id="ogTitle">-</strong>
+          </div>
+
+          <div class="meta-card">
+            <span>og:description</span>
+            <strong id="ogDescription">-</strong>
+          </div>
+
+          <div class="meta-card">
+            <span>og:image</span>
+            <strong id="ogImage">-</strong>
+          </div>
+
+          <div class="meta-card">
+            <span>twitter:card</span>
+            <strong id="twitterCard">-</strong>
+          </div>
+
+          <div class="meta-card">
+            <span>canonical</span>
+            <strong id="canonical">-</strong>
+          </div>
+
+          <div class="meta-card">
+            <span>robots</span>
+            <strong id="robots">-</strong>
+          </div>
+        </div>
+
+        <div class="json-panel">
+          <h2>Metadatos detectados</h2>
+          <pre id="jsonOutput"></pre>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <style>
+    .warning-box {
+      margin-top: 1.5rem;
+      margin-bottom: 2rem;
+      padding: 1rem 1.2rem;
+      border-radius: 18px;
+      background: rgba(56,189,248,.08);
+      border: 1px solid rgba(56,189,248,.18);
+      color: #bae6fd;
+      line-height: 1.7;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    input {
+      flex: 1;
+      min-width: 260px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font-size: 1rem;
+    }
+
+    button {
+      border-radius: 14px;
+      border: none;
+      background: var(--primary);
+      color: black;
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    #results {
+      margin-top: 2rem;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
+      gap: 1rem;
+    }
+
+    .preview-card,
+    .meta-card,
+    .json-panel {
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(2,6,23,.55);
+      padding: 1rem;
+    }
+
+    .preview-label {
+      display: inline-block;
+      margin-bottom: 1rem;
+      color: var(--primary);
+      font-size: .9rem;
+    }
+
+    .preview-card img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      border-radius: 14px;
+      margin-bottom: 1rem;
+    }
+
+    .preview-card strong {
+      display: block;
+      margin-bottom: .6rem;
+    }
+
+    .preview-card p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .preview-card small {
+      color: var(--primary);
+    }
+
+    .meta-grid {
+      margin-top: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+      gap: 1rem;
+    }
+
+    .meta-card {
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+    }
+
+    .meta-card span {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .json-panel {
+      margin-top: 1rem;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-x: auto;
+      line-height: 1.6;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+    }
+  </style>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const set = (id, value) => {
+        document.getElementById(id).textContent = value || '-';
+      };
+
+      document.getElementById('analyzeBtn').onclick = async () => {
+        const url = document.getElementById('urlInput').value.trim();
+
+        if (!url) {
+          alert('Introduce una URL');
+          return;
+        }
+
+        try {
+          const proxy = `https://r.jina.ai/http://${url.replace(/^https?:\/\//, '')}`;
+          const response = await fetch(proxy);
+          const html = await response.text();
+
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+
+          const getMeta = (property, attr = 'property') => {
+            return doc.querySelector(`meta[${attr}="${property}"]`)?.content || '';
+          };
+
+          const title = getMeta('og:title') || doc.title;
+          const description = getMeta('og:description') || getMeta('description', 'name');
+          const image = getMeta('og:image');
+          const twitterCard = getMeta('twitter:card', 'name');
+          const canonical = doc.querySelector('link[rel="canonical"]')?.href || '';
+          const robots = getMeta('robots', 'name');
+
+          document.getElementById('results').hidden = false;
+
+          set('ogTitle', title);
+          set('ogDescription', description);
+          set('ogImage', image);
+          set('twitterCard', twitterCard);
+          set('canonical', canonical);
+          set('robots', robots);
+
+          set('twitterTitle', title);
+          set('facebookTitle', title);
+
+          set('twitterDescription', description);
+          set('facebookDescription', description);
+
+          const hostname = new URL(url).hostname;
+
+          set('twitterDomain', hostname);
+          set('facebookDomain', hostname);
+
+          if (image) {
+            const twitterImage = document.getElementById('twitterImage');
+            const facebookImage = document.getElementById('facebookImage');
+
+            twitterImage.src = image;
+            facebookImage.src = image;
+
+            twitterImage.hidden = false;
+            facebookImage.hidden = false;
+          }
+
+          document.getElementById('jsonOutput').textContent = JSON.stringify({
+            title,
+            description,
+            image,
+            twitterCard,
+            canonical,
+            robots
+          }, null, 2);
+        } catch (error) {
+          alert('No se pudieron leer los metadatos');
+        }
+      };
+    });
+  </script>
+</Layout>
