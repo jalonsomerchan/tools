@@ -1,0 +1,322 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Censurador de fotos';
+---
+
+<Layout title={title}>
+  <section style="padding: 4rem 0;">
+    <div class="eyebrow">Alon Tools</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Sube una imagen, marca las zonas sensibles y censúralas con pixelado, desenfoque o bloque negro. Todo ocurre en tu navegador.
+    </p>
+
+    <section class="tool-card">
+      <div class="controls">
+        <label class="file-button">
+          Subir imagen
+          <input id="fileInput" type="file" accept="image/*" hidden />
+        </label>
+
+        <label>
+          Modo
+          <select id="mode">
+            <option value="pixelate">Pixelar</option>
+            <option value="blur">Desenfocar</option>
+            <option value="black">Bloque negro</option>
+          </select>
+        </label>
+
+        <label>
+          Intensidad
+          <input id="intensity" type="range" min="4" max="40" value="18" />
+        </label>
+
+        <button id="undoBtn">Deshacer</button>
+        <button id="resetBtn">Reiniciar</button>
+        <button class="primary" id="downloadBtn">Descargar</button>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="canvas"></canvas>
+        <p id="emptyState">Sube una imagen para empezar. Después arrastra sobre la foto para censurar una zona.</p>
+      </div>
+
+      <p class="status" id="status">Listo.</p>
+    </section>
+  </section>
+
+  <style>
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: end;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    select,
+    input[type="range"] {
+      min-width: 180px;
+    }
+
+    select,
+    button,
+    .file-button {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: black;
+      border: none;
+      font-weight: 700;
+    }
+
+    .file-button {
+      color: black;
+      background: var(--primary);
+      font-weight: 700;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      min-height: 420px;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(45deg, rgba(148,163,184,.08) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(148,163,184,.08) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(148,163,184,.08) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.08) 75%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+      overflow: auto;
+      display: grid;
+      place-items: center;
+    }
+
+    canvas {
+      max-width: 100%;
+      height: auto;
+      display: none;
+      cursor: crosshair;
+    }
+
+    #emptyState {
+      color: var(--muted);
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .status {
+      color: var(--muted);
+      margin-top: 1rem;
+    }
+  </style>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const fileInput = document.getElementById('fileInput');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const mode = document.getElementById('mode');
+      const intensity = document.getElementById('intensity');
+      const emptyState = document.getElementById('emptyState');
+      const status = document.getElementById('status');
+
+      let originalImage = null;
+      let history = [];
+      let drawing = false;
+      let startX = 0;
+      let startY = 0;
+
+      const setStatus = (message) => {
+        status.textContent = message;
+      };
+
+      const getPointer = (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+        const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+
+        return {
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY
+        };
+      };
+
+      const saveState = () => {
+        history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+
+        if (history.length > 20) {
+          history.shift();
+        }
+      };
+
+      const drawImage = (image) => {
+        const maxWidth = 1600;
+        const ratio = Math.min(1, maxWidth / image.width);
+
+        canvas.width = Math.round(image.width * ratio);
+        canvas.height = Math.round(image.height * ratio);
+
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        canvas.style.display = 'block';
+        emptyState.hidden = true;
+        history = [];
+        saveState();
+      };
+
+      const pixelate = (x, y, width, height, blockSize) => {
+        const safeX = Math.max(0, Math.floor(x));
+        const safeY = Math.max(0, Math.floor(y));
+        const safeWidth = Math.min(canvas.width - safeX, Math.floor(width));
+        const safeHeight = Math.min(canvas.height - safeY, Math.floor(height));
+
+        for (let yy = safeY; yy < safeY + safeHeight; yy += blockSize) {
+          for (let xx = safeX; xx < safeX + safeWidth; xx += blockSize) {
+            const pixel = ctx.getImageData(xx, yy, 1, 1).data;
+            ctx.fillStyle = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+            ctx.fillRect(xx, yy, blockSize, blockSize);
+          }
+        }
+      };
+
+      const blurArea = (x, y, width, height, amount) => {
+        const temp = document.createElement('canvas');
+        const tempCtx = temp.getContext('2d');
+
+        temp.width = width;
+        temp.height = height;
+        tempCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+
+        ctx.save();
+        ctx.filter = `blur(${amount}px)`;
+        ctx.drawImage(temp, x, y);
+        ctx.restore();
+      };
+
+      const censorArea = (a, b) => {
+        const x = Math.min(a.x, b.x);
+        const y = Math.min(a.y, b.y);
+        const width = Math.abs(a.x - b.x);
+        const height = Math.abs(a.y - b.y);
+
+        if (width < 4 || height < 4) {
+          return;
+        }
+
+        saveState();
+
+        if (mode.value === 'pixelate') {
+          pixelate(x, y, width, height, Number(intensity.value));
+        }
+
+        if (mode.value === 'blur') {
+          blurArea(x, y, width, height, Math.round(Number(intensity.value) / 3));
+        }
+
+        if (mode.value === 'black') {
+          ctx.fillStyle = '#000';
+          ctx.fillRect(x, y, width, height);
+        }
+
+        setStatus('Zona censurada.');
+      };
+
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+
+        if (!file) return;
+
+        const image = new Image();
+        image.onload = () => {
+          originalImage = image;
+          drawImage(image);
+          setStatus('Imagen cargada. Arrastra sobre la zona que quieras censurar.');
+        };
+        image.src = URL.createObjectURL(file);
+      });
+
+      canvas.addEventListener('mousedown', (event) => {
+        if (!originalImage) return;
+        drawing = true;
+        startX = getPointer(event).x;
+        startY = getPointer(event).y;
+      });
+
+      canvas.addEventListener('mouseup', (event) => {
+        if (!drawing) return;
+        drawing = false;
+        censorArea({ x: startX, y: startY }, getPointer(event));
+      });
+
+      canvas.addEventListener('touchstart', (event) => {
+        if (!originalImage) return;
+        event.preventDefault();
+        drawing = true;
+        startX = getPointer(event).x;
+        startY = getPointer(event).y;
+      });
+
+      canvas.addEventListener('touchend', (event) => {
+        if (!drawing) return;
+        event.preventDefault();
+        drawing = false;
+        const touch = event.changedTouches[0];
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        censorArea(
+          { x: startX, y: startY },
+          {
+            x: (touch.clientX - rect.left) * scaleX,
+            y: (touch.clientY - rect.top) * scaleY
+          }
+        );
+      });
+
+      document.getElementById('undoBtn').onclick = () => {
+        if (history.length <= 1) return;
+        history.pop();
+        ctx.putImageData(history[history.length - 1], 0, 0);
+        setStatus('Última censura deshecha.');
+      };
+
+      document.getElementById('resetBtn').onclick = () => {
+        if (!originalImage) return;
+        drawImage(originalImage);
+        setStatus('Imagen reiniciada.');
+      };
+
+      document.getElementById('downloadBtn').onclick = () => {
+        if (!originalImage) return;
+
+        const link = document.createElement('a');
+        link.download = 'imagen-censurada.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      };
+    });
+  </script>
+</Layout>
