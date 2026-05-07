@@ -1,0 +1,229 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Diff checker';
+---
+
+<Layout title={title}>
+  <section style="padding: 4rem 0;">
+    <div class="eyebrow">Alon Tools</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Compara dos textos y visualiza rápidamente diferencias, líneas añadidas y eliminadas.
+    </p>
+
+    <section class="tool-card">
+      <div class="toolbar">
+        <button class="primary" id="compareBtn">Comparar textos</button>
+        <button id="swapBtn">Intercambiar</button>
+        <button id="clearBtn">Limpiar</button>
+      </div>
+
+      <div class="editor-grid">
+        <div class="editor-panel">
+          <span>Texto original</span>
+          <textarea id="leftInput" placeholder="Pega aquí el texto original..."></textarea>
+        </div>
+
+        <div class="editor-panel">
+          <span>Texto modificado</span>
+          <textarea id="rightInput" placeholder="Pega aquí el texto modificado..."></textarea>
+        </div>
+      </div>
+
+      <div class="results-panel">
+        <div class="legend">
+          <div><span class="dot added"></span> Añadido</div>
+          <div><span class="dot removed"></span> Eliminado</div>
+          <div><span class="dot unchanged"></span> Sin cambios</div>
+        </div>
+
+        <pre id="diffOutput">Aquí aparecerán las diferencias.</pre>
+      </div>
+    </section>
+  </section>
+
+  <style>
+    .toolbar {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: black;
+      border: none;
+      font-weight: 700;
+    }
+
+    .editor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
+      gap: 1rem;
+    }
+
+    .editor-panel {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+
+    .editor-panel span {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 360px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font-family: ui-monospace, monospace;
+      line-height: 1.6;
+      resize: vertical;
+    }
+
+    .results-panel {
+      margin-top: 1.5rem;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: rgba(2,6,23,.55);
+      overflow: hidden;
+    }
+
+    .legend {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-right: .4rem;
+    }
+
+    .dot.added {
+      background: #22c55e;
+    }
+
+    .dot.removed {
+      background: #ef4444;
+    }
+
+    .dot.unchanged {
+      background: #64748b;
+    }
+
+    pre {
+      margin: 0;
+      padding: 1rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.7;
+      font-family: ui-monospace, monospace;
+    }
+
+    .line {
+      display: block;
+      padding: .2rem .5rem;
+      border-radius: 8px;
+    }
+
+    .line.added {
+      background: rgba(34,197,94,.15);
+      color: #86efac;
+    }
+
+    .line.removed {
+      background: rgba(239,68,68,.15);
+      color: #fca5a5;
+    }
+
+    .line.unchanged {
+      color: #cbd5e1;
+    }
+  </style>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const left = document.getElementById('leftInput');
+      const right = document.getElementById('rightInput');
+      const output = document.getElementById('diffOutput');
+
+      const escapeHtml = (text) =>
+        text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+
+      const renderDiff = () => {
+        const leftLines = left.value.split('\n');
+        const rightLines = right.value.split('\n');
+
+        const max = Math.max(leftLines.length, rightLines.length);
+
+        let html = '';
+
+        for (let i = 0; i < max; i++) {
+          const a = leftLines[i] ?? '';
+          const b = rightLines[i] ?? '';
+
+          if (a === b) {
+            html += `<span class="line unchanged">  ${escapeHtml(a)}</span>`;
+            continue;
+          }
+
+          if (a) {
+            html += `<span class="line removed">- ${escapeHtml(a)}</span>`;
+          }
+
+          if (b) {
+            html += `<span class="line added">+ ${escapeHtml(b)}</span>`;
+          }
+        }
+
+        output.innerHTML = html || 'No hay diferencias.';
+      };
+
+      document.getElementById('compareBtn').onclick = renderDiff;
+
+      document.getElementById('swapBtn').onclick = () => {
+        const temp = left.value;
+        left.value = right.value;
+        right.value = temp;
+        renderDiff();
+      };
+
+      document.getElementById('clearBtn').onclick = () => {
+        left.value = '';
+        right.value = '';
+        output.textContent = 'Aquí aparecerán las diferencias.';
+      };
+    });
+  </script>
+</Layout>
