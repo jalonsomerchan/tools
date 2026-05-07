@@ -1,0 +1,270 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Conversor de imágenes';
+---
+
+<Layout title={title}>
+  <section style="padding: 4rem 0;">
+    <div class="eyebrow">Alon Tools</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Convierte imágenes entre JPEG, PNG y WebP directamente desde el navegador, con ajuste de calidad y tamaño máximo.
+    </p>
+
+    <section class="tool-card">
+      <div class="controls">
+        <label class="upload-btn">
+          Seleccionar imagen
+          <input id="fileInput" type="file" accept="image/*" hidden />
+        </label>
+
+        <label>
+          Formato de salida
+          <select id="format">
+            <option value="image/webp">WebP</option>
+            <option value="image/jpeg">JPEG</option>
+            <option value="image/png">PNG</option>
+          </select>
+        </label>
+
+        <label>
+          Calidad
+          <input id="quality" type="range" min="10" max="100" value="90" />
+        </label>
+
+        <label>
+          Ancho máximo
+          <input id="maxWidth" type="number" min="100" max="10000" value="1920" />
+        </label>
+
+        <button class="primary" id="convertBtn">Convertir</button>
+      </div>
+
+      <div class="preview-grid" id="previewGrid" hidden>
+        <div class="preview-card">
+          <span>Original</span>
+          <img id="originalPreview" alt="Imagen original" />
+          <small id="originalInfo"></small>
+        </div>
+
+        <div class="preview-card">
+          <span>Convertida</span>
+          <img id="convertedPreview" alt="Imagen convertida" />
+          <small id="convertedInfo"></small>
+          <button id="downloadBtn">Descargar imagen</button>
+        </div>
+      </div>
+
+      <div class="stats" id="stats" hidden>
+        <div class="stat-card">
+          <span>Formato final</span>
+          <strong id="finalFormat">-</strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Tamaño final</span>
+          <strong id="finalSize">-</strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Resolución final</span>
+          <strong id="finalDimensions">-</strong>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <style>
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .upload-btn,
+    button,
+    input,
+    select {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font: inherit;
+    }
+
+    .upload-btn,
+    button {
+      cursor: pointer;
+    }
+
+    .primary,
+    .upload-btn {
+      background: var(--primary);
+      color: black;
+      border: none;
+      font-weight: 700;
+    }
+
+    .preview-grid {
+      margin-top: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+
+    .preview-card,
+    .stat-card {
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: rgba(2,6,23,.55);
+      padding: 1rem;
+    }
+
+    .preview-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .preview-card span,
+    .stat-card span {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .preview-card img {
+      width: 100%;
+      max-height: 420px;
+      object-fit: contain;
+      border-radius: 18px;
+      background: #000;
+    }
+
+    .preview-card small {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .stats {
+      margin-top: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat-card {
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+    }
+  </style>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const fileInput = document.getElementById('fileInput');
+      let currentFile = null;
+      let convertedBlob = null;
+      let convertedExtension = 'webp';
+
+      const formatBytes = (bytes) => {
+        if (!bytes) return '0 B';
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(1024));
+        return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
+      };
+
+      const extensionFromMime = (mime) => {
+        if (mime === 'image/jpeg') return 'jpg';
+        if (mime === 'image/png') return 'png';
+        if (mime === 'image/webp') return 'webp';
+        return 'png';
+      };
+
+      fileInput.addEventListener('change', () => {
+        currentFile = fileInput.files[0];
+
+        if (!currentFile) return;
+
+        document.getElementById('previewGrid').hidden = false;
+        document.getElementById('originalPreview').src = URL.createObjectURL(currentFile);
+        document.getElementById('originalInfo').textContent = `${currentFile.name} · ${currentFile.type || 'desconocido'} · ${formatBytes(currentFile.size)}`;
+      });
+
+      document.getElementById('convertBtn').onclick = () => {
+        if (!currentFile) {
+          alert('Selecciona una imagen');
+          return;
+        }
+
+        const outputFormat = document.getElementById('format').value;
+        const quality = Number(document.getElementById('quality').value) / 100;
+        const maxWidth = Number(document.getElementById('maxWidth').value);
+
+        const image = new Image();
+
+        image.onload = () => {
+          const ratio = Math.min(1, maxWidth / image.width);
+          const width = Math.round(image.width * ratio);
+          const height = Math.round(image.height * ratio);
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+
+          if (outputFormat === 'image/jpeg') {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+          }
+
+          ctx.drawImage(image, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              alert('No se pudo convertir la imagen');
+              return;
+            }
+
+            convertedBlob = blob;
+            convertedExtension = extensionFromMime(outputFormat);
+
+            const url = URL.createObjectURL(blob);
+            document.getElementById('convertedPreview').src = url;
+            document.getElementById('convertedInfo').textContent = `${outputFormat} · ${formatBytes(blob.size)} · ${width}x${height}`;
+
+            document.getElementById('stats').hidden = false;
+            document.getElementById('finalFormat').textContent = outputFormat;
+            document.getElementById('finalSize').textContent = formatBytes(blob.size);
+            document.getElementById('finalDimensions').textContent = `${width} × ${height}`;
+          }, outputFormat, quality);
+        };
+
+        image.src = URL.createObjectURL(currentFile);
+      };
+
+      document.getElementById('downloadBtn').onclick = () => {
+        if (!convertedBlob) return;
+
+        const baseName = currentFile.name.replace(/\.[^/.]+$/, '');
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(convertedBlob);
+        link.download = `${baseName}.${convertedExtension}`;
+        link.click();
+      };
+    });
+  </script>
+</Layout>
