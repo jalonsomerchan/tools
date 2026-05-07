@@ -62,13 +62,60 @@ h1 {
   line-height: 1.7;
 }
 
-.tool-card {
+.tool-card,
+.tool-link-card {
   border: 1px solid var(--border);
   background: var(--card);
   backdrop-filter: blur(20px);
   border-radius: 28px;
-  padding: 1.25rem;
   box-shadow: var(--shadow);
+}
+
+.tool-card {
+  padding: 1.25rem;
+}
+
+.directory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.tool-link-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1.4rem;
+  color: inherit;
+  text-decoration: none;
+  transition: .2s ease;
+}
+
+.tool-link-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(56, 189, 248, .45);
+}
+
+.tool-icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #001018;
+  font-weight: 900;
+  font-size: 1.3rem;
+}
+
+.tool-link-card strong {
+  display: block;
+  font-size: 1.1rem;
+  margin-bottom: .4rem;
+}
+
+.tool-link-card small {
+  color: var(--muted);
+  line-height: 1.7;
 }
 
 .toolbar {
