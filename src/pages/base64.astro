@@ -6,10 +6,213 @@ const title = 'Base64 encoder y decoder';
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+
     <title>{title}</title>
+
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #020617;
+        --card: rgba(15, 23, 42, .88);
+        --border: rgba(148, 163, 184, .18);
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --primary: #38bdf8;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top, rgba(56,189,248,.12), transparent 35%),
+          var(--bg);
+        color: var(--text);
+        font-family: Inter, system-ui, sans-serif;
+      }
+
+      .page-shell {
+        width: min(1200px, calc(100% - 2rem));
+        margin: auto;
+        padding: 4rem 0;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        padding: .4rem .8rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--primary);
+      }
+
+      h1 {
+        font-size: clamp(3rem, 6vw, 5rem);
+        line-height: .95;
+        letter-spacing: -.05em;
+      }
+
+      .hero-text {
+        color: var(--muted);
+        max-width: 700px;
+        line-height: 1.7;
+      }
+
+      .tool-card {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        background: var(--card);
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+
+      button {
+        background: #0f172a;
+        color: white;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1rem;
+        cursor: pointer;
+      }
+
+      button.primary {
+        background: var(--primary);
+        color: black;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 350px;
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        background: #020617;
+        color: white;
+        padding: 1rem;
+      }
+
+      .status {
+        color: var(--muted);
+      }
+
+      @media (max-width: 860px) {
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
   </head>
 
   <body>
-    <h1>{title}</h1>
+    <main class="page-shell">
+      <div class="eyebrow">Alon Tools</div>
+
+      <h1>{title}</h1>
+
+      <p class="hero-text">
+        Convierte texto plano a Base64 y decodifica cadenas Base64 directamente desde el navegador.
+      </p>
+
+      <section class="tool-card">
+        <div class="toolbar">
+          <button class="primary" id="encodeBtn">Codificar</button>
+          <button id="decodeBtn">Decodificar</button>
+          <button id="swapBtn">Intercambiar</button>
+          <button id="clearBtn">Limpiar</button>
+          <button id="copyBtn">Copiar resultado</button>
+        </div>
+
+        <div class="workspace">
+          <textarea id="input" placeholder="Texto de entrada..."></textarea>
+
+          <textarea id="output" readonly placeholder="Resultado..."></textarea>
+        </div>
+
+        <p class="status" id="status">Listo para convertir.</p>
+      </section>
+    </main>
+
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('input');
+        const output = document.getElementById('output');
+        const status = document.getElementById('status');
+
+        const setStatus = (message, error = false) => {
+          status.textContent = message;
+          status.style.color = error ? '#fca5a5' : '#94a3b8';
+        };
+
+        const encode = (text) => {
+          const bytes = new TextEncoder().encode(text);
+          let binary = '';
+
+          bytes.forEach(byte => {
+            binary += String.fromCharCode(byte);
+          });
+
+          return btoa(binary);
+        };
+
+        const decode = (text) => {
+          const binary = atob(text);
+          const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+          return new TextDecoder().decode(bytes);
+        };
+
+        document.getElementById('encodeBtn').onclick = () => {
+          try {
+            output.value = encode(input.value);
+            setStatus('Texto codificado correctamente.');
+          } catch {
+            setStatus('Error al codificar.', true);
+          }
+        };
+
+        document.getElementById('decodeBtn').onclick = () => {
+          try {
+            output.value = decode(input.value.trim());
+            setStatus('Texto decodificado correctamente.');
+          } catch {
+            setStatus('Base64 inválido.', true);
+          }
+        };
+
+        document.getElementById('swapBtn').onclick = () => {
+          const temp = input.value;
+          input.value = output.value;
+          output.value = temp;
+          setStatus('Contenido intercambiado.');
+        };
+
+        document.getElementById('clearBtn').onclick = () => {
+          input.value = '';
+          output.value = '';
+          setStatus('Contenido eliminado.');
+        };
+
+        document.getElementById('copyBtn').onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(output.value);
+            setStatus('Resultado copiado.');
+          } catch {
+            setStatus('No se pudo copiar.', true);
+          }
+        };
+      });
+    </script>
   </body>
 </html>
