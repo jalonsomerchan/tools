@@ -1,0 +1,31 @@
+<footer>
+  <div class="page-shell footer-inner">
+    <p>© 2026 Alon Tools</p>
+
+    <p>
+      Herramientas rápidas creadas con Astro.
+    </p>
+  </div>
+</footer>
+
+<style>
+  footer {
+    margin-top: 5rem;
+    border-top: 1px solid rgba(148,163,184,.12);
+  }
+
+  .footer-inner {
+    padding: 2rem 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--muted);
+    font-size: .95rem;
+  }
+
+  @media (max-width: 700px) {
+    .footer-inner {
+      flex-direction: column;
+    }
+  }
+</style>
