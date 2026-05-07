@@ -1,0 +1,207 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Markdown writer & preview';
+---
+
+<Layout title={title}>
+  <section style="padding: 4rem 0;">
+    <div class="eyebrow">Alon Tools</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Escribe Markdown y visualiza el resultado en tiempo real con soporte para títulos, tablas, listas, bloques de código y más.
+    </p>
+
+    <section class="tool-card">
+      <div class="toolbar">
+        <button class="primary" id="copyBtn">Copiar markdown</button>
+        <button id="downloadBtn">Descargar .md</button>
+        <button id="clearBtn">Limpiar</button>
+      </div>
+
+      <div class="editor-grid">
+        <div class="panel">
+          <span>Markdown</span>
+          <textarea id="markdownInput"># Hola mundo
+
+Escribe aquí tu markdown.
+
+## Lista
+
+- Uno
+- Dos
+- Tres
+
+```js
+console.log('Hola');
+```
+
+| Nombre | Valor |
+|---|---|
+| Test | 123 |
+</textarea>
+        </div>
+
+        <div class="panel">
+          <span>Preview</span>
+          <div id="preview"></div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    .toolbar {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: black;
+      border: none;
+      font-weight: 700;
+    }
+
+    .editor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
+      gap: 1rem;
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+    }
+
+    .panel span {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    textarea,
+    #preview {
+      min-height: 620px;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: rgba(2,6,23,.55);
+      padding: 1.2rem;
+      overflow: auto;
+    }
+
+    textarea {
+      resize: vertical;
+      color: white;
+      font-family: ui-monospace, monospace;
+      line-height: 1.7;
+      background: #020617;
+    }
+
+    #preview {
+      color: #e2e8f0;
+      line-height: 1.8;
+    }
+
+    #preview h1,
+    #preview h2,
+    #preview h3 {
+      margin-top: 1.6rem;
+      margin-bottom: .8rem;
+      line-height: 1.2;
+    }
+
+    #preview p {
+      color: #cbd5e1;
+    }
+
+    #preview code {
+      background: rgba(148,163,184,.12);
+      padding: .2rem .4rem;
+      border-radius: 6px;
+      font-family: ui-monospace, monospace;
+    }
+
+    #preview pre {
+      background: #020617;
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: 18px;
+      overflow-x: auto;
+    }
+
+    #preview table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    #preview th,
+    #preview td {
+      border: 1px solid var(--border);
+      padding: .7rem;
+      text-align: left;
+    }
+
+    #preview blockquote {
+      border-left: 4px solid var(--primary);
+      margin-left: 0;
+      padding-left: 1rem;
+      color: var(--muted);
+    }
+
+    #preview a {
+      color: var(--primary);
+    }
+  </style>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('markdownInput');
+      const preview = document.getElementById('preview');
+
+      const render = () => {
+        preview.innerHTML = marked.parse(input.value);
+      };
+
+      render();
+
+      input.addEventListener('input', render);
+
+      document.getElementById('copyBtn').onclick = async () => {
+        await navigator.clipboard.writeText(input.value);
+      };
+
+      document.getElementById('clearBtn').onclick = () => {
+        input.value = '';
+        render();
+      };
+
+      document.getElementById('downloadBtn').onclick = () => {
+        const blob = new Blob([input.value], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'document.md';
+        link.click();
+      };
+    });
+  </script>
+</Layout>
