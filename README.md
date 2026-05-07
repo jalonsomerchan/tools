@@ -1,112 +1,160 @@
-# Alon Tools
+# 🛠️ Alon Tools
 
-Colección de herramientas online rápidas, privadas y gratuitas creadas con Astro y desplegadas en GitHub Pages.
+<div align="center">
 
-## Objetivo
+## Herramientas rápidas, privadas y gratuitas
 
-Crear un directorio de pequeñas utilidades web centradas en:
+[![Astro](https://img.shields.io/badge/Astro-5C2D91?style=for-the-badge&logo=astro&logoColor=white)](https://astro.build)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-121013?style=for-the-badge&logo=github&logoColor=white)](https://pages.github.com/)
+[![Privacy First](https://img.shields.io/badge/Privacy-First-22c55e?style=for-the-badge)](https://tools.alon.one)
+[![Open Source](https://img.shields.io/badge/Open%20Source-Yes-38bdf8?style=for-the-badge)](https://github.com/jalonsomerchan/tools)
 
-- productividad
-- desarrollo
-- imágenes
-- texto
-- datos
-- mapas
-- IA
-- utilidades rápidas
+# 🌐 https://tools.alon.one
 
-Todas las herramientas funcionan completamente en el navegador, sin backend y sin enviar información a servidores externos.
+### Sin backend · Sin cuentas · Sin rastreo · Sin subir archivos
 
-## Tecnologías
+</div>
 
-- Astro
-- JavaScript
-- GitHub Pages
-- HTML5
-- CSS moderno
+---
 
-## Herramientas disponibles
+# 🔒 Privacidad ante todo
 
-### Base64 encoder y decoder
+## Todo se ejecuta en tu ordenador
 
-Convierte texto plano a Base64 y decodifica cadenas Base64 con soporte UTF-8.
+La filosofía principal de Alon Tools es muy simple:
 
-Ruta:
+> Tus imágenes, textos, archivos y datos nunca se suben a ninguna nube.
 
-```txt
-/base64/
-```
+Las herramientas funcionan completamente dentro del navegador usando JavaScript, Canvas API y APIs locales del navegador.
 
-## Próximas herramientas
+Eso significa:
 
-### Texto y desarrollo
+- ✅ Las imágenes nunca abandonan tu dispositivo
+- ✅ Los JWT se procesan localmente
+- ✅ Los textos nunca se envían a servidores
+- ✅ El markdown se renderiza localmente
+- ✅ Los favicons se generan en tu navegador
+- ✅ El censurado de fotos ocurre en memoria local
+- ✅ La compresión de imágenes no usa servidores
+- ✅ No existe backend
+- ✅ No existe base de datos
+- ✅ No hay cuentas
+- ✅ No hay analítica invasiva
+- ✅ No hay tracking agresivo
 
-- JSON formatter
+Muchas herramientas online actuales suben archivos silenciosamente.
+
+Alon Tools intenta hacer justo lo contrario.
+
+---
+
+# ⚡ Demo online
+
+## 👉 https://tools.alon.one
+
+---
+
+# 🧰 Herramientas disponibles
+
+## 🔐 Desarrollo
+
+- Base64 encoder & decoder
+- URL encoder & decoder
 - JWT decoder
-- URL encoder / decoder
-- Hash generator
-- UUID generator
-- Cron parser
-- Regex tester
+- MD5 generator
 - Diff checker
-- Markdown preview
+- JSON viewer & formatter
+- cURL configurator
+- URL inspector
+- Social preview checker
+- Markdown writer & preview
 
-### Imágenes
+## 🖼️ Imágenes
 
-- Image compressor
-- Image converter
-- Background remover
-- SVG optimizer
-- Pixel art tools
-- Palette extractor
+- Compresor de imágenes
+- Conversor de imágenes
+- Información y metadatos de imágenes
+- Generador de favicon
+- Censurador de fotos
 
-### Mapas y GPS
+## 🌍 Utilidades
 
-- GPX viewer
-- GPX optimizer
-- Elevation viewer
-- Coordinate converter
-- GeoJSON viewer
+- Información de IP
+- Coordenadas de direcciones
 
-### Vídeo y multimedia
+---
 
-- Video trimmer
-- Thumbnail extractor
-- Subtitle converter
-- Audio converter
+# 🚀 Stack tecnológico
 
-### IA y automatización
+- ⚡ Astro
+- 🧠 JavaScript Vanilla
+- 🎨 CSS moderno
+- 🖼️ Canvas API
+- 🌍 Leaflet
+- 📦 GitHub Pages
 
-- Prompt formatter
-- AI text cleaner
-- RSS to JSON
-- RSS reader
-- Feed generator
+---
 
-## Roadmap
+# 📱 Características
 
-- Sistema de búsqueda de herramientas
-- Categorías
-- Tema claro/oscuro
-- PWA
-- Favoritos
-- Historial local
-- Compartir configuraciones por URL
-- Soporte offline
+- Responsive
+- Optimizado para móviles
+- Compatible con GitHub Pages
+- Muy rápido
+- Diseño moderno
+- Sin dependencias pesadas
+- SEO friendly
+- Herramientas instantáneas
+- Todo client-side
 
-## Desarrollo
+---
+
+# 🧠 Filosofía del proyecto
+
+Internet está lleno de herramientas que:
+
+- suben archivos
+- requieren registro
+- guardan información
+- añaden publicidad agresiva
+- usan trackers
+- son lentas
+
+Alon Tools intenta ser una alternativa:
+
+> herramientas simples, rápidas, privadas y útiles.
+
+---
+
+# 🖥️ Desarrollo local
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Build
+---
+
+# 📦 Build
 
 ```bash
 npm run build
 ```
 
-## Licencia
+---
+
+# 🚀 Deploy
+
+El proyecto está preparado para desplegar automáticamente en GitHub Pages usando GitHub Actions.
+
+---
+
+# ❤️ Open source
+
+Pull requests, ideas y nuevas herramientas son bienvenidas.
+
+---
+
+# 📄 Licencia
 
 MIT
