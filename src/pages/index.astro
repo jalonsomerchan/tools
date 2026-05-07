@@ -1,17 +1,135 @@
 ---
-
+const tools = [
+  {
+    title: 'Base64 encoder y decoder',
+    description: 'Codifica y decodifica texto Base64 con soporte UTF-8.',
+    href: '/tools/base64/',
+    icon: '64'
+  }
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>Alon Tools</title>
+
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #020617;
+        --card: rgba(15, 23, 42, .88);
+        --border: rgba(148, 163, 184, .18);
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --primary: #38bdf8;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top, rgba(56,189,248,.12), transparent 35%),
+          var(--bg);
+        color: var(--text);
+        font-family: Inter, system-ui, sans-serif;
+      }
+
+      .page-shell {
+        width: min(1200px, calc(100% - 2rem));
+        margin: auto;
+        padding: 4rem 0;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        padding: .4rem .8rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--primary);
+      }
+
+      h1 {
+        font-size: clamp(3rem, 6vw, 5rem);
+        line-height: .95;
+        letter-spacing: -.05em;
+      }
+
+      .hero-text {
+        color: var(--muted);
+        max-width: 700px;
+        line-height: 1.7;
+      }
+
+      .directory-grid {
+        display: grid;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .tool-card {
+        display: flex;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .tool-icon {
+        width: 64px;
+        height: 64px;
+        display: grid;
+        place-items: center;
+        border-radius: 18px;
+        background: var(--primary);
+        color: black;
+        font-weight: 900;
+      }
+
+      .tool-card strong {
+        display: block;
+        margin-bottom: .5rem;
+      }
+
+      .tool-card small {
+        color: var(--muted);
+        line-height: 1.7;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="page-shell">
+      <div class="eyebrow">Alon Tools</div>
+
+      <h1>Herramientas rápidas para el navegador</h1>
+
+      <p class="hero-text">
+        Colección de pequeñas utilidades privadas y rápidas creadas con Astro.
+      </p>
+
+      <section class="directory-grid">
+        {
+          tools.map((tool) => (
+            <a class="tool-card" href={tool.href}>
+              <div class="tool-icon">{tool.icon}</div>
+
+              <div>
+                <strong>{tool.title}</strong>
+                <small>{tool.description}</small>
+              </div>
+            </a>
+          ))
+        }
+      </section>
+    </main>
+  </body>
 </html>
