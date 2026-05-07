@@ -1,13 +1,15 @@
 <header>
   <div class="page-shell header-inner">
-    <a href="/tools/" class="brand">
+    <a href="/" class="brand">
       <span class="brand-mark">A</span>
       <span>Alon Tools</span>
     </a>
 
     <nav>
-      <a href="/tools/">Inicio</a>
-      <a href="/tools/base64/">Base64</a>
+      <a href="/">Inicio</a>
+      <a href="/json-viewer/">JSON</a>
+      <a href="/image-compressor/">Imágenes</a>
+      <a href="/curl-builder/">cURL</a>
     </nav>
   </div>
 </header>
@@ -52,10 +54,27 @@
   nav {
     display: flex;
     gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   nav a {
     color: var(--muted);
     text-decoration: none;
+  }
+
+  nav a:hover {
+    color: white;
+  }
+
+  @media (max-width: 700px) {
+    .header-inner {
+      height: auto;
+      min-height: 72px;
+      padding: .9rem 0;
+      align-items: flex-start;
+      flex-direction: column;
+      gap: .8rem;
+    }
   }
 </style>
