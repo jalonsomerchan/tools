@@ -1,0 +1,178 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Inspector de URLs';
+---
+
+<Layout title={title}>
+  <section style="padding: 4rem 0;">
+    <div class="eyebrow">Alon Tools</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Analiza URLs y obtén información útil para desarrollo: dominio, path, parámetros, fragmentos, ejemplos en PHP, JavaScript, cURL y más.
+    </p>
+
+    <section class="tool-card">
+      <div class="toolbar">
+        <input id="urlInput" type="text" placeholder="https://example.com/path?query=test#fragment" />
+        <button class="primary" id="analyzeBtn">Analizar URL</button>
+      </div>
+
+      <div class="results" id="results" hidden>
+        <div class="info-grid">
+          <div class="info-item"><span>URL completa</span><strong id="fullUrl">-</strong></div>
+          <div class="info-item"><span>Protocolo</span><strong id="protocol">-</strong></div>
+          <div class="info-item"><span>Host</span><strong id="host">-</strong></div>
+          <div class="info-item"><span>Hostname</span><strong id="hostname">-</strong></div>
+          <div class="info-item"><span>Puerto</span><strong id="port">-</strong></div>
+          <div class="info-item"><span>Path</span><strong id="pathname">-</strong></div>
+          <div class="info-item"><span>Query string</span><strong id="search">-</strong></div>
+          <div class="info-item"><span>Fragment</span><strong id="hash">-</strong></div>
+          <div class="info-item"><span>Origen</span><strong id="origin">-</strong></div>
+        </div>
+
+        <div class="code-grid">
+          <div class="code-panel">
+            <h2>JavaScript</h2>
+            <pre id="jsCode"></pre>
+          </div>
+
+          <div class="code-panel">
+            <h2>PHP</h2>
+            <pre id="phpCode"></pre>
+          </div>
+
+          <div class="code-panel">
+            <h2>cURL</h2>
+            <pre id="curlCode"></pre>
+          </div>
+
+          <div class="code-panel">
+            <h2>Fetch API</h2>
+            <pre id="fetchCode"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <style>
+    .toolbar {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    input {
+      flex: 1;
+      min-width: 280px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font-size: 1rem;
+    }
+
+    button {
+      background: var(--primary);
+      color: black;
+      border: none;
+      border-radius: 14px;
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .results {
+      margin-top: 2rem;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .info-item,
+    .code-panel {
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(2,6,23,.55);
+      padding: 1rem;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: .35rem;
+    }
+
+    .info-item span {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .code-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+    }
+
+    pre {
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, monospace;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+  </style>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('urlInput');
+      const results = document.getElementById('results');
+
+      const set = (id, value) => {
+        document.getElementById(id).textContent = value || '-';
+      };
+
+      document.getElementById('analyzeBtn').onclick = () => {
+        try {
+          const url = new URL(input.value.trim());
+
+          results.hidden = false;
+
+          set('fullUrl', url.href);
+          set('protocol', url.protocol);
+          set('host', url.host);
+          set('hostname', url.hostname);
+          set('port', url.port || 'Default');
+          set('pathname', url.pathname);
+          set('search', url.search || 'Sin parámetros');
+          set('hash', url.hash || 'Sin fragment');
+          set('origin', url.origin);
+
+          document.getElementById('jsCode').textContent = `const url = new URL('${url.href}');\n\nconsole.log(url.hostname);\nconsole.log(url.pathname);\nconsole.log(url.searchParams);`;
+
+          document.getElementById('phpCode').textContent = `$url = parse_url('${url.href}');\n\nprint_r($url);\n\necho $url['host'];\necho $url['path'];`;
+
+          document.getElementById('curlCode').textContent = `curl -X GET '${url.href}'`;
+
+          document.getElementById('fetchCode').textContent = `fetch('${url.href}')\n  .then(response => response.text())\n  .then(data => console.log(data));`;
+        } catch {
+          alert('URL inválida');
+        }
+      };
+    });
+  </script>
+</Layout>
