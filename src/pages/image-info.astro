@@ -1,0 +1,251 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Información y metadatos de imágenes';
+---
+
+<Layout title={title}>
+  <section style="padding: 4rem 0;">
+    <div class="eyebrow">Alon Tools</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Analiza imágenes directamente desde el navegador y obtén dimensiones, tamaño, formato, transparencia, EXIF y más.
+    </p>
+
+    <section class="tool-card">
+      <div class="upload-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*" hidden />
+
+        <div class="upload-content">
+          <strong>Selecciona una imagen</strong>
+          <span>o arrástrala aquí</span>
+        </div>
+      </div>
+
+      <div class="preview-grid" id="previewGrid" hidden>
+        <div class="preview-panel">
+          <img id="previewImage" alt="Vista previa" />
+        </div>
+
+        <div class="info-panel">
+          <div class="info-item">
+            <span>Nombre</span>
+            <strong id="fileName">-</strong>
+          </div>
+
+          <div class="info-item">
+            <span>Formato</span>
+            <strong id="fileType">-</strong>
+          </div>
+
+          <div class="info-item">
+            <span>Tamaño</span>
+            <strong id="fileSize">-</strong>
+          </div>
+
+          <div class="info-item">
+            <span>Resolución</span>
+            <strong id="dimensions">-</strong>
+          </div>
+
+          <div class="info-item">
+            <span>Aspect ratio</span>
+            <strong id="aspectRatio">-</strong>
+          </div>
+
+          <div class="info-item">
+            <span>Transparencia</span>
+            <strong id="transparency">-</strong>
+          </div>
+
+          <div class="info-item">
+            <span>Última modificación</span>
+            <strong id="lastModified">-</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="metadata-panel" id="metadataPanel" hidden>
+        <h2>Metadatos EXIF</h2>
+
+        <pre id="metadataOutput">No hay metadatos disponibles.</pre>
+      </div>
+    </section>
+  </section>
+
+  <style>
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 24px;
+      padding: 4rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--primary);
+      background: rgba(56,189,248,.05);
+    }
+
+    .upload-content {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+
+    .upload-content strong {
+      font-size: 1.2rem;
+    }
+
+    .upload-content span {
+      color: var(--muted);
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .preview-panel,
+    .info-panel,
+    .metadata-panel {
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: rgba(2,6,23,.55);
+      padding: 1.5rem;
+    }
+
+    .preview-panel {
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .preview-panel img {
+      max-width: 100%;
+      max-height: 500px;
+      border-radius: 18px;
+    }
+
+    .info-panel {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: .3rem;
+    }
+
+    .info-item span {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .metadata-panel {
+      margin-top: 1.5rem;
+    }
+
+    .metadata-panel h2 {
+      margin-top: 0;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, monospace;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    @media (max-width: 960px) {
+      .preview-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const fileInput = document.getElementById('fileInput');
+      const dropZone = document.getElementById('dropZone');
+      const previewGrid = document.getElementById('previewGrid');
+      const metadataPanel = document.getElementById('metadataPanel');
+      const previewImage = document.getElementById('previewImage');
+      const metadataOutput = document.getElementById('metadataOutput');
+
+      dropZone.addEventListener('click', () => {
+        fileInput.click();
+      });
+
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+
+        const file = e.dataTransfer.files[0];
+
+        if (file) {
+          processFile(file);
+        }
+      });
+
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+
+        if (file) {
+          processFile(file);
+        }
+      });
+
+      const formatBytes = (bytes) => {
+        if (bytes === 0) return '0 B';
+
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(1024));
+
+        return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
+      };
+
+      const processFile = (file) => {
+        const url = URL.createObjectURL(file);
+        const image = new Image();
+
+        image.onload = () => {
+          previewGrid.hidden = false;
+          metadataPanel.hidden = false;
+
+          previewImage.src = url;
+
+          document.getElementById('fileName').textContent = file.name;
+          document.getElementById('fileType').textContent = file.type || 'Desconocido';
+          document.getElementById('fileSize').textContent = formatBytes(file.size);
+          document.getElementById('dimensions').textContent = `${image.width} × ${image.height}`;
+          document.getElementById('aspectRatio').textContent = (image.width / image.height).toFixed(2);
+          document.getElementById('transparency').textContent = file.type.includes('png') || file.type.includes('webp') ? 'Posible' : 'No';
+          document.getElementById('lastModified').textContent = new Date(file.lastModified).toLocaleString();
+
+          metadataOutput.textContent = JSON.stringify({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            width: image.width,
+            height: image.height,
+            aspectRatio: image.width / image.height,
+            lastModified: new Date(file.lastModified).toISOString()
+          }, null, 2);
+        };
+
+        image.src = url;
+      };
+    });
+  </script>
+</Layout>
