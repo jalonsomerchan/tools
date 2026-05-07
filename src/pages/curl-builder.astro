@@ -1,0 +1,213 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Configurador cURL';
+---
+
+<Layout title={title}>
+  <section style="padding: 4rem 0;">
+    <div class="eyebrow">Alon Tools</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Construye llamadas HTTP y genera automáticamente código para cURL, PHP, JavaScript, Python y más.
+    </p>
+
+    <section class="tool-card">
+      <div class="form-grid">
+        <div class="field">
+          <label>URL</label>
+          <input id="url" type="text" placeholder="https://api.example.com/users" />
+        </div>
+
+        <div class="field">
+          <label>Método</label>
+          <select id="method">
+            <option>GET</option>
+            <option>POST</option>
+            <option>PUT</option>
+            <option>PATCH</option>
+            <option>DELETE</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>User-Agent</label>
+          <input id="agent" type="text" placeholder="Mozilla/5.0" />
+        </div>
+
+        <div class="field">
+          <label>Authorization Bearer</label>
+          <input id="auth" type="text" placeholder="token..." />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Headers personalizados</label>
+        <textarea id="headers" placeholder="Accept: application/json&#10;X-Test: demo"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Body</label>
+        <textarea id="body" placeholder='{"hello":"world"}'></textarea>
+      </div>
+
+      <button class="generate-btn" id="generateBtn">Generar código</button>
+
+      <div class="code-grid" id="results" hidden>
+        <div class="code-panel">
+          <h2>cURL</h2>
+          <pre id="curlCode"></pre>
+        </div>
+
+        <div class="code-panel">
+          <h2>PHP</h2>
+          <pre id="phpCode"></pre>
+        </div>
+
+        <div class="code-panel">
+          <h2>JavaScript Fetch</h2>
+          <pre id="jsCode"></pre>
+        </div>
+
+        <div class="code-panel">
+          <h2>Python Requests</h2>
+          <pre id="pythonCode"></pre>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <style>
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+      margin-bottom: 1rem;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    input,
+    select,
+    textarea {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font-size: .96rem;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+      font-family: ui-monospace, monospace;
+    }
+
+    .generate-btn {
+      background: var(--primary);
+      color: black;
+      border: none;
+      border-radius: 14px;
+      padding: 1rem 1.5rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .code-grid {
+      margin-top: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
+      gap: 1rem;
+    }
+
+    .code-panel {
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(2,6,23,.55);
+      padding: 1rem;
+    }
+
+    .code-panel h2 {
+      margin-top: 0;
+      font-size: 1rem;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-x: auto;
+      line-height: 1.6;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+    }
+  </style>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('generateBtn').onclick = () => {
+        const url = document.getElementById('url').value.trim();
+        const method = document.getElementById('method').value;
+        const agent = document.getElementById('agent').value.trim();
+        const auth = document.getElementById('auth').value.trim();
+        const headers = document.getElementById('headers').value.trim();
+        const body = document.getElementById('body').value.trim();
+
+        if (!url) {
+          alert('Introduce una URL');
+          return;
+        }
+
+        const headerLines = headers
+          .split('\n')
+          .filter(Boolean);
+
+        if (auth) {
+          headerLines.push(`Authorization: Bearer ${auth}`);
+        }
+
+        if (agent) {
+          headerLines.push(`User-Agent: ${agent}`);
+        }
+
+        const curlHeaders = headerLines
+          .map(h => `-H "${h}"`)
+          .join(' \\\n  ');
+
+        const curlBody = body
+          ? `\\\n  --data '${body}'`
+          : '';
+
+        document.getElementById('curlCode').textContent = `curl -X ${method} "${url}" \\
+  ${curlHeaders}${curlBody}`;
+
+        document.getElementById('phpCode').textContent = `$ch = curl_init('${url}');\n\ncurl_setopt_array($ch, [\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_CUSTOMREQUEST => '${method}',\n  CURLOPT_HTTPHEADER => [\n${headerLines.map(h => `    '${h}'`).join(',\n')}\n  ],\n  CURLOPT_POSTFIELDS => '${body.replace(/'/g, "\\'")}'\n]);\n\n$response = curl_exec($ch);\ncurl_close($ch);`;
+
+        document.getElementById('jsCode').textContent = `fetch('${url}', {\n  method: '${method}',\n  headers: {\n${headerLines.map(h => {
+            const parts = h.split(':');
+            return `    '${parts[0].trim()}': '${parts.slice(1).join(':').trim()}'`;
+          }).join(',\n')}\n  },\n  body: ${body ? `JSON.stringify(${body})` : 'undefined'}\n})\n.then(r => r.text())\n.then(console.log);`;
+
+        document.getElementById('pythonCode').textContent = `import requests\n\nheaders = {\n${headerLines.map(h => {
+            const parts = h.split(':');
+            return `    '${parts[0].trim()}': '${parts.slice(1).join(':').trim()}',`;
+          }).join('\n')}\n}\n\nresponse = requests.request(\n    '${method}',\n    '${url}',\n    headers=headers,\n    data='''${body}'''\n)\n\nprint(response.text)`;
+
+        document.getElementById('results').hidden = false;
+      };
+    });
+  </script>
+</Layout>
