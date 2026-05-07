@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Base64 encoder y decoder | Alon Tools</title>
-  <meta name="description" content="Herramienta online gratuita para codificar y decodificar texto en Base64 directamente desde el navegador." />
+  <title>Alon Tools | Herramientas online gratuitas</title>
+  <meta name="description" content="Directorio de herramientas online gratuitas para desarrollo, texto, datos e imágenes." />
   <meta name="theme-color" content="#0f172a" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -12,52 +12,19 @@
   <main class="page-shell">
     <section class="hero" aria-labelledby="page-title">
       <div class="eyebrow">Alon Tools</div>
-      <h1 id="page-title">Codificador y decodificador Base64</h1>
-      <p class="hero-text">Convierte texto plano a Base64 y decodifica cadenas Base64 al instante. Todo ocurre en tu navegador, sin enviar datos a ningún servidor.</p>
+      <h1 id="page-title">Herramientas rápidas para el navegador</h1>
+      <p class="hero-text">Una colección de pequeñas utilidades web, privadas y rápidas. Sin registros, sin backend y listas para usar desde GitHub Pages.</p>
     </section>
 
-    <section class="tool-card" aria-label="Herramienta Base64">
-      <div class="toolbar" role="group" aria-label="Acciones de conversión">
-        <button class="primary" type="button" data-action="encode">Codificar</button>
-        <button type="button" data-action="decode">Decodificar</button>
-        <button type="button" data-action="swap">Intercambiar</button>
-        <button type="button" data-action="clear">Limpiar</button>
-      </div>
-
-      <div class="workspace">
-        <label class="panel">
-          <span>Entrada</span>
-          <textarea id="input" spellcheck="false" placeholder="Escribe o pega aquí el texto que quieres convertir..."></textarea>
-        </label>
-
-        <label class="panel">
-          <span>Resultado</span>
-          <textarea id="output" spellcheck="false" readonly placeholder="Aquí aparecerá el resultado..."></textarea>
-        </label>
-      </div>
-
-      <div class="footer-actions">
-        <p id="status" class="status" aria-live="polite">Listo para convertir.</p>
-        <button class="ghost" type="button" data-action="copy">Copiar resultado</button>
-      </div>
-    </section>
-
-    <section class="info-grid" aria-label="Información útil">
-      <article>
-        <h2>Privado por diseño</h2>
-        <p>La conversión se ejecuta con JavaScript local. El contenido no sale de tu dispositivo.</p>
-      </article>
-      <article>
-        <h2>Compatible con UTF-8</h2>
-        <p>Funciona correctamente con acentos, eñes, emojis y otros caracteres Unicode.</p>
-      </article>
-      <article>
-        <h2>Uso típico</h2>
-        <p>Útil para tokens, cadenas de configuración, datos de prueba y pequeñas conversiones rápidas.</p>
-      </article>
+    <section class="directory-grid" aria-label="Directorio de herramientas">
+      <a class="tool-link-card" href="base64/">
+        <span class="tool-icon">64</span>
+        <span>
+          <strong>Codificador y decodificador Base64</strong>
+          <small>Convierte texto plano a Base64 y decodifica cadenas Base64 con soporte UTF-8.</small>
+        </span>
+      </a>
     </section>
   </main>
-
-  <script src="app.js" defer></script>
 </body>
 </html>
