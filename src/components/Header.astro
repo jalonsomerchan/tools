@@ -1,0 +1,61 @@
+<header>
+  <div class="page-shell header-inner">
+    <a href="/tools/" class="brand">
+      <span class="brand-mark">A</span>
+      <span>Alon Tools</span>
+    </a>
+
+    <nav>
+      <a href="/tools/">Inicio</a>
+      <a href="/tools/base64/">Base64</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(20px);
+    background: rgba(2, 6, 23, .7);
+    border-bottom: 1px solid rgba(148,163,184,.12);
+  }
+
+  .header-inner {
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    color: white;
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .brand-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: var(--primary);
+    color: black;
+    font-weight: 900;
+  }
+
+  nav {
+    display: flex;
+    gap: 1rem;
+  }
+
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+</style>
