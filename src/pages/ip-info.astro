@@ -1,0 +1,207 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Información de IP';
+---
+
+<Layout title={title}>
+  <section style="padding: 4rem 0;">
+    <div class="eyebrow">Alon Tools</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Consulta información técnica y geográfica de una dirección IP utilizando ip.guide.
+    </p>
+
+    <div class="warning-box">
+      ⚠️ La IP introducida se enviará al servicio externo ip.guide para realizar la consulta.
+      No introduzcas direcciones IP sensibles o privadas si no quieres compartirlas con ese servicio.
+    </div>
+
+    <section class="tool-card">
+      <div class="toolbar">
+        <input id="ipInput" type="text" placeholder="8.8.8.8" />
+
+        <button class="primary" id="lookupBtn">
+          Consultar IP
+        </button>
+      </div>
+
+      <div id="results" hidden>
+        <div class="results-grid">
+          <div class="result-card">
+            <span>IP</span>
+            <strong id="ip">-</strong>
+          </div>
+
+          <div class="result-card">
+            <span>País</span>
+            <strong id="country">-</strong>
+          </div>
+
+          <div class="result-card">
+            <span>Ciudad</span>
+            <strong id="city">-</strong>
+          </div>
+
+          <div class="result-card">
+            <span>ASN</span>
+            <strong id="asn">-</strong>
+          </div>
+
+          <div class="result-card">
+            <span>ISP / Organización</span>
+            <strong id="org">-</strong>
+          </div>
+
+          <div class="result-card">
+            <span>Timezone</span>
+            <strong id="timezone">-</strong>
+          </div>
+
+          <div class="result-card">
+            <span>Latitud</span>
+            <strong id="latitude">-</strong>
+          </div>
+
+          <div class="result-card">
+            <span>Longitud</span>
+            <strong id="longitude">-</strong>
+          </div>
+        </div>
+
+        <div class="json-panel">
+          <h2>Respuesta JSON</h2>
+
+          <pre id="jsonOutput"></pre>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <style>
+    .warning-box {
+      margin-top: 1.5rem;
+      margin-bottom: 2rem;
+      padding: 1rem 1.2rem;
+      border-radius: 18px;
+      background: rgba(251, 191, 36, .12);
+      border: 1px solid rgba(251,191,36,.25);
+      color: #fde68a;
+      line-height: 1.7;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    input {
+      flex: 1;
+      min-width: 240px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font-size: 1rem;
+    }
+
+    button {
+      border-radius: 14px;
+      border: none;
+      background: var(--primary);
+      color: black;
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    #results {
+      margin-top: 2rem;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .result-card,
+    .json-panel {
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(2,6,23,.55);
+      padding: 1rem;
+    }
+
+    .result-card {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+    }
+
+    .result-card span {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .json-panel {
+      margin-top: 1.5rem;
+    }
+
+    .json-panel h2 {
+      margin-top: 0;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-x: auto;
+      line-height: 1.6;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+    }
+  </style>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const set = (id, value) => {
+        document.getElementById(id).textContent = value || '-';
+      };
+
+      document.getElementById('lookupBtn').onclick = async () => {
+        const ip = document.getElementById('ipInput').value.trim();
+
+        if (!ip) {
+          alert('Introduce una IP');
+          return;
+        }
+
+        try {
+          const response = await fetch(`https://ip.guide/${encodeURIComponent(ip)}`);
+          const data = await response.json();
+
+          document.getElementById('results').hidden = false;
+
+          const info = data.ipResponse || data;
+
+          set('ip', info.ip || ip);
+          set('country', info.location?.country || info.country || '-');
+          set('city', info.location?.city || info.city || '-');
+          set('asn', info.network?.autonomous_system_number || info.asn || '-');
+          set('org', info.network?.autonomous_system_organization || info.organization || '-');
+          set('timezone', info.location?.time_zone || '-');
+          set('latitude', info.location?.latitude || '-');
+          set('longitude', info.location?.longitude || '-');
+
+          document.getElementById('jsonOutput').textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+          alert('No se pudo consultar la IP');
+        }
+      };
+    });
+  </script>
+</Layout>
