@@ -5,10 +5,13 @@
   "nav.images": "Images",
   "nav.development": "Development",
   "base64.title": "Base64 encoder & decoder",
-  "base64.description": "Encode and decode Base64 locally in your browser.",
+  "base64.description": "Encode and decode Base64 locally in your browser. Your text never leaves your device.",
   "base64.encode": "Encode",
   "base64.decode": "Decode",
+  "base64.swap": "Swap",
   "base64.clear": "Clear",
-  "base64.input": "Input text",
-  "base64.output": "Output"
+  "base64.copy": "Copy result",
+  "base64.input": "Input text...",
+  "base64.output": "Result...",
+  "base64.ready": "Ready to convert."
 }
