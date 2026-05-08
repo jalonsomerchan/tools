@@ -1,0 +1,111 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { useTranslations } from '../../i18n';
+
+const t = useTranslations('es');
+
+const categories = [
+  {
+    title: 'Desarrollo',
+    items: [
+      ['Base64 encoder y decoder', 'Codifica y decodifica Base64.', '/es/base64/', '64'],
+      ['JSON viewer y formatter', 'Visualiza y valida JSON.', '/es/json-viewer/', '{}'],
+      ['JWT decoder', 'Decodifica JWT localmente.', '/es/jwt-decoder/', 'JWT'],
+      ['Configurador cURL', 'Genera peticiones HTTP.', '/es/curl-builder/', 'API']
+    ]
+  },
+  {
+    title: 'Imágenes',
+    items: [
+      ['Compresor de imágenes', 'Reduce el tamaño de imágenes.', '/es/image-compressor/', 'ZIP'],
+      ['Conversor de imágenes', 'Convierte PNG, JPEG y WebP.', '/es/image-converter/', 'CONV'],
+      ['Generador de favicon', 'Crea favicons desde texto o imágenes.', '/es/favicon-generator/', 'ICO']
+    ]
+  }
+];
+---
+
+<Layout
+  title="Alon Tools en Español"
+  description="Herramientas privadas para desarrolladores e imágenes. Todo funciona localmente en tu navegador."
+  lang="es"
+  path="/"
+>
+  <section class="hero">
+    <div class="eyebrow">Privacy First</div>
+
+    <h1>Herramientas rápidas y privadas</h1>
+
+    <p class="hero-text">
+      {t('privacy')}
+    </p>
+  </section>
+
+  {
+    categories.map((category) => (
+      <section class="category-section">
+        <div class="category-header">
+          <h2>{category.title}</h2>
+        </div>
+
+        <div class="directory-grid">
+          {
+            category.items.map(([title, description, href, icon]) => (
+              <a class="tool-link-card" href={href}>
+                <div class="tool-icon">{icon}</div>
+
+                <div>
+                  <strong>{title}</strong>
+                  <small>{description}</small>
+                </div>
+              </a>
+            ))
+          }
+        </div>
+      </section>
+    ))
+  }
+</Layout>
+
+<style>
+  .hero {
+    padding: 4rem 0 2rem;
+  }
+
+  .category-section {
+    margin-top: 3rem;
+  }
+
+  .directory-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  .tool-link-card {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .tool-icon {
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    background: var(--primary);
+    color: black;
+    font-weight: 900;
+  }
+
+  .tool-link-card small {
+    color: var(--muted);
+    line-height: 1.7;
+  }
+</style>
