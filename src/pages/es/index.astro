@@ -1,0 +1,151 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const categories = [
+  {
+    title: 'Desarrollo',
+    items: [
+      ['Base64 encoder y decoder', 'Codifica y decodifica Base64.', '/base64/', '64'],
+      ['JSON viewer y formatter', 'Visualiza y valida JSON.', '/json-viewer/', '{}'],
+      ['Generador MD5', 'Genera hashes MD5.', '/md5/', 'MD5'],
+      ['JWT decoder', 'Decodifica JWT localmente.', '/jwt-decoder/', 'JWT'],
+      ['URL encoder & decoder', 'Codifica parámetros y URLs.', '/url-encoder/', 'ENC'],
+      ['Inspector de URLs', 'Analiza URLs para desarrolladores.', '/url-inspector/', 'URL'],
+      ['Configurador cURL', 'Genera peticiones HTTP.', '/curl-builder/', 'API'],
+      ['Diff checker', 'Compara textos rápidamente.', '/diff-checker/', 'DIFF']
+    ]
+  },
+  {
+    title: 'Imágenes',
+    items: [
+      ['Compresor de imágenes', 'Reduce el tamaño de imágenes.', '/image-compressor/', 'ZIP'],
+      ['Conversor de imágenes', 'Convierte PNG, JPEG y WebP.', '/image-converter/', 'CONV'],
+      ['Información de imágenes', 'Obtén metadatos y tamaño.', '/image-info/', 'IMG'],
+      ['Generador de favicon', 'Crea favicons desde texto o imágenes.', '/favicon-generator/', 'ICO'],
+      ['Censurador de fotos', 'Pixelado, blur y censura.', '/photo-censor/', 'CEN']
+    ]
+  },
+  {
+    title: 'Internet y mapas',
+    items: [
+      ['Información de IP', 'Consulta información técnica de IPs.', '/ip-info/', 'IP'],
+      ['Coordenadas de direcciones', 'Busca coordenadas GPS.', '/geocoder/', 'MAP'],
+      ['Preview social de URLs', 'Comprueba Open Graph y Twitter.', '/social-preview/', 'SOC']
+    ]
+  },
+  {
+    title: 'Texto y escritura',
+    items: [
+      ['Markdown writer & preview', 'Editor Markdown con preview.', '/markdown-preview/', 'MD']
+    ]
+  }
+];
+---
+
+<Layout
+  title="Alon Tools — Herramientas privadas para navegador"
+  description="Herramientas rápidas para desarrollo, imágenes e internet que funcionan localmente en tu navegador. Sin backend, sin cuentas y sin subir archivos a la nube."
+  lang="es"
+  path="/"
+  translated={true}
+>
+  <section class="hero">
+    <div class="eyebrow">Privacy First</div>
+
+    <h1>Herramientas rápidas para el navegador que respetan tu privacidad</h1>
+
+    <p class="hero-text">
+      Sin backend. Sin cuentas. Sin subir archivos a la nube. La mayoría de herramientas se ejecutan completamente en tu dispositivo.
+    </p>
+  </section>
+
+  {
+    categories.map((category) => (
+      <section class="category-section">
+        <div class="category-header">
+          <h2>{category.title}</h2>
+        </div>
+
+        <div class="directory-grid">
+          {
+            category.items.map(([title, description, href, icon]) => (
+              <a class="tool-link-card" href={href}>
+                <div class="tool-icon">{icon}</div>
+
+                <div>
+                  <strong>{title}</strong>
+                  <small>{description}</small>
+                </div>
+              </a>
+            ))
+          }
+        </div>
+      </section>
+    ))
+  }
+</Layout>
+
+<style>
+  .hero {
+    padding: 4rem 0 2rem;
+  }
+
+  .category-section {
+    margin-top: 3rem;
+  }
+
+  .category-header {
+    margin-bottom: 1rem;
+  }
+
+  .category-header h2 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  .directory-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  .tool-link-card {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: inherit;
+    text-decoration: none;
+    transition: transform .15s ease, border-color .15s ease;
+  }
+
+  .tool-link-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(56,189,248,.35);
+  }
+
+  .tool-icon {
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    background: var(--primary);
+    color: black;
+    font-weight: 900;
+    font-size: .9rem;
+    flex-shrink: 0;
+  }
+
+  .tool-link-card strong {
+    display: block;
+    margin-bottom: .5rem;
+  }
+
+  .tool-link-card small {
+    color: var(--muted);
+    line-height: 1.7;
+  }
+</style>
