@@ -18,6 +18,7 @@ const title = 'Coordenadas de direcciones';
       <div class="toolbar">
         <input id="searchInput" type="text" placeholder="Buscar dirección o lugar..." />
         <button class="primary" id="searchBtn">Buscar</button>
+        <button id="locationBtn">Usar mi ubicación</button>
       </div>
 
       <div id="map"></div>
@@ -157,12 +158,7 @@ const title = 'Coordenadas de direcciones';
         }
       };
 
-      map.on('click', async (e) => {
-        const { lat, lng } = e.latlng;
-
-        placeMarker(lat, lng);
-        setData(lat, lng);
-
+      const reverseGeocode = async (lat, lng) => {
         try {
           const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
           const data = await response.json();
@@ -171,6 +167,15 @@ const title = 'Coordenadas de direcciones';
             setData(lat, lng, data.display_name);
           }
         } catch {}
+      };
+
+      map.on('click', async (e) => {
+        const { lat, lng } = e.latlng;
+
+        placeMarker(lat, lng);
+        setData(lat, lng);
+
+        await reverseGeocode(lat, lng);
       });
 
       document.getElementById('searchBtn').onclick = async () => {
@@ -193,6 +198,29 @@ const title = 'Coordenadas de direcciones';
         map.setView([lat, lng], 15);
         placeMarker(lat, lng);
         setData(lat, lng, result.display_name);
+      };
+
+      document.getElementById('locationBtn').onclick = () => {
+        if (!navigator.geolocation) {
+          alert('Tu navegador no soporta geolocalización');
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+
+          map.setView([lat, lng], 16);
+          placeMarker(lat, lng);
+          setData(lat, lng, 'Obteniendo dirección...');
+
+          await reverseGeocode(lat, lng);
+        }, () => {
+          alert('No se pudo obtener tu ubicación');
+        }, {
+          enableHighAccuracy: true,
+          timeout: 10000
+        });
       };
 
       document.getElementById('copyBtn').onclick = async () => {
