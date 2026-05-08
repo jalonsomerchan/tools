@@ -1,0 +1,85 @@
+---
+import { useTranslations, type Language } from '../../i18n';
+
+const { lang = 'en' } = Astro.props as { lang?: Language };
+const t = useTranslations(lang);
+---
+
+<section style="padding: 4rem 0;">
+  <div class="eyebrow">Alon Tools</div>
+
+  <h1>{t('jwt.title')}</h1>
+
+  <p class="hero-text">{t('jwt.description')}</p>
+
+  <div class="warning-box">⚠️ {t('jwt.warning')}</div>
+
+  <section class="tool-card">
+    <div class="toolbar">
+      <button class="primary" id="decodeBtn">{t('jwt.decode')}</button>
+      <button id="clearBtn">{t('jwt.clear')}</button>
+      <button id="exampleBtn">{t('jwt.example')}</button>
+    </div>
+
+    <textarea id="jwtInput" placeholder={t('jwt.input')}></textarea>
+
+    <div class="results-grid" id="results" hidden>
+      <div class="result-panel">
+        <h2>{t('jwt.header')}</h2>
+        <pre id="headerOutput"></pre>
+      </div>
+
+      <div class="result-panel">
+        <h2>{t('jwt.payload')}</h2>
+        <pre id="payloadOutput"></pre>
+      </div>
+    </div>
+  </section>
+</section>
+
+<style>
+  .warning-box{margin-top:1.5rem;margin-bottom:2rem;padding:1rem 1.2rem;border-radius:18px;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.25);color:#fde68a;line-height:1.7}
+  .toolbar{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+  button{border-radius:14px;border:1px solid var(--border);background:#020617;color:white;padding:1rem;cursor:pointer;font:inherit}
+  button.primary{background:var(--primary);color:black;border:none;font-weight:700}
+  textarea{width:100%;min-height:180px;border-radius:24px;border:1px solid var(--border);background:#020617;color:white;padding:1rem;resize:vertical;font-family:ui-monospace,monospace;line-height:1.7}
+  .results-grid{margin-top:1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem}
+  .result-panel{border-radius:24px;border:1px solid var(--border);background:rgba(2,6,23,.55);padding:1rem}
+  pre{white-space:pre-wrap;word-break:break-word;overflow-x:auto;line-height:1.6;color:var(--muted);font-family:ui-monospace,monospace}
+</style>
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const decodeBase64Url = (str) => {
+      str = str.replace(/-/g, '+').replace(/_/g, '/');
+      while (str.length % 4) str += '=';
+      return decodeURIComponent(atob(str).split('').map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    };
+
+    document.getElementById('decodeBtn').onclick = () => {
+      try {
+        const token = document.getElementById('jwtInput').value.trim();
+        const parts = token.split('.');
+        if (parts.length < 2) throw new Error('Invalid JWT');
+
+        const header = JSON.parse(decodeBase64Url(parts[0]));
+        const payload = JSON.parse(decodeBase64Url(parts[1]));
+
+        document.getElementById('results').hidden = false;
+        document.getElementById('headerOutput').textContent = JSON.stringify(header, null, 2);
+        document.getElementById('payloadOutput').textContent = JSON.stringify(payload, null, 2);
+      } catch {
+        alert('Invalid JWT');
+      }
+    };
+
+    document.getElementById('clearBtn').onclick = () => {
+      document.getElementById('jwtInput').value = '';
+      document.getElementById('results').hidden = true;
+    };
+
+    document.getElementById('exampleBtn').onclick = () => {
+      document.getElementById('jwtInput').value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFsb24gVG9vbHMiLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MjUxNjIzOTAyMiwiaXNzIjoiYWxvbi5vbmUifQ.signature';
+    };
+  });
+</script>
