@@ -1,0 +1,14 @@
+{
+  "site.title": "Alon Tools",
+  "site.description": "Herramientas privadas para desarrolladores que funcionan localmente en tu navegador.",
+  "nav.home": "Inicio",
+  "nav.images": "Imágenes",
+  "nav.development": "Desarrollo",
+  "base64.title": "Base64 encoder y decoder",
+  "base64.description": "Codifica y decodifica Base64 localmente en tu navegador.",
+  "base64.encode": "Codificar",
+  "base64.decode": "Decodificar",
+  "base64.clear": "Limpiar",
+  "base64.input": "Texto original",
+  "base64.output": "Resultado"
+}
