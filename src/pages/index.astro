@@ -48,6 +48,8 @@ const categories = [
     ]
   }
 ];
+
+const totalTools = categories.reduce((total, category) => total + category.items.length, 0);
 ---
 
 <Layout
@@ -81,9 +83,32 @@ const categories = [
     </p>
   </section>
 
+  <section class="search-panel" aria-labelledby="toolsSearchTitle">
+    <div class="search-heading">
+      <div>
+        <h2 id="toolsSearchTitle">Find a tool</h2>
+        <p id="toolsCount">Showing {totalTools} tools</p>
+      </div>
+
+      <button id="clearFilters" type="button">Clear filters</button>
+    </div>
+
+    <label for="toolSearch">Search by name, description or shortcut</label>
+    <input id="toolSearch" type="search" placeholder="Search: json, image, qr, timestamp..." autocomplete="off" />
+
+    <div class="category-filters" aria-label="Category filters">
+      <button class="filter-button active" type="button" data-category-filter="all">All</button>
+      {categories.map((category) => (
+        <button class="filter-button" type="button" data-category-filter={category.title}>{category.title}</button>
+      ))}
+    </div>
+  </section>
+
+  <p class="empty-state" id="emptyState" hidden>No tools match your search.</p>
+
   {
     categories.map((category) => (
-      <section class="category-section">
+      <section class="category-section" data-category-section={category.title}>
         <div class="category-header">
           <h2>{category.title}</h2>
         </div>
@@ -91,7 +116,13 @@ const categories = [
         <div class="directory-grid">
           {
             category.items.map(([title, description, href, icon]) => (
-              <a class="tool-link-card" href={href}>
+              <a
+                class="tool-link-card"
+                href={href}
+                data-tool-card
+                data-category={category.title}
+                data-search={`${title} ${description} ${href} ${icon} ${category.title}`.toLowerCase()}
+              >
                 <div class="tool-icon">{icon}</div>
 
                 <div>
@@ -105,6 +136,62 @@ const categories = [
       </section>
     ))
   }
+
+  <script>
+    const searchInput = document.getElementById('toolSearch');
+    const clearFilters = document.getElementById('clearFilters');
+    const toolsCount = document.getElementById('toolsCount');
+    const emptyState = document.getElementById('emptyState');
+    const cards = Array.from(document.querySelectorAll('[data-tool-card]'));
+    const sections = Array.from(document.querySelectorAll('[data-category-section]'));
+    const filterButtons = Array.from(document.querySelectorAll('[data-category-filter]'));
+    const total = cards.length;
+    let activeCategory = 'all';
+
+    const setActiveButton = () => {
+      filterButtons.forEach((button) => {
+        button.classList.toggle('active', button.dataset.categoryFilter === activeCategory);
+      });
+    };
+
+    const filterTools = () => {
+      const query = searchInput.value.trim().toLowerCase();
+      let visible = 0;
+
+      cards.forEach((card) => {
+        const matchesCategory = activeCategory === 'all' || card.dataset.category === activeCategory;
+        const matchesSearch = !query || card.dataset.search.includes(query);
+        const show = matchesCategory && matchesSearch;
+        card.hidden = !show;
+        if (show) visible += 1;
+      });
+
+      sections.forEach((section) => {
+        section.hidden = !section.querySelector('[data-tool-card]:not([hidden])');
+      });
+
+      toolsCount.textContent = `Showing ${visible} of ${total} tools`;
+      emptyState.hidden = visible !== 0;
+      setActiveButton();
+    };
+
+    filterButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activeCategory = button.dataset.categoryFilter || 'all';
+        filterTools();
+      });
+    });
+
+    searchInput.addEventListener('input', filterTools);
+    clearFilters.addEventListener('click', () => {
+      searchInput.value = '';
+      activeCategory = 'all';
+      filterTools();
+      searchInput.focus();
+    });
+
+    filterTools();
+  </script>
 </Layout>
 
 <style>
@@ -112,8 +199,92 @@ const categories = [
     padding: 4rem 0 2rem;
   }
 
+  .search-panel {
+    margin: 1rem 0 2.5rem;
+    padding: 1.25rem;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .search-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .search-heading h2 {
+    margin: 0 0 .25rem;
+    font-size: 1.25rem;
+  }
+
+  .search-heading p,
+  label {
+    color: var(--muted);
+  }
+
+  .search-heading p {
+    margin: 0;
+  }
+
+  label {
+    display: block;
+    margin-bottom: .55rem;
+    font-weight: 700;
+  }
+
+  input[type='search'] {
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: #020617;
+    color: white;
+    padding: 1rem;
+    font: inherit;
+  }
+
+  .category-filters {
+    display: flex;
+    gap: .65rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+
+  button,
+  .filter-button {
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #0f172a;
+    color: white;
+    padding: .75rem 1rem;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+  }
+
+  .filter-button.active,
+  #clearFilters:hover {
+    background: var(--primary);
+    color: #020617;
+    border-color: transparent;
+  }
+
+  .empty-state {
+    padding: 1.25rem;
+    border-radius: 18px;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    text-align: center;
+  }
+
   .category-section {
     margin-top: 3rem;
+  }
+
+  .category-section[hidden] {
+    display: none;
   }
 
   .category-header {
@@ -148,6 +319,10 @@ const categories = [
     border-color: rgba(56,189,248,.35);
   }
 
+  .tool-link-card[hidden] {
+    display: none;
+  }
+
   .tool-icon {
     width: 64px;
     height: 64px;
@@ -169,5 +344,20 @@ const categories = [
   .tool-link-card small {
     color: var(--muted);
     line-height: 1.7;
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      padding-top: 2.5rem;
+    }
+
+    .search-heading {
+      flex-direction: column;
+    }
+
+    #clearFilters,
+    .filter-button {
+      width: 100%;
+    }
   }
 </style>
