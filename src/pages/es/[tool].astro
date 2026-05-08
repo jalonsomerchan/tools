@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import UrlEncoderTool from '../../components/tools/UrlEncoderTool.astro';
+import Md5Tool from '../../components/tools/Md5Tool.astro';
 import { useTranslations } from '../../i18n';
 
 export function getStaticPaths() {
@@ -11,6 +12,13 @@ export function getStaticPaths() {
         toolKey: 'urlEncoder',
         path: '/url-encoder/'
       }
+    },
+    {
+      params: { tool: 'md5' },
+      props: {
+        toolKey: 'md5',
+        path: '/md5/'
+      }
     }
   ];
 }
@@ -20,7 +28,8 @@ const lang = 'es';
 const t = useTranslations(lang);
 
 const components = {
-  urlEncoder: UrlEncoderTool
+  urlEncoder: UrlEncoderTool,
+  md5: Md5Tool
 };
 
 const ToolComponent = components[toolKey];
