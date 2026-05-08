@@ -1,0 +1,36 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import UrlEncoderTool from '../../components/tools/UrlEncoderTool.astro';
+import { useTranslations } from '../../i18n';
+
+export function getStaticPaths() {
+  return [
+    {
+      params: { tool: 'url-encoder' },
+      props: {
+        toolKey: 'urlEncoder',
+        path: '/url-encoder/'
+      }
+    }
+  ];
+}
+
+const { toolKey, path } = Astro.props;
+const lang = 'es';
+const t = useTranslations(lang);
+
+const components = {
+  urlEncoder: UrlEncoderTool
+};
+
+const ToolComponent = components[toolKey];
+---
+
+<Layout
+  title={t(`${toolKey}.title`)}
+  description={t(`${toolKey}.description`)}
+  lang={lang}
+  path={path}
+>
+  <ToolComponent lang={lang} />
+</Layout>
