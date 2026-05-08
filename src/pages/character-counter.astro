@@ -1,0 +1,445 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Contador de caracteres y analizador de texto';
+const description = 'Pega un texto y cuenta caracteres, palabras, frases, párrafos, espacios y repeticiones de letras y palabras.';
+---
+
+<Layout title={title} description={description} path="/character-counter/" translated={false}>
+  <section class="counter-page">
+    <div class="eyebrow">100% local</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Pega cualquier texto para analizarlo al instante: caracteres, palabras, frases, párrafos, espacios y rankings de letras y palabras más repetidas. No se envía nada fuera de tu navegador.
+    </p>
+
+    <section class="tool-card" aria-labelledby="inputTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="inputTitle">Texto</h2>
+          <p>El análisis se actualiza mientras escribes. Puedes copiar el resumen o limpiar el contenido.</p>
+        </div>
+      </div>
+
+      <label for="textInput">Pega o escribe el texto a analizar</label>
+      <textarea id="textInput" spellcheck="false" placeholder="Pega aquí tu texto..."></textarea>
+
+      <div class="toolbar" aria-label="Acciones del contador">
+        <button class="primary" id="copySummaryBtn" type="button">Copiar resumen</button>
+        <button id="copyStatsBtn" type="button">Copiar estadísticas JSON</button>
+        <button id="clearBtn" type="button">Limpiar</button>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">Listo para analizar texto.</p>
+    </section>
+
+    <section class="stats-section" aria-labelledby="statsTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="statsTitle">Resumen</h2>
+          <p id="densityInfo">Sin texto todavía.</p>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="statsGrid"></div>
+    </section>
+
+    <section class="rankings-grid" aria-label="Rankings de repeticiones">
+      <div class="ranking-panel">
+        <div class="panel-heading">
+          <h2>Letras más repetidas</h2>
+          <p>Ignora espacios, números y signos. Normaliza mayúsculas/minúsculas.</p>
+        </div>
+        <div id="lettersRanking" class="ranking-list"></div>
+      </div>
+
+      <div class="ranking-panel">
+        <div class="panel-heading">
+          <h2>Palabras más repetidas</h2>
+          <p>Cuenta palabras completas y normaliza mayúsculas/minúsculas.</p>
+        </div>
+        <div id="wordsRanking" class="ranking-list"></div>
+      </div>
+    </section>
+  </section>
+
+  <style>
+    .counter-page { padding: 4rem 0; }
+
+    .section-heading,
+    .panel-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    h2 { margin: 0 0 .35rem; font-size: 1.35rem; }
+
+    .section-heading p,
+    .panel-heading p,
+    .status {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    label {
+      display: block;
+      margin-bottom: .55rem;
+      font-weight: 700;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 320px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font: inherit;
+      line-height: 1.65;
+      resize: vertical;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: white;
+      padding: .95rem 1rem;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .15s ease, border-color .15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(56,189,248,.45);
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #020617;
+      border-color: transparent;
+    }
+
+    .status { margin-top: 1rem; }
+    .status.success { color: #86efac; }
+    .status.error { color: #fca5a5; }
+
+    .stats-section,
+    .ranking-panel {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat-card {
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(2, 6, 23, .55);
+      padding: 1rem;
+    }
+
+    .stat-card span {
+      display: block;
+      color: var(--muted);
+      margin-bottom: .4rem;
+      font-size: .9rem;
+    }
+
+    .stat-card strong {
+      display: block;
+      color: white;
+      font-size: 1.6rem;
+      overflow-wrap: anywhere;
+    }
+
+    .rankings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+
+    .ranking-list {
+      display: grid;
+      gap: .7rem;
+    }
+
+    .ranking-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: .8rem;
+      align-items: center;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, .18);
+      background: rgba(2, 6, 23, .45);
+      padding: .75rem .85rem;
+    }
+
+    .ranking-main {
+      min-width: 0;
+    }
+
+    .ranking-main strong {
+      display: block;
+      color: white;
+      overflow-wrap: anywhere;
+    }
+
+    .ranking-main span {
+      display: block;
+      color: var(--muted);
+      font-size: .85rem;
+      margin-top: .25rem;
+    }
+
+    .ranking-count {
+      color: var(--primary);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .bar {
+      width: 100%;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, .16);
+      overflow: hidden;
+      margin-top: .5rem;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--primary);
+    }
+
+    .empty-ranking {
+      color: var(--muted);
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    @media (max-width: 900px) {
+      .rankings-grid { grid-template-columns: 1fr; }
+      .section-heading,
+      .panel-heading { flex-direction: column; }
+    }
+
+    @media (max-width: 560px) {
+      .counter-page { padding: 2.5rem 0; }
+      button { width: 100%; }
+      textarea { min-height: 260px; }
+      .stat-card strong { font-size: 1.35rem; }
+    }
+  </style>
+
+  <script>
+    const textInput = document.getElementById('textInput') as HTMLTextAreaElement;
+    const statsGrid = document.getElementById('statsGrid') as HTMLDivElement;
+    const lettersRanking = document.getElementById('lettersRanking') as HTMLDivElement;
+    const wordsRanking = document.getElementById('wordsRanking') as HTMLDivElement;
+    const densityInfo = document.getElementById('densityInfo') as HTMLParagraphElement;
+    const status = document.getElementById('status') as HTMLParagraphElement;
+    const copySummaryBtn = document.getElementById('copySummaryBtn') as HTMLButtonElement;
+    const copyStatsBtn = document.getElementById('copyStatsBtn') as HTMLButtonElement;
+    const clearBtn = document.getElementById('clearBtn') as HTMLButtonElement;
+
+    let currentStats: Record<string, unknown> = {};
+
+    const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => {
+      status.textContent = message;
+      status.classList.toggle('success', type === 'success');
+      status.classList.toggle('error', type === 'error');
+    };
+
+    const segmentWords = (text: string) => {
+      if ('Segmenter' in Intl) {
+        const segmenter = new Intl.Segmenter(undefined, { granularity: 'word' });
+        return Array.from(segmenter.segment(text))
+          .filter((part) => part.isWordLike)
+          .map((part) => part.segment);
+      }
+      return text.match(/[\p{L}\p{N}]+(?:['’_-][\p{L}\p{N}]+)*/gu) || [];
+    };
+
+    const countMap = (items: string[]) => {
+      const map = new Map<string, number>();
+      items.forEach((item) => map.set(item, (map.get(item) || 0) + 1));
+      return Array.from(map.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    };
+
+    const getStats = (text: string) => {
+      const characters = Array.from(text).length;
+      const charactersNoSpaces = Array.from(text.replace(/\s/g, '')).length;
+      const spaces = (text.match(/ /g) || []).length;
+      const whitespace = (text.match(/\s/g) || []).length;
+      const words = segmentWords(text);
+      const sentences = (text.match(/[^.!?¿¡]+[.!?]+(?:\s|$)|[^.!?¿¡]+$/g) || [])
+        .map((sentence) => sentence.trim())
+        .filter(Boolean);
+      const paragraphs = text.trim()
+        ? text.split(/\n\s*\n/g).map((paragraph) => paragraph.trim()).filter(Boolean)
+        : [];
+      const lines = text ? text.split(/\r\n|\r|\n/).length : 0;
+      const letters = Array.from(text.toLocaleLowerCase())
+        .filter((char) => /\p{L}/u.test(char));
+      const normalizedWords = words.map((word) => word.toLocaleLowerCase());
+      const uniqueWords = new Set(normalizedWords).size;
+      const readingMinutes = words.length ? Math.max(1, Math.ceil(words.length / 220)) : 0;
+
+      return {
+        characters,
+        charactersNoSpaces,
+        words: words.length,
+        uniqueWords,
+        sentences: sentences.length,
+        paragraphs: paragraphs.length,
+        lines,
+        spaces,
+        whitespace,
+        avgWordLength: words.length ? Number((charactersNoSpaces / words.length).toFixed(2)) : 0,
+        readingMinutes,
+        lettersRanking: countMap(letters).slice(0, 15),
+        wordsRanking: countMap(normalizedWords).slice(0, 20)
+      };
+    };
+
+    const createStatCard = (label: string, value: string | number) => {
+      const card = document.createElement('div');
+      card.className = 'stat-card';
+      const span = document.createElement('span');
+      span.textContent = label;
+      const strong = document.createElement('strong');
+      strong.textContent = String(value);
+      card.append(span, strong);
+      return card;
+    };
+
+    const renderRanking = (container: HTMLDivElement, ranking: [string, number][], emptyText: string) => {
+      if (!ranking.length) {
+        const empty = document.createElement('p');
+        empty.className = 'empty-ranking';
+        empty.textContent = emptyText;
+        container.replaceChildren(empty);
+        return;
+      }
+
+      const max = ranking[0][1] || 1;
+      container.replaceChildren(...ranking.map(([item, count], index) => {
+        const row = document.createElement('div');
+        row.className = 'ranking-row';
+        const main = document.createElement('div');
+        main.className = 'ranking-main';
+        const strong = document.createElement('strong');
+        strong.textContent = item;
+        const span = document.createElement('span');
+        span.textContent = `#${index + 1} · ${((count / max) * 100).toFixed(0)}% respecto al máximo`;
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        const fill = document.createElement('div');
+        fill.className = 'bar-fill';
+        fill.style.width = `${Math.max(4, (count / max) * 100)}%`;
+        bar.append(fill);
+        main.append(strong, span, bar);
+        const countNode = document.createElement('div');
+        countNode.className = 'ranking-count';
+        countNode.textContent = String(count);
+        row.append(main, countNode);
+        return row;
+      }));
+    };
+
+    const analyze = () => {
+      const text = textInput.value;
+      const stats = getStats(text);
+      currentStats = stats;
+
+      statsGrid.replaceChildren(
+        createStatCard('Caracteres', stats.characters),
+        createStatCard('Caracteres sin espacios', stats.charactersNoSpaces),
+        createStatCard('Palabras', stats.words),
+        createStatCard('Palabras únicas', stats.uniqueWords),
+        createStatCard('Frases', stats.sentences),
+        createStatCard('Párrafos', stats.paragraphs),
+        createStatCard('Líneas', stats.lines),
+        createStatCard('Espacios', stats.spaces),
+        createStatCard('Espacios en blanco', stats.whitespace),
+        createStatCard('Media letras/palabra', stats.avgWordLength),
+        createStatCard('Lectura estimada', stats.readingMinutes ? `${stats.readingMinutes} min` : '0 min')
+      );
+
+      renderRanking(lettersRanking, stats.lettersRanking as [string, number][], 'No hay letras para analizar.');
+      renderRanking(wordsRanking, stats.wordsRanking as [string, number][], 'No hay palabras para analizar.');
+
+      densityInfo.textContent = stats.words
+        ? `${stats.words} palabras en ${stats.paragraphs} párrafo${stats.paragraphs === 1 ? '' : 's'} · lectura estimada: ${stats.readingMinutes} min.`
+        : 'Sin texto todavía.';
+    };
+
+    const buildSummary = () => {
+      const stats = currentStats as Record<string, number>;
+      return [
+        'Resumen de texto',
+        `Caracteres: ${stats.characters || 0}`,
+        `Caracteres sin espacios: ${stats.charactersNoSpaces || 0}`,
+        `Palabras: ${stats.words || 0}`,
+        `Palabras únicas: ${stats.uniqueWords || 0}`,
+        `Frases: ${stats.sentences || 0}`,
+        `Párrafos: ${stats.paragraphs || 0}`,
+        `Líneas: ${stats.lines || 0}`,
+        `Espacios: ${stats.spaces || 0}`,
+        `Espacios en blanco: ${stats.whitespace || 0}`,
+        `Lectura estimada: ${stats.readingMinutes || 0} min`
+      ].join('\n');
+    };
+
+    copySummaryBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(buildSummary());
+        setStatus('Resumen copiado.', 'success');
+      } catch {
+        setStatus('No se pudo copiar el resumen.', 'error');
+      }
+    });
+
+    copyStatsBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(currentStats, null, 2));
+        setStatus('Estadísticas JSON copiadas.', 'success');
+      } catch {
+        setStatus('No se pudieron copiar las estadísticas.', 'error');
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      textInput.value = '';
+      analyze();
+      setStatus('Texto limpiado.', 'success');
+      textInput.focus();
+    });
+
+    textInput.addEventListener('input', analyze);
+    analyze();
+  </script>
+</Layout>
