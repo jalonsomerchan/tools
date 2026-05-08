@@ -1,0 +1,14 @@
+{
+  "site.title": "Alon Tools",
+  "site.description": "Privacy-first developer tools running locally in your browser.",
+  "nav.home": "Home",
+  "nav.images": "Images",
+  "nav.development": "Development",
+  "base64.title": "Base64 encoder & decoder",
+  "base64.description": "Encode and decode Base64 locally in your browser.",
+  "base64.encode": "Encode",
+  "base64.decode": "Decode",
+  "base64.clear": "Clear",
+  "base64.input": "Input text",
+  "base64.output": "Output"
+}
