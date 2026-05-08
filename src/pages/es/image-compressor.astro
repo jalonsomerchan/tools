@@ -1,0 +1,79 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout
+  title="Compresor de imágenes"
+  description="Reduce el tamaño de imágenes online sin subirlas a servidores."
+  lang="es"
+  path="/image-compressor/"
+>
+  <section style="padding:4rem 0;">
+    <div class="eyebrow">Image Tool</div>
+
+    <h1>Compresor de imágenes</h1>
+
+    <p class="hero-text">
+      Comprime imágenes directamente en tu navegador.
+      Tus imágenes nunca abandonan tu dispositivo.
+    </p>
+
+    <section class="tool-card">
+      <input id="fileInput" type="file" accept="image/*" />
+
+      <label>
+        Calidad
+        <input id="quality" type="range" min="10" max="100" value="80" />
+      </label>
+
+      <button class="primary" id="compressBtn">Comprimir</button>
+
+      <img id="preview" hidden />
+
+      <a id="downloadLink" hidden>Descargar imagen comprimida</a>
+    </section>
+  </section>
+
+  <style>
+    input,button,a{display:block;margin-top:1rem}
+    button{padding:1rem;border-radius:14px;background:var(--primary);color:#000;border:none;font-weight:700;cursor:pointer}
+    img{margin-top:1rem;max-width:100%;border-radius:24px}
+    a{color:var(--primary)}
+  </style>
+
+  <script>
+    window.addEventListener('DOMContentLoaded',()=>{
+      document.getElementById('compressBtn').onclick=()=>{
+        const file=document.getElementById('fileInput').files[0];
+        if(!file)return;
+
+        const quality=Number(document.getElementById('quality').value)/100;
+        const img=new Image();
+
+        img.onload=()=>{
+          const canvas=document.createElement('canvas');
+          canvas.width=img.width;
+          canvas.height=img.height;
+
+          const ctx=canvas.getContext('2d');
+          ctx.drawImage(img,0,0);
+
+          canvas.toBlob(blob=>{
+            const url=URL.createObjectURL(blob);
+
+            const preview=document.getElementById('preview');
+            preview.src=url;
+            preview.hidden=false;
+
+            const link=document.getElementById('downloadLink');
+            link.href=url;
+            link.download='compressed.jpg';
+            link.hidden=false;
+          },'image/jpeg',quality);
+        };
+
+        img.src=URL.createObjectURL(file);
+      };
+    });
+  </script>
+</Layout>
