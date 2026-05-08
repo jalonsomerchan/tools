@@ -3,53 +3,59 @@ import Layout from '../layouts/Layout.astro';
 
 const categories = [
   {
-    title: 'Desarrollo',
+    title: 'Development',
     items: [
-      ['Base64 encoder y decoder', 'Codifica y decodifica Base64.', '/base64/', '64'],
-      ['JSON viewer y formatter', 'Visualiza y valida JSON.', '/json-viewer/', '{}'],
-      ['Generador MD5', 'Genera hashes MD5.', '/md5/', 'MD5'],
-      ['JWT decoder', 'Decodifica JWT localmente.', '/jwt-decoder/', 'JWT'],
-      ['URL encoder & decoder', 'Codifica parámetros y URLs.', '/url-encoder/', 'ENC'],
-      ['Inspector de URLs', 'Analiza URLs para desarrolladores.', '/url-inspector/', 'URL'],
-      ['Configurador cURL', 'Genera peticiones HTTP.', '/curl-builder/', 'API'],
-      ['Diff checker', 'Compara textos rápidamente.', '/diff-checker/', 'DIFF']
+      ['Base64 encoder & decoder', 'Encode and decode Base64 text.', '/base64/', '64'],
+      ['JSON viewer & formatter', 'View, validate and format JSON.', '/json-viewer/', '{}'],
+      ['MD5 generator', 'Generate MD5 hashes in the browser.', '/md5/', 'MD5'],
+      ['JWT decoder', 'Decode JWT tokens locally.', '/jwt-decoder/', 'JWT'],
+      ['URL encoder & decoder', 'Encode URLs and query parameters.', '/url-encoder/', 'ENC'],
+      ['URL inspector', 'Analyze URLs for developers.', '/url-inspector/', 'URL'],
+      ['cURL builder', 'Generate HTTP requests and code snippets.', '/curl-builder/', 'API'],
+      ['Diff checker', 'Compare texts quickly.', '/diff-checker/', 'DIFF']
     ]
   },
   {
-    title: 'Imágenes',
+    title: 'Images',
     items: [
-      ['Compresor de imágenes', 'Reduce el tamaño de imágenes.', '/image-compressor/', 'ZIP'],
-      ['Conversor de imágenes', 'Convierte PNG, JPEG y WebP.', '/image-converter/', 'CONV'],
-      ['Información de imágenes', 'Obtén metadatos y tamaño.', '/image-info/', 'IMG'],
-      ['Generador de favicon', 'Crea favicons desde texto o imágenes.', '/favicon-generator/', 'ICO'],
-      ['Censurador de fotos', 'Pixelado, blur y censura.', '/photo-censor/', 'CEN']
+      ['Image compressor', 'Reduce image file size locally.', '/image-compressor/', 'ZIP'],
+      ['Image converter', 'Convert between PNG, JPEG and WebP.', '/image-converter/', 'CONV'],
+      ['Image information', 'Get image size and metadata.', '/image-info/', 'IMG'],
+      ['Favicon generator', 'Create favicons from text or images.', '/favicon-generator/', 'ICO'],
+      ['Photo censor', 'Pixelate, blur or cover image areas.', '/photo-censor/', 'CEN']
     ]
   },
   {
-    title: 'Internet y mapas',
+    title: 'Internet & maps',
     items: [
-      ['Información de IP', 'Consulta información técnica de IPs.', '/ip-info/', 'IP'],
-      ['Coordenadas de direcciones', 'Busca coordenadas GPS.', '/geocoder/', 'MAP'],
-      ['Preview social de URLs', 'Comprueba Open Graph y Twitter.', '/social-preview/', 'SOC']
+      ['IP information', 'Look up technical IP information.', '/ip-info/', 'IP'],
+      ['Address coordinates', 'Find GPS coordinates from an address.', '/geocoder/', 'MAP'],
+      ['Social URL preview', 'Check Open Graph and Twitter Cards.', '/social-preview/', 'SOC']
     ]
   },
   {
-    title: 'Texto y escritura',
+    title: 'Text & writing',
     items: [
-      ['Markdown writer & preview', 'Editor Markdown con preview.', '/markdown-preview/', 'MD']
+      ['Markdown writer & preview', 'Markdown editor with live preview.', '/markdown-preview/', 'MD']
     ]
   }
 ];
 ---
 
-<Layout title="Alon Tools">
+<Layout
+  title="Alon Tools — Privacy-first browser tools"
+  description="Fast developer, image and internet tools that run locally in your browser. No backend, no accounts, no cloud uploads."
+  lang="en"
+  path="/"
+  translated={true}
+>
   <section class="hero">
     <div class="eyebrow">Privacy First</div>
 
-    <h1>Herramientas rápidas que se ejecutan en tu navegador</h1>
+    <h1>Fast browser tools that respect your privacy</h1>
 
     <p class="hero-text">
-      Sin backend. Sin subir archivos. Sin rastreo. Todo ocurre localmente en tu ordenador.
+      No backend. No accounts. No cloud uploads. Most tools run entirely on your device.
     </p>
   </section>
 
