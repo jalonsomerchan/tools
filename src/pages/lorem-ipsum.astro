@@ -1,0 +1,503 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Generador de Lorem Ipsum';
+const description = 'Genera texto Lorem Ipsum por letras, párrafos o páginas, cópialo o expórtalo a PDF desde el navegador.';
+---
+
+<Layout title={title} description={description} path="/lorem-ipsum/" translated={false}>
+  <section class="lorem-page">
+    <div class="eyebrow">100% local</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Genera textos de relleno para maquetación, pruebas de diseño y prototipos. Puedes elegir número de letras, párrafos o páginas, copiar el resultado y exportarlo a PDF.
+    </p>
+
+    <section class="tool-card" aria-labelledby="generatorTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="generatorTitle">Configuración</h2>
+          <p>El texto se genera localmente en tu navegador, sin enviar nada a servidores.</p>
+        </div>
+      </div>
+
+      <div class="controls-grid">
+        <div class="field">
+          <label for="modeSelect">Generar por</label>
+          <select id="modeSelect">
+            <option value="letters">Número de letras</option>
+            <option value="paragraphs">Número de párrafos</option>
+            <option value="pages">Número de páginas</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="amountInput">Cantidad</label>
+          <input id="amountInput" type="number" min="1" max="50000" step="1" value="1000" inputmode="numeric" />
+        </div>
+
+        <div class="field">
+          <label for="styleSelect">Estilo</label>
+          <select id="styleSelect">
+            <option value="classic">Lorem Ipsum clásico</option>
+            <option value="spanish">Relleno neutro en español</option>
+          </select>
+        </div>
+
+        <div class="field checkbox-field">
+          <label for="startClassic">Inicio clásico</label>
+          <input id="startClassic" type="checkbox" checked />
+        </div>
+      </div>
+
+      <div class="toolbar" aria-label="Acciones de Lorem Ipsum">
+        <button class="primary" id="generateBtn" type="button">Generar texto</button>
+        <button id="copyBtn" type="button">Copiar texto</button>
+        <button id="downloadTxtBtn" type="button">Descargar TXT</button>
+        <button id="exportPdfBtn" type="button">Exportar PDF</button>
+        <button id="clearBtn" type="button">Limpiar</button>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">Listo para generar texto de relleno.</p>
+    </section>
+
+    <section class="output-section" aria-labelledby="outputTitle">
+      <div class="output-heading">
+        <div>
+          <h2 id="outputTitle">Texto generado</h2>
+          <p id="counter">0 caracteres · 0 palabras · 0 párrafos</p>
+        </div>
+      </div>
+
+      <textarea id="output" spellcheck="false" placeholder="Aquí aparecerá el Lorem Ipsum generado..."></textarea>
+    </section>
+  </section>
+
+  <style>
+    .lorem-page {
+      padding: 4rem 0;
+    }
+
+    .section-heading,
+    .output-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h2 {
+      margin: 0 0 .35rem;
+      font-size: 1.35rem;
+    }
+
+    .section-heading p,
+    .output-heading p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      margin-bottom: .55rem;
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font: inherit;
+    }
+
+    .checkbox-field {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      min-height: 54px;
+      padding: 0 1rem;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+    }
+
+    .checkbox-field label {
+      margin: 0;
+    }
+
+    .checkbox-field input {
+      width: auto;
+      min-width: 1.15rem;
+      min-height: 1.15rem;
+      accent-color: var(--primary);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: white;
+      padding: .95rem 1rem;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .15s ease, border-color .15s ease, opacity .15s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(56,189,248,.45);
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #020617;
+      border-color: transparent;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .55;
+    }
+
+    .status {
+      color: var(--muted);
+      margin: 1rem 0 0;
+      line-height: 1.7;
+    }
+
+    .status.success {
+      color: #86efac;
+    }
+
+    .status.error {
+      color: #fca5a5;
+    }
+
+    .output-section {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+
+    #output {
+      min-height: 520px;
+      resize: vertical;
+      line-height: 1.75;
+      color: var(--text);
+      font-family: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 980px) {
+      .controls-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .controls-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading,
+      .output-heading {
+        flex-direction: column;
+      }
+    }
+  </style>
+
+  <script>
+    const modeSelect = document.getElementById('modeSelect') as HTMLSelectElement;
+    const amountInput = document.getElementById('amountInput') as HTMLInputElement;
+    const styleSelect = document.getElementById('styleSelect') as HTMLSelectElement;
+    const startClassic = document.getElementById('startClassic') as HTMLInputElement;
+    const generateBtn = document.getElementById('generateBtn') as HTMLButtonElement;
+    const copyBtn = document.getElementById('copyBtn') as HTMLButtonElement;
+    const downloadTxtBtn = document.getElementById('downloadTxtBtn') as HTMLButtonElement;
+    const exportPdfBtn = document.getElementById('exportPdfBtn') as HTMLButtonElement;
+    const clearBtn = document.getElementById('clearBtn') as HTMLButtonElement;
+    const status = document.getElementById('status') as HTMLParagraphElement;
+    const output = document.getElementById('output') as HTMLTextAreaElement;
+    const counter = document.getElementById('counter') as HTMLParagraphElement;
+
+    const classicWords = `lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum`.split(' ');
+
+    const spanishWords = `este texto de relleno permite probar diseños bloques visuales titulares columnas espaciados interfaces plantillas componentes páginas prototipos contenido neutro lectura simulada estructura editorial navegación párrafos secciones botones tarjetas formularios estilos tipografía equilibrio jerarquía contraste ritmo composición ejemplo proyecto maqueta desarrollo pruebas presentación sitio aplicación documento resultado generado automáticamente navegador local privado sencillo flexible útil claro`.split(' ');
+
+    const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => {
+      status.textContent = message;
+      status.classList.toggle('success', type === 'success');
+      status.classList.toggle('error', type === 'error');
+    };
+
+    const clampNumber = (value: string, min: number, max: number, fallback: number) => {
+      const number = Number.parseInt(value, 10);
+
+      if (Number.isNaN(number)) {
+        return fallback;
+      }
+
+      return Math.min(max, Math.max(min, number));
+    };
+
+    const sentenceCase = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
+    const buildSentence = (words: string[], cursor: number, minWords = 8, maxWords = 18) => {
+      const length = minWords + (cursor % (maxWords - minWords + 1));
+      const sentenceWords: string[] = [];
+
+      for (let index = 0; index < length; index += 1) {
+        sentenceWords.push(words[(cursor + index) % words.length]);
+      }
+
+      return {
+        text: `${sentenceCase(sentenceWords.join(' '))}.`,
+        nextCursor: cursor + length
+      };
+    };
+
+    const buildParagraph = (words: string[], cursor: number, sentenceCount = 5) => {
+      const sentences: string[] = [];
+      let nextCursor = cursor;
+
+      for (let index = 0; index < sentenceCount; index += 1) {
+        const sentence = buildSentence(words, nextCursor + index, 9, 20);
+        sentences.push(sentence.text);
+        nextCursor = sentence.nextCursor;
+      }
+
+      return {
+        text: sentences.join(' '),
+        nextCursor
+      };
+    };
+
+    const trimToLetters = (text: string, letters: number) => {
+      if (text.length <= letters) {
+        return text;
+      }
+
+      const trimmed = text.slice(0, letters).trimEnd();
+      return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed.replace(/[,. ;:]+$/, '')}.`;
+    };
+
+    const generateByLetters = (letters: number, words: string[]) => {
+      const paragraphs: string[] = [];
+      let cursor = 0;
+      let text = '';
+
+      while (text.length < letters) {
+        const paragraph = buildParagraph(words, cursor, 4 + (cursor % 3));
+        paragraphs.push(paragraph.text);
+        cursor = paragraph.nextCursor;
+        text = paragraphs.join('\n\n');
+      }
+
+      return trimToLetters(text, letters);
+    };
+
+    const generateByParagraphs = (count: number, words: string[]) => {
+      const paragraphs: string[] = [];
+      let cursor = 0;
+
+      for (let index = 0; index < count; index += 1) {
+        const paragraph = buildParagraph(words, cursor + index, 4 + (index % 4));
+        paragraphs.push(paragraph.text);
+        cursor = paragraph.nextCursor;
+      }
+
+      return paragraphs.join('\n\n');
+    };
+
+    const generateByPages = (pages: number, words: string[]) => {
+      const paragraphsPerPage = 7;
+      const paragraphs = generateByParagraphs(pages * paragraphsPerPage, words).split('\n\n');
+      const pageBlocks: string[] = [];
+
+      for (let page = 0; page < pages; page += 1) {
+        const pageText = paragraphs.slice(page * paragraphsPerPage, (page + 1) * paragraphsPerPage).join('\n\n');
+        pageBlocks.push(`Página ${page + 1}\n\n${pageText}`);
+      }
+
+      return pageBlocks.join('\n\n---\n\n');
+    };
+
+    const applyClassicStart = (text: string) => {
+      const classicStart = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
+
+      if (!startClassic.checked || styleSelect.value !== 'classic' || text.startsWith(classicStart)) {
+        return text;
+      }
+
+      const withoutFirstSentence = text.replace(/^[^.]+\.\s*/, '');
+      return `${classicStart} ${withoutFirstSentence}`.trim();
+    };
+
+    const updateAmountLimits = () => {
+      if (modeSelect.value === 'letters') {
+        amountInput.max = '50000';
+        amountInput.value = String(clampNumber(amountInput.value, 1, 50000, 1000));
+      } else if (modeSelect.value === 'paragraphs') {
+        amountInput.max = '200';
+        amountInput.value = String(clampNumber(amountInput.value, 1, 200, 5));
+      } else {
+        amountInput.max = '50';
+        amountInput.value = String(clampNumber(amountInput.value, 1, 50, 1));
+      }
+    };
+
+    const updateCounter = () => {
+      const text = output.value.trim();
+      const chars = output.value.length;
+      const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+      const paragraphs = text ? text.split(/\n{2,}/).filter((item) => item.trim()).length : 0;
+      counter.textContent = `${chars} caracteres · ${words} palabras · ${paragraphs} párrafos`;
+    };
+
+    const generateText = () => {
+      updateAmountLimits();
+      const amount = Number.parseInt(amountInput.value, 10);
+      const words = styleSelect.value === 'spanish' ? spanishWords : classicWords;
+      let text = '';
+
+      if (modeSelect.value === 'letters') {
+        text = generateByLetters(amount, words);
+      } else if (modeSelect.value === 'paragraphs') {
+        text = generateByParagraphs(amount, words);
+      } else {
+        text = generateByPages(amount, words);
+      }
+
+      output.value = applyClassicStart(text);
+      updateCounter();
+      setStatus('Texto generado correctamente.', 'success');
+    };
+
+    const downloadText = () => {
+      if (!output.value.trim()) {
+        setStatus('No hay texto para descargar.', 'error');
+        return;
+      }
+
+      const blob = new Blob([output.value], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'lorem-ipsum.txt';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setStatus('TXT descargado.', 'success');
+    };
+
+    const escapeHtml = (value: string) => value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    const exportPdf = () => {
+      if (!output.value.trim()) {
+        setStatus('No hay texto para exportar a PDF.', 'error');
+        return;
+      }
+
+      const printable = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700');
+
+      if (!printable) {
+        setStatus('El navegador ha bloqueado la ventana de exportación PDF.', 'error');
+        return;
+      }
+
+      const paragraphs = output.value
+        .split(/\n{2,}/)
+        .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`)
+        .join('\n');
+
+      printable.document.write(`<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Lorem Ipsum</title>
+  <style>
+    @page { margin: 22mm; }
+    body { color: #111827; font-family: Georgia, 'Times New Roman', serif; font-size: 12pt; line-height: 1.65; }
+    h1 { font-family: Arial, sans-serif; font-size: 18pt; margin: 0 0 18pt; }
+    p { margin: 0 0 12pt; white-space: normal; }
+  </style>
+</head>
+<body>
+  <h1>Lorem Ipsum</h1>
+  ${paragraphs}
+  <script>
+    window.addEventListener('load', () => {
+      window.print();
+    });
+  <\/script>
+</body>
+</html>`);
+      printable.document.close();
+      setStatus('Ventana de impresión abierta. Elige “Guardar como PDF”.', 'success');
+    };
+
+    generateBtn.addEventListener('click', generateText);
+    modeSelect.addEventListener('change', () => {
+      updateAmountLimits();
+      generateText();
+    });
+    styleSelect.addEventListener('change', generateText);
+    startClassic.addEventListener('change', generateText);
+    output.addEventListener('input', updateCounter);
+
+    copyBtn.addEventListener('click', async () => {
+      if (!output.value.trim()) {
+        setStatus('No hay texto para copiar.', 'error');
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(output.value);
+        setStatus('Texto copiado al portapapeles.', 'success');
+      } catch {
+        setStatus('No se pudo copiar el texto.', 'error');
+      }
+    });
+
+    downloadTxtBtn.addEventListener('click', downloadText);
+    exportPdfBtn.addEventListener('click', exportPdf);
+
+    clearBtn.addEventListener('click', () => {
+      output.value = '';
+      updateCounter();
+      setStatus('Texto limpiado. Puedes generar uno nuevo.', 'success');
+    });
+
+    generateText();
+  </script>
+</Layout>
