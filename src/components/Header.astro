@@ -1,10 +1,10 @@
 ---
 import { getLocalizedPath, useTranslations } from '../i18n/ui';
 
-const { lang = 'en', path = '/' } = Astro.props;
+const { lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
-const enPath = getLocalizedPath(path, 'en');
-const esPath = getLocalizedPath(path, 'es');
+const enPath = '/';
+const esPath = '/es/';
 ---
 
 <header>
@@ -17,9 +17,9 @@ const esPath = getLocalizedPath(path, 'es');
     <div class="header-right">
       <nav>
         <a href={getLocalizedPath('/', lang)}>{t('nav.home')}</a>
-        <a href={getLocalizedPath('/json-viewer/', lang)}>JSON</a>
-        <a href={getLocalizedPath('/image-compressor/', lang)}>{t('nav.images')}</a>
-        <a href={getLocalizedPath('/curl-builder/', lang)}>{t('nav.curl')}</a>
+        <a href="/json-viewer/">JSON</a>
+        <a href="/image-compressor/">{t('nav.images')}</a>
+        <a href="/curl-builder/">{t('nav.curl')}</a>
       </nav>
 
       <div class="language-switcher" aria-label="Language selector">
