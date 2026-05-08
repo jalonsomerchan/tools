@@ -1,0 +1,368 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Convertidor de colores CSS';
+const description = 'Convierte colores CSS entre HEX, RGB, RGBA, HSL, HSLA, HWB y nombres CSS, genera variaciones y comprueba contraste WCAG.';
+---
+
+<Layout title={title} description={description} path="/css-color-converter/" translated={false}>
+  <section class="color-page">
+    <div class="eyebrow">100% local</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Introduce un color en HEX, RGB, HSL, HWB o nombre CSS para convertirlo a formatos habituales, generar variaciones y comprobar contraste. Sin APIs externas.
+    </p>
+
+    <section class="tool-card" aria-labelledby="converterTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="converterTitle">Color principal</h2>
+          <p>Ejemplos válidos: <code>#38bdf8</code>, <code>rgb(56 189 248)</code>, <code>hsl(199 95% 56%)</code>, <code>hwb(199 22% 3%)</code> o <code>rebeccapurple</code>.</p>
+        </div>
+      </div>
+
+      <div class="input-grid">
+        <div class="field text-field">
+          <label for="colorInput">Color CSS</label>
+          <input id="colorInput" type="text" value="#38bdf8" spellcheck="false" autocomplete="off" />
+        </div>
+
+        <div class="field picker-field">
+          <label for="colorPicker">Selector visual</label>
+          <input id="colorPicker" type="color" value="#38bdf8" />
+        </div>
+
+        <button class="primary" id="convertBtn" type="button">Convertir</button>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">Listo para convertir colores.</p>
+    </section>
+
+    <section class="preview-section" aria-labelledby="previewTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="previewTitle">Previsualización</h2>
+          <p id="colorMeta">-</p>
+        </div>
+      </div>
+
+      <div class="preview-grid">
+        <div class="swatch" id="mainSwatch"><span id="swatchText">#38BDF8</span></div>
+        <div class="results-grid" id="resultsGrid"></div>
+      </div>
+    </section>
+
+    <section class="tool-card" aria-labelledby="variationsTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="variationsTitle">Variaciones rápidas</h2>
+          <p>Colores derivados útiles para estados hover, fondos claros, versiones oscuras y overlays transparentes.</p>
+        </div>
+      </div>
+
+      <div class="variations-grid" id="variationsGrid"></div>
+    </section>
+
+    <section class="tool-card" aria-labelledby="contrastTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="contrastTitle">Contraste WCAG básico</h2>
+          <p>Compara color de texto y fondo. Orientativo para AA/AAA en texto normal y grande.</p>
+        </div>
+      </div>
+
+      <div class="contrast-grid">
+        <div class="field">
+          <label for="textColorInput">Color de texto</label>
+          <input id="textColorInput" type="text" value="#020617" spellcheck="false" />
+        </div>
+        <div class="field">
+          <label for="backgroundColorInput">Color de fondo</label>
+          <input id="backgroundColorInput" type="text" value="#38bdf8" spellcheck="false" />
+        </div>
+        <button id="checkContrastBtn" type="button">Comprobar contraste</button>
+      </div>
+
+      <div class="contrast-preview" id="contrastPreview">Texto de ejemplo sobre el fondo elegido</div>
+      <div class="contrast-results" id="contrastResults"></div>
+    </section>
+  </section>
+
+  <style>
+    .color-page { padding: 4rem 0; }
+    .section-heading { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+    h2 { margin: 0 0 .35rem; font-size: 1.35rem; }
+    .section-heading p, .status { color: var(--muted); line-height: 1.7; margin: 0; }
+    code { color: white; background: rgba(148,163,184,.12); border-radius: .35rem; padding: .08rem .3rem; }
+    .input-grid, .contrast-grid { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(140px, 220px) auto; gap: 1rem; align-items: end; }
+    label { display: block; margin-bottom: .55rem; font-weight: 700; }
+    input { width: 100%; border-radius: 14px; border: 1px solid var(--border); background: #020617; color: white; padding: 1rem; font: inherit; }
+    input[type='color'] { min-height: 56px; padding: .35rem; cursor: pointer; }
+    button { border-radius: 14px; border: 1px solid var(--border); background: #0f172a; color: white; padding: 1rem; cursor: pointer; font: inherit; font-weight: 700; transition: transform .15s ease, border-color .15s ease; }
+    button:hover { transform: translateY(-1px); border-color: rgba(56,189,248,.45); }
+    button.primary { background: var(--primary); color: #020617; border-color: transparent; }
+    .status { margin-top: 1rem; }
+    .status.success { color: #86efac; }
+    .status.error { color: #fca5a5; }
+    .preview-section { margin-top: 1.5rem; padding: 1.5rem; border-radius: 24px; border: 1px solid var(--border); background: var(--card); }
+    .preview-grid { display: grid; grid-template-columns: minmax(220px, 360px) 1fr; gap: 1rem; align-items: stretch; }
+    .swatch { min-height: 260px; border-radius: 24px; border: 1px solid var(--border); display: grid; place-items: center; color: #020617; font-weight: 900; font-size: 1.35rem; text-align: center; padding: 1rem; }
+    .results-grid, .variations-grid, .contrast-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .result-card, .variation-card, .contrast-card { border-radius: 18px; border: 1px solid var(--border); background: rgba(2,6,23,.55); padding: 1rem; min-width: 0; }
+    .result-card span, .variation-card span, .contrast-card span { display: block; color: var(--muted); margin-bottom: .45rem; font-size: .9rem; }
+    .result-card code, .variation-card code { display: block; color: white; background: transparent; padding: 0; overflow-wrap: anywhere; line-height: 1.5; margin-bottom: .8rem; }
+    .copy-btn { padding: .65rem .8rem; font-size: .9rem; }
+    .variations-grid { margin-top: .5rem; }
+    .variation-swatch { height: 88px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: .75rem; }
+    .contrast-preview { margin: 1rem 0; min-height: 110px; border-radius: 18px; display: grid; place-items: center; padding: 1.25rem; text-align: center; font-weight: 800; }
+    .contrast-card strong { display: block; color: white; font-size: 1.25rem; margin-bottom: .35rem; }
+    @media (max-width: 900px) { .input-grid, .contrast-grid, .preview-grid { grid-template-columns: 1fr; } .section-heading { flex-direction: column; } }
+    @media (max-width: 560px) { .color-page { padding: 2.5rem 0; } button { width: 100%; } .swatch { min-height: 180px; } }
+  </style>
+
+  <script>
+    const cssNames = {
+      aliceblue: '#f0f8ff', antiquewhite: '#faebd7', aqua: '#00ffff', aquamarine: '#7fffd4', azure: '#f0ffff', beige: '#f5f5dc', bisque: '#ffe4c4', black: '#000000', blanchedalmond: '#ffebcd', blue: '#0000ff', blueviolet: '#8a2be2', brown: '#a52a2a', burlywood: '#deb887', cadetblue: '#5f9ea0', chartreuse: '#7fff00', chocolate: '#d2691e', coral: '#ff7f50', cornflowerblue: '#6495ed', cornsilk: '#fff8dc', crimson: '#dc143c', cyan: '#00ffff', darkblue: '#00008b', darkcyan: '#008b8b', darkgoldenrod: '#b8860b', darkgray: '#a9a9a9', darkgreen: '#006400', darkgrey: '#a9a9a9', darkkhaki: '#bdb76b', darkmagenta: '#8b008b', darkolivegreen: '#556b2f', darkorange: '#ff8c00', darkorchid: '#9932cc', darkred: '#8b0000', darksalmon: '#e9967a', darkseagreen: '#8fbc8f', darkslateblue: '#483d8b', darkslategray: '#2f4f4f', darkslategrey: '#2f4f4f', darkturquoise: '#00ced1', darkviolet: '#9400d3', deeppink: '#ff1493', deepskyblue: '#00bfff', dimgray: '#696969', dimgrey: '#696969', dodgerblue: '#1e90ff', firebrick: '#b22222', floralwhite: '#fffaf0', forestgreen: '#228b22', fuchsia: '#ff00ff', gainsboro: '#dcdcdc', ghostwhite: '#f8f8ff', gold: '#ffd700', goldenrod: '#daa520', gray: '#808080', green: '#008000', greenyellow: '#adff2f', grey: '#808080', honeydew: '#f0fff0', hotpink: '#ff69b4', indianred: '#cd5c5c', indigo: '#4b0082', ivory: '#fffff0', khaki: '#f0e68c', lavender: '#e6e6fa', lavenderblush: '#fff0f5', lawngreen: '#7cfc00', lemonchiffon: '#fffacd', lightblue: '#add8e6', lightcoral: '#f08080', lightcyan: '#e0ffff', lightgoldenrodyellow: '#fafad2', lightgray: '#d3d3d3', lightgreen: '#90ee90', lightgrey: '#d3d3d3', lightpink: '#ffb6c1', lightsalmon: '#ffa07a', lightseagreen: '#20b2aa', lightskyblue: '#87cefa', lightslategray: '#778899', lightslategrey: '#778899', lightsteelblue: '#b0c4de', lightyellow: '#ffffe0', lime: '#00ff00', limegreen: '#32cd32', linen: '#faf0e6', magenta: '#ff00ff', maroon: '#800000', mediumaquamarine: '#66cdaa', mediumblue: '#0000cd', mediumorchid: '#ba55d3', mediumpurple: '#9370db', mediumseagreen: '#3cb371', mediumslateblue: '#7b68ee', mediumspringgreen: '#00fa9a', mediumturquoise: '#48d1cc', mediumvioletred: '#c71585', midnightblue: '#191970', mintcream: '#f5fffa', mistyrose: '#ffe4e1', moccasin: '#ffe4b5', navajowhite: '#ffdead', navy: '#000080', oldlace: '#fdf5e6', olive: '#808000', olivedrab: '#6b8e23', orange: '#ffa500', orangered: '#ff4500', orchid: '#da70d6', palegoldenrod: '#eee8aa', palegreen: '#98fb98', paleturquoise: '#afeeee', palevioletred: '#db7093', papayawhip: '#ffefd5', peachpuff: '#ffdab9', peru: '#cd853f', pink: '#ffc0cb', plum: '#dda0dd', powderblue: '#b0e0e6', purple: '#800080', rebeccapurple: '#663399', red: '#ff0000', rosybrown: '#bc8f8f', royalblue: '#4169e1', saddlebrown: '#8b4513', salmon: '#fa8072', sandybrown: '#f4a460', seagreen: '#2e8b57', seashell: '#fff5ee', sienna: '#a0522d', silver: '#c0c0c0', skyblue: '#87ceeb', slateblue: '#6a5acd', slategray: '#708090', slategrey: '#708090', snow: '#fffafa', springgreen: '#00ff7f', steelblue: '#4682b4', tan: '#d2b48c', teal: '#008080', thistle: '#d8bfd8', tomato: '#ff6347', turquoise: '#40e0d0', violet: '#ee82ee', wheat: '#f5deb3', white: '#ffffff', whitesmoke: '#f5f5f5', yellow: '#ffff00', yellowgreen: '#9acd32'
+    };
+
+    const colorInput = document.getElementById('colorInput') as HTMLInputElement;
+    const colorPicker = document.getElementById('colorPicker') as HTMLInputElement;
+    const convertBtn = document.getElementById('convertBtn') as HTMLButtonElement;
+    const status = document.getElementById('status') as HTMLParagraphElement;
+    const mainSwatch = document.getElementById('mainSwatch') as HTMLDivElement;
+    const swatchText = document.getElementById('swatchText') as HTMLSpanElement;
+    const colorMeta = document.getElementById('colorMeta') as HTMLParagraphElement;
+    const resultsGrid = document.getElementById('resultsGrid') as HTMLDivElement;
+    const variationsGrid = document.getElementById('variationsGrid') as HTMLDivElement;
+    const textColorInput = document.getElementById('textColorInput') as HTMLInputElement;
+    const backgroundColorInput = document.getElementById('backgroundColorInput') as HTMLInputElement;
+    const checkContrastBtn = document.getElementById('checkContrastBtn') as HTMLButtonElement;
+    const contrastPreview = document.getElementById('contrastPreview') as HTMLDivElement;
+    const contrastResults = document.getElementById('contrastResults') as HTMLDivElement;
+
+    const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => {
+      status.textContent = message;
+      status.classList.toggle('success', type === 'success');
+      status.classList.toggle('error', type === 'error');
+    };
+
+    const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
+    const round = (value: number, digits = 2) => Number(value.toFixed(digits));
+    const toHexPart = (value: number) => Math.round(clamp(value, 0, 255)).toString(16).padStart(2, '0').toUpperCase();
+    const hex = ({ r, g, b }: { r: number; g: number; b: number }) => `#${toHexPart(r)}${toHexPart(g)}${toHexPart(b)}`;
+
+    const parseAlpha = (value: string | undefined) => value === undefined ? 1 : clamp(value.endsWith('%') ? Number.parseFloat(value) / 100 : Number.parseFloat(value));
+    const parseCssNumber = (value: string, max: number) => value.endsWith('%') ? clamp(Number.parseFloat(value) / 100) * max : Number.parseFloat(value);
+    const parsePercent = (value: string) => clamp(Number.parseFloat(value) / 100);
+    const splitFunctionArgs = (body: string) => body.trim().replace(/,/g, ' ').replace(/\s*\/\s*/g, ' / ').split(/\s+/).filter(Boolean);
+
+    const rgbToHsl = ({ r, g, b }: { r: number; g: number; b: number }) => {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0;
+      const l = (max + min) / 2;
+      if (max !== min) {
+        const d = max - min;
+        s = l > .5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        if (max === g) h = (b - r) / d + 2;
+        if (max === b) h = (r - g) / d + 4;
+        h *= 60;
+      }
+      return { h: round(h, 1), s: round(s * 100, 1), l: round(l * 100, 1) };
+    };
+
+    const hslToRgb = (h: number, s: number, l: number) => {
+      h = ((h % 360) + 360) % 360 / 360;
+      s = clamp(s); l = clamp(l);
+      if (s === 0) {
+        const v = l * 255;
+        return { r: v, g: v, b: v };
+      }
+      const hue2rgb = (p: number, q: number, t: number) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      };
+      const q = l < .5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      return { r: hue2rgb(p, q, h + 1 / 3) * 255, g: hue2rgb(p, q, h) * 255, b: hue2rgb(p, q, h - 1 / 3) * 255 };
+    };
+
+    const rgbToHwb = (color: { r: number; g: number; b: number }) => {
+      const hsl = rgbToHsl(color);
+      const r = color.r / 255, g = color.g / 255, b = color.b / 255;
+      return { h: hsl.h, w: round(Math.min(r, g, b) * 100, 1), black: round((1 - Math.max(r, g, b)) * 100, 1) };
+    };
+
+    const hwbToRgb = (h: number, w: number, black: number) => {
+      w = clamp(w); black = clamp(black);
+      if (w + black >= 1) {
+        const gray = w / (w + black) * 255;
+        return { r: gray, g: gray, b: gray };
+      }
+      const rgb = hslToRgb(h, 1, .5);
+      return { r: rgb.r * (1 - w - black) + w * 255, g: rgb.g * (1 - w - black) + w * 255, b: rgb.b * (1 - w - black) + w * 255 };
+    };
+
+    const parseColor = (input: string) => {
+      const value = input.trim().toLowerCase();
+      if (!value) throw new Error('Introduce un color CSS.');
+      if (cssNames[value as keyof typeof cssNames]) return parseColor(cssNames[value as keyof typeof cssNames]);
+      let match = value.match(/^#?([0-9a-f]{3,8})$/i);
+      if (match) {
+        let raw = match[1];
+        if (raw.length === 3 || raw.length === 4) raw = raw.split('').map((char) => char + char).join('');
+        if (raw.length !== 6 && raw.length !== 8) throw new Error('HEX inválido. Usa #RGB, #RGBA, #RRGGBB o #RRGGBBAA.');
+        return { r: parseInt(raw.slice(0, 2), 16), g: parseInt(raw.slice(2, 4), 16), b: parseInt(raw.slice(4, 6), 16), a: raw.length === 8 ? parseInt(raw.slice(6, 8), 16) / 255 : 1 };
+      }
+      match = value.match(/^rgba?\((.*)\)$/);
+      if (match) {
+        const parts = splitFunctionArgs(match[1]).filter((part) => part !== '/');
+        if (parts.length < 3) throw new Error('RGB inválido. Usa rgb(56 189 248) o rgba(56, 189, 248, .8).');
+        return { r: parseCssNumber(parts[0], 255), g: parseCssNumber(parts[1], 255), b: parseCssNumber(parts[2], 255), a: parseAlpha(parts[3]) };
+      }
+      match = value.match(/^hsla?\((.*)\)$/);
+      if (match) {
+        const parts = splitFunctionArgs(match[1]).filter((part) => part !== '/');
+        if (parts.length < 3) throw new Error('HSL inválido. Usa hsl(199 95% 56%).');
+        const rgb = hslToRgb(Number.parseFloat(parts[0]), parsePercent(parts[1]), parsePercent(parts[2]));
+        return { ...rgb, a: parseAlpha(parts[3]) };
+      }
+      match = value.match(/^hwb\((.*)\)$/);
+      if (match) {
+        const parts = splitFunctionArgs(match[1]).filter((part) => part !== '/');
+        if (parts.length < 3) throw new Error('HWB inválido. Usa hwb(199 22% 3%).');
+        const rgb = hwbToRgb(Number.parseFloat(parts[0]), parsePercent(parts[1]), parsePercent(parts[2]));
+        return { ...rgb, a: parseAlpha(parts[3]) };
+      }
+      throw new Error('Color no reconocido. Prueba con HEX, RGB, HSL, HWB o nombre CSS.');
+    };
+
+    const normalizeColor = (color: { r: number; g: number; b: number; a: number }) => ({ r: clamp(color.r, 0, 255), g: clamp(color.g, 0, 255), b: clamp(color.b, 0, 255), a: clamp(color.a) });
+    const rgbaString = (c: { r: number; g: number; b: number; a: number }) => `rgba(${Math.round(c.r)}, ${Math.round(c.g)}, ${Math.round(c.b)}, ${round(c.a, 3)})`;
+    const rgbString = (c: { r: number; g: number; b: number }) => `rgb(${Math.round(c.r)}, ${Math.round(c.g)}, ${Math.round(c.b)})`;
+    const hslString = (c: { r: number; g: number; b: number; a: number }) => { const hsl = rgbToHsl(c); return `hsl(${hsl.h} ${hsl.s}% ${hsl.l}%)`; };
+    const hslaString = (c: { r: number; g: number; b: number; a: number }) => { const hsl = rgbToHsl(c); return `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${round(c.a, 3)})`; };
+    const hwbString = (c: { r: number; g: number; b: number; a: number }) => { const hwb = rgbToHwb(c); return `hwb(${hwb.h} ${hwb.w}% ${hwb.black}%${c.a < 1 ? ` / ${round(c.a, 3)}` : ''})`; };
+
+    const luminance = (c: { r: number; g: number; b: number }) => {
+      const channels = [c.r, c.g, c.b].map((value) => {
+        value /= 255;
+        return value <= .03928 ? value / 12.92 : Math.pow((value + .055) / 1.055, 2.4);
+      });
+      return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+    };
+
+    const contrastRatio = (a: { r: number; g: number; b: number }, b: { r: number; g: number; b: number }) => {
+      const l1 = luminance(a), l2 = luminance(b);
+      return (Math.max(l1, l2) + .05) / (Math.min(l1, l2) + .05);
+    };
+
+    const mix = (color: { r: number; g: number; b: number; a: number }, target: { r: number; g: number; b: number }, amount: number) => ({ r: color.r + (target.r - color.r) * amount, g: color.g + (target.g - color.g) * amount, b: color.b + (target.b - color.b) * amount, a: color.a });
+
+    const createCard = (label: string, value: string) => {
+      const card = document.createElement('div');
+      card.className = 'result-card';
+      const span = document.createElement('span'); span.textContent = label;
+      const code = document.createElement('code'); code.textContent = value;
+      const button = document.createElement('button'); button.className = 'copy-btn'; button.type = 'button'; button.textContent = 'Copiar';
+      button.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(value); setStatus(`${label} copiado.`, 'success'); }
+        catch { setStatus('No se pudo copiar.', 'error'); }
+      });
+      card.append(span, code, button);
+      return card;
+    };
+
+    const createVariation = (label: string, color: { r: number; g: number; b: number; a: number }) => {
+      const value = color.a < 1 ? rgbaString(color) : hex(color);
+      const card = document.createElement('div');
+      card.className = 'variation-card';
+      const swatch = document.createElement('div'); swatch.className = 'variation-swatch'; swatch.style.background = rgbaString(color);
+      const span = document.createElement('span'); span.textContent = label;
+      const code = document.createElement('code'); code.textContent = value;
+      const button = document.createElement('button'); button.className = 'copy-btn'; button.type = 'button'; button.textContent = 'Copiar';
+      button.addEventListener('click', async () => navigator.clipboard.writeText(value));
+      card.append(swatch, span, code, button);
+      return card;
+    };
+
+    const renderColor = (input = colorInput.value) => {
+      try {
+        const color = normalizeColor(parseColor(input));
+        const baseHex = hex(color);
+        const hexAlpha = `${baseHex}${color.a < 1 ? toHexPart(color.a * 255) : ''}`;
+        colorPicker.value = baseHex;
+        mainSwatch.style.background = rgbaString(color);
+        mainSwatch.style.color = contrastRatio(color, { r: 0, g: 0, b: 0 }) > contrastRatio(color, { r: 255, g: 255, b: 255 }) ? '#020617' : '#ffffff';
+        swatchText.textContent = baseHex;
+        const hsl = rgbToHsl(color);
+        colorMeta.textContent = `RGB ${Math.round(color.r)}, ${Math.round(color.g)}, ${Math.round(color.b)} · HSL ${hsl.h}°, ${hsl.s}%, ${hsl.l}% · alpha ${round(color.a, 3)}`;
+        resultsGrid.replaceChildren(
+          createCard('HEX', baseHex),
+          createCard('HEX con alpha', hexAlpha),
+          createCard('RGB', rgbString(color)),
+          createCard('RGBA', rgbaString(color)),
+          createCard('HSL', hslString(color)),
+          createCard('HSLA', hslaString(color)),
+          createCard('HWB', hwbString(color))
+        );
+        variationsGrid.replaceChildren(
+          createVariation('Más claro 20%', mix(color, { r: 255, g: 255, b: 255 }, .2)),
+          createVariation('Más claro 40%', mix(color, { r: 255, g: 255, b: 255 }, .4)),
+          createVariation('Más oscuro 20%', mix(color, { r: 0, g: 0, b: 0 }, .2)),
+          createVariation('Más oscuro 40%', mix(color, { r: 0, g: 0, b: 0 }, .4)),
+          createVariation('Transparente 75%', { ...color, a: .75 }),
+          createVariation('Transparente 50%', { ...color, a: .5 })
+        );
+        backgroundColorInput.value = baseHex;
+        checkContrast();
+        setStatus('Color convertido correctamente.', 'success');
+      } catch (error) {
+        setStatus(error instanceof Error ? error.message : 'Color inválido.', 'error');
+      }
+    };
+
+    const createContrastCard = (label: string, passed: boolean) => {
+      const card = document.createElement('div');
+      card.className = 'contrast-card';
+      const span = document.createElement('span'); span.textContent = label;
+      const strong = document.createElement('strong'); strong.textContent = passed ? 'Pasa' : 'No pasa';
+      strong.style.color = passed ? '#86efac' : '#fca5a5';
+      card.append(span, strong);
+      return card;
+    };
+
+    const checkContrast = () => {
+      try {
+        const text = normalizeColor(parseColor(textColorInput.value));
+        const background = normalizeColor(parseColor(backgroundColorInput.value));
+        const ratio = contrastRatio(text, background);
+        contrastPreview.style.color = rgbaString(text);
+        contrastPreview.style.background = rgbaString(background);
+        contrastResults.replaceChildren(
+          createContrastCard(`Ratio ${round(ratio, 2)}:1`, true),
+          createContrastCard('AA texto normal · 4.5:1', ratio >= 4.5),
+          createContrastCard('AA texto grande · 3:1', ratio >= 3),
+          createContrastCard('AAA texto normal · 7:1', ratio >= 7),
+          createContrastCard('AAA texto grande · 4.5:1', ratio >= 4.5)
+        );
+      } catch {
+        contrastResults.replaceChildren(createContrastCard('Contraste no disponible: revisa los colores', false));
+      }
+    };
+
+    convertBtn.addEventListener('click', () => renderColor());
+    colorInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') renderColor(); });
+    colorPicker.addEventListener('input', () => { colorInput.value = colorPicker.value; renderColor(colorPicker.value); });
+    checkContrastBtn.addEventListener('click', checkContrast);
+    [textColorInput, backgroundColorInput].forEach((input) => input.addEventListener('keydown', (event) => { if (event.key === 'Enter') checkContrast(); }));
+    renderColor();
+  </script>
+</Layout>
