@@ -13,5 +13,15 @@
   "base64.copy": "Copiar resultado",
   "base64.input": "Texto de entrada...",
   "base64.output": "Resultado...",
-  "base64.ready": "Listo para convertir."
+  "base64.ready": "Listo para convertir.",
+  "json.title": "JSON viewer y formatter",
+  "json.description": "Valida, formatea y minifica JSON localmente en tu navegador. Tus datos nunca salen de tu dispositivo.",
+  "json.format": "Formatear",
+  "json.minify": "Minificar",
+  "json.validate": "Validar",
+  "json.clear": "Limpiar",
+  "json.copy": "Copiar resultado",
+  "json.input": "Pega aquí tu JSON...",
+  "json.output": "Resultado...",
+  "json.ready": "Listo."
 }
