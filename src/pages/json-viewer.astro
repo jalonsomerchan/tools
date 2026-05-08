@@ -70,11 +70,20 @@ const title = 'JSON viewer y formatter';
       color: white;
       padding: 1rem;
       font-family: monospace;
+      line-height: 1.6;
+      resize: vertical;
+      tab-size: 2;
+    }
+
+    textarea[data-invalid='true'] {
+      border-color: rgba(252, 165, 165, .6);
+      box-shadow: 0 0 0 1px rgba(252, 165, 165, .15);
     }
 
     .status {
       margin-top: 1rem;
       color: var(--muted);
+      white-space: pre-wrap;
     }
 
     @media (max-width: 860px) {
@@ -89,48 +98,195 @@ const title = 'JSON viewer y formatter';
       const input = document.getElementById('input');
       const output = document.getElementById('output');
       const status = document.getElementById('status');
+      const formatBtn = document.getElementById('formatBtn');
+      const minifyBtn = document.getElementById('minifyBtn');
+      const validateBtn = document.getElementById('validateBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const copyBtn = document.getElementById('copyBtn');
+
+      const INDENT = '  ';
 
       const setStatus = (message, error = false) => {
         status.textContent = message;
         status.style.color = error ? '#fca5a5' : '#94a3b8';
+        output.dataset.invalid = String(error);
       };
 
       const parse = () => JSON.parse(input.value);
 
-      document.getElementById('formatBtn').onclick = () => {
+      const getJsonErrorDetails = (error) => {
+        const message = error instanceof Error ? error.message : 'JSON inválido.';
+        const positionMatch = message.match(/position\s+(\d+)/i);
+        const position = positionMatch ? Number(positionMatch[1]) : null;
+
+        if (position === null || Number.isNaN(position)) {
+          return message;
+        }
+
+        const beforeError = input.value.slice(0, position);
+        const line = beforeError.split('\n').length;
+        const column = beforeError.length - beforeError.lastIndexOf('\n');
+
+        return `${message}\nLínea ${line}, columna ${column}.`;
+      };
+
+      const formatBrokenJson = (value) => {
+        let formatted = '';
+        let depth = 0;
+        let inString = false;
+        let escaped = false;
+
+        const addNewLine = () => {
+          formatted = formatted.trimEnd();
+          formatted += `\n${INDENT.repeat(Math.max(depth, 0))}`;
+        };
+
+        for (const char of value) {
+          if (inString) {
+            formatted += char;
+
+            if (escaped) {
+              escaped = false;
+              continue;
+            }
+
+            if (char === '\\') {
+              escaped = true;
+              continue;
+            }
+
+            if (char === '"') {
+              inString = false;
+            }
+
+            continue;
+          }
+
+          if (char === '"') {
+            inString = true;
+            formatted += char;
+            continue;
+          }
+
+          if (char === '{' || char === '[') {
+            formatted += char;
+            depth += 1;
+            addNewLine();
+            continue;
+          }
+
+          if (char === '}' || char === ']') {
+            depth = Math.max(depth - 1, 0);
+            addNewLine();
+            formatted += char;
+            continue;
+          }
+
+          if (char === ',') {
+            formatted += char;
+            addNewLine();
+            continue;
+          }
+
+          if (char === ':') {
+            formatted += ': ';
+            continue;
+          }
+
+          if (/\s/.test(char)) {
+            if (formatted && !formatted.endsWith(' ') && !formatted.endsWith('\n')) {
+              formatted += ' ';
+            }
+
+            continue;
+          }
+
+          formatted += char;
+        }
+
+        return formatted.trim();
+      };
+
+      const minifyLooseJson = (value) => {
+        let minified = '';
+        let inString = false;
+        let escaped = false;
+
+        for (const char of value) {
+          if (inString) {
+            minified += char;
+
+            if (escaped) {
+              escaped = false;
+              continue;
+            }
+
+            if (char === '\\') {
+              escaped = true;
+              continue;
+            }
+
+            if (char === '"') {
+              inString = false;
+            }
+
+            continue;
+          }
+
+          if (char === '"') {
+            inString = true;
+            minified += char;
+            continue;
+          }
+
+          if (!/\s/.test(char)) {
+            minified += char;
+          }
+        }
+
+        return minified;
+      };
+
+      const showBrokenJson = (error, transform = formatBrokenJson) => {
+        output.value = transform(input.value);
+        setStatus(`JSON inválido, pero se muestra una vista parcial.\n${getJsonErrorDetails(error)}`, true);
+      };
+
+      formatBtn.onclick = () => {
         try {
           output.value = JSON.stringify(parse(), null, 2);
           setStatus('JSON formateado correctamente.');
-        } catch (e) {
-          setStatus('JSON inválido.', true);
+        } catch (error) {
+          showBrokenJson(error);
         }
       };
 
-      document.getElementById('minifyBtn').onclick = () => {
+      minifyBtn.onclick = () => {
         try {
           output.value = JSON.stringify(parse());
           setStatus('JSON minificado correctamente.');
-        } catch {
-          setStatus('JSON inválido.', true);
+        } catch (error) {
+          showBrokenJson(error, minifyLooseJson);
         }
       };
 
-      document.getElementById('validateBtn').onclick = () => {
+      validateBtn.onclick = () => {
         try {
           parse();
+          output.value = JSON.stringify(parse(), null, 2);
           setStatus('JSON válido.');
-        } catch {
-          setStatus('JSON inválido.', true);
+        } catch (error) {
+          showBrokenJson(error);
         }
       };
 
-      document.getElementById('clearBtn').onclick = () => {
+      clearBtn.onclick = () => {
         input.value = '';
         output.value = '';
         setStatus('Contenido eliminado.');
       };
 
-      document.getElementById('copyBtn').onclick = async () => {
+      copyBtn.onclick = async () => {
         try {
           await navigator.clipboard.writeText(output.value);
           setStatus('Resultado copiado.');
@@ -138,6 +294,21 @@ const title = 'JSON viewer y formatter';
           setStatus('No se pudo copiar.', true);
         }
       };
+
+      input.addEventListener('input', () => {
+        if (!input.value.trim()) {
+          output.value = '';
+          setStatus('Listo.');
+          return;
+        }
+
+        try {
+          output.value = JSON.stringify(parse(), null, 2);
+          setStatus('JSON válido.');
+        } catch (error) {
+          showBrokenJson(error);
+        }
+      });
     });
   </script>
 </Layout>
