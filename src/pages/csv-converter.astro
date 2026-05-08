@@ -1,0 +1,626 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Parser y conversor de CSV';
+const description = 'Pega o carga CSV localmente y conviértelo a JSON, Markdown o HTML desde el navegador.';
+---
+
+<Layout title={title} description={description} path="/csv-converter/" translated={false}>
+  <section class="csv-page">
+    <div class="eyebrow">100% local</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Pega un CSV o carga un archivo local para previsualizarlo y convertirlo a JSON, Markdown table o HTML table. No se suben datos a ningún servidor.
+    </p>
+
+    <section class="tool-card" aria-labelledby="inputTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="inputTitle">Entrada CSV</h2>
+          <p>Soporta coma, punto y coma y tabulador, incluyendo comillas y saltos de línea dentro de celdas.</p>
+        </div>
+      </div>
+
+      <div class="controls-grid">
+        <div class="field file-field">
+          <label for="csvFile">Cargar archivo local</label>
+          <input id="csvFile" type="file" accept=".csv,text/csv,text/plain" />
+        </div>
+
+        <div class="field">
+          <label for="delimiterSelect">Separador</label>
+          <select id="delimiterSelect">
+            <option value="auto">Detectar automáticamente</option>
+            <option value=",">Coma (,)</option>
+            <option value=";">Punto y coma (;)</option>
+            <option value="tab">Tabulador</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="formatSelect">Formato de salida</label>
+          <select id="formatSelect">
+            <option value="json-array">JSON array</option>
+            <option value="json-objects">JSON objects con cabecera</option>
+            <option value="markdown">Markdown table</option>
+            <option value="html">HTML table</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="csvInput">CSV</label>
+      <textarea id="csvInput" spellcheck="false" placeholder="name,email\nJorge,jorge@example.com\nAna,ana@example.com">name,email,notes
+Jorge,jorge@example.com,"Texto con coma, y comillas"
+Ana,ana@example.com,"Celda con
+salto de línea"</textarea>
+
+      <div class="toolbar" aria-label="Acciones CSV">
+        <button class="primary" id="parseBtn" type="button">Parsear y convertir</button>
+        <button id="copyResultBtn" type="button">Copiar resultado</button>
+        <button id="downloadResultBtn" type="button">Descargar resultado</button>
+        <button id="clearBtn" type="button">Limpiar</button>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">Listo para procesar CSV en el navegador.</p>
+    </section>
+
+    <section class="preview-section" id="previewSection" hidden aria-labelledby="previewTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="previewTitle">Vista previa</h2>
+          <p id="previewMeta">-</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="previewTable"></table>
+      </div>
+    </section>
+
+    <section class="output-section" aria-labelledby="outputTitle">
+      <div class="output-heading">
+        <div>
+          <h2 id="outputTitle">Resultado</h2>
+          <p>Actualiza el formato y vuelve a convertir para regenerar la salida.</p>
+        </div>
+      </div>
+
+      <textarea id="output" readonly spellcheck="false" placeholder="Aquí aparecerá el resultado convertido..."></textarea>
+    </section>
+  </section>
+
+  <style>
+    .csv-page {
+      padding: 4rem 0;
+    }
+
+    .section-heading,
+    .output-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h2 {
+      margin: 0 0 .35rem;
+      font-size: 1.35rem;
+    }
+
+    .section-heading p,
+    .output-heading p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(180px, 240px) minmax(180px, 260px);
+      gap: 1rem;
+      margin-bottom: 1rem;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      margin-bottom: .55rem;
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font: inherit;
+    }
+
+    input[type='file']::file-selector-button {
+      margin-right: 1rem;
+      border: 0;
+      border-radius: 12px;
+      background: var(--primary);
+      color: #020617;
+      font-weight: 800;
+      padding: .75rem 1rem;
+      cursor: pointer;
+    }
+
+    textarea {
+      min-height: 260px;
+      resize: vertical;
+      line-height: 1.6;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: white;
+      padding: .95rem 1rem;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .15s ease, border-color .15s ease, opacity .15s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(56,189,248,.45);
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #020617;
+      border-color: transparent;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .55;
+    }
+
+    .status {
+      color: var(--muted);
+      margin: 1rem 0 0;
+      line-height: 1.7;
+    }
+
+    .status.success {
+      color: #86efac;
+    }
+
+    .status.error {
+      color: #fca5a5;
+    }
+
+    .preview-section,
+    .output-section {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+
+    .table-wrap {
+      max-height: 520px;
+      overflow: auto;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(2, 6, 23, .55);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 620px;
+    }
+
+    th,
+    td {
+      padding: .8rem 1rem;
+      border-bottom: 1px solid rgba(148,163,184,.12);
+      border-right: 1px solid rgba(148,163,184,.08);
+      text-align: left;
+      vertical-align: top;
+      max-width: 360px;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #0f172a;
+      color: white;
+    }
+
+    td {
+      color: var(--muted);
+    }
+
+    #output {
+      min-height: 340px;
+    }
+
+    @media (max-width: 900px) {
+      .controls-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading,
+      .output-heading {
+        flex-direction: column;
+      }
+    }
+  </style>
+
+  <script>
+    const MAX_FILE_SIZE = 2 * 1024 * 1024;
+    const MAX_PREVIEW_ROWS = 100;
+
+    const csvFile = document.getElementById('csvFile') as HTMLInputElement;
+    const delimiterSelect = document.getElementById('delimiterSelect') as HTMLSelectElement;
+    const formatSelect = document.getElementById('formatSelect') as HTMLSelectElement;
+    const csvInput = document.getElementById('csvInput') as HTMLTextAreaElement;
+    const parseBtn = document.getElementById('parseBtn') as HTMLButtonElement;
+    const copyResultBtn = document.getElementById('copyResultBtn') as HTMLButtonElement;
+    const downloadResultBtn = document.getElementById('downloadResultBtn') as HTMLButtonElement;
+    const clearBtn = document.getElementById('clearBtn') as HTMLButtonElement;
+    const status = document.getElementById('status') as HTMLParagraphElement;
+    const previewSection = document.getElementById('previewSection') as HTMLElement;
+    const previewMeta = document.getElementById('previewMeta') as HTMLParagraphElement;
+    const previewTable = document.getElementById('previewTable') as HTMLTableElement;
+    const output = document.getElementById('output') as HTMLTextAreaElement;
+
+    let parsedRows: string[][] = [];
+    let currentDelimiter = ',';
+
+    const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => {
+      status.textContent = message;
+      status.classList.toggle('success', type === 'success');
+      status.classList.toggle('error', type === 'error');
+    };
+
+    const delimiterLabel = (delimiter: string) => delimiter === '\t' ? 'tabulador' : delimiter === ';' ? 'punto y coma' : 'coma';
+
+    const detectDelimiter = (text: string) => {
+      const candidates = [',', ';', '\t'];
+      const sample = text.slice(0, 5000);
+      let best = ',';
+      let bestScore = -1;
+
+      for (const delimiter of candidates) {
+        let score = 0;
+        let inQuotes = false;
+
+        for (let i = 0; i < sample.length; i += 1) {
+          const char = sample[i];
+          const next = sample[i + 1];
+
+          if (char === '"') {
+            if (inQuotes && next === '"') {
+              i += 1;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (!inQuotes && char === delimiter) {
+            score += 1;
+          }
+        }
+
+        if (score > bestScore) {
+          best = delimiter;
+          bestScore = score;
+        }
+      }
+
+      return best;
+    };
+
+    const parseCsv = (text: string, delimiter: string) => {
+      const rows: string[][] = [];
+      let row: string[] = [];
+      let cell = '';
+      let inQuotes = false;
+      let line = 1;
+      let column = 1;
+
+      for (let i = 0; i < text.length; i += 1) {
+        const char = text[i];
+        const next = text[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && next === '"') {
+            cell += '"';
+            i += 1;
+            column += 2;
+          } else {
+            inQuotes = !inQuotes;
+            column += 1;
+          }
+          continue;
+        }
+
+        if (!inQuotes && char === delimiter) {
+          row.push(cell);
+          cell = '';
+          column += 1;
+          continue;
+        }
+
+        if (!inQuotes && (char === '\n' || char === '\r')) {
+          row.push(cell);
+          rows.push(row);
+          row = [];
+          cell = '';
+
+          if (char === '\r' && next === '\n') {
+            i += 1;
+          }
+
+          line += 1;
+          column = 1;
+          continue;
+        }
+
+        cell += char;
+        column += 1;
+      }
+
+      if (inQuotes) {
+        throw new Error(`CSV mal formado: comillas sin cerrar cerca de la línea ${line}, columna ${column}.`);
+      }
+
+      if (cell !== '' || row.length || text.endsWith(delimiter)) {
+        row.push(cell);
+        rows.push(row);
+      }
+
+      return rows.filter((items) => items.some((value) => value !== ''));
+    };
+
+    const normalizeRows = (rows: string[][]) => {
+      const width = Math.max(...rows.map((row) => row.length));
+      return rows.map((row) => Array.from({ length: width }, (_, index) => row[index] ?? ''));
+    };
+
+    const escapeHtml = (value: string) => value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    const escapeMarkdown = (value: string) => value
+      .replace(/\|/g, '\\|')
+      .replace(/\r?\n/g, '<br>');
+
+    const getUniqueHeaders = (headers: string[]) => {
+      const counts = new Map<string, number>();
+
+      return headers.map((header, index) => {
+        const base = header.trim() || `column_${index + 1}`;
+        const count = counts.get(base) || 0;
+        counts.set(base, count + 1);
+        return count ? `${base}_${count + 1}` : base;
+      });
+    };
+
+    const toJsonObjects = (rows: string[][]) => {
+      if (rows.length < 2) {
+        return '[]';
+      }
+
+      const headers = getUniqueHeaders(rows[0]);
+      const objects = rows.slice(1).map((row) => Object.fromEntries(headers.map((header, index) => [header, row[index] ?? ''])));
+      return JSON.stringify(objects, null, 2);
+    };
+
+    const toMarkdown = (rows: string[][]) => {
+      if (!rows.length) {
+        return '';
+      }
+
+      const headers = rows[0].map((cell, index) => escapeMarkdown(cell || `Column ${index + 1}`));
+      const separator = headers.map(() => '---');
+      const body = rows.slice(1).map((row) => `| ${row.map(escapeMarkdown).join(' | ')} |`);
+      return [`| ${headers.join(' | ')} |`, `| ${separator.join(' | ')} |`, ...body].join('\n');
+    };
+
+    const toHtmlTable = (rows: string[][]) => {
+      if (!rows.length) {
+        return '';
+      }
+
+      const header = rows[0].map((cell) => `      <th>${escapeHtml(cell)}</th>`).join('\n');
+      const body = rows.slice(1).map((row) => `    <tr>\n${row.map((cell) => `      <td>${escapeHtml(cell)}</td>`).join('\n')}\n    </tr>`).join('\n');
+
+      return `<table>\n  <thead>\n    <tr>\n${header}\n    </tr>\n  </thead>\n  <tbody>\n${body}\n  </tbody>\n</table>`;
+    };
+
+    const convertRows = (rows: string[][]) => {
+      switch (formatSelect.value) {
+        case 'json-objects':
+          return toJsonObjects(rows);
+        case 'markdown':
+          return toMarkdown(rows);
+        case 'html':
+          return toHtmlTable(rows);
+        case 'json-array':
+        default:
+          return JSON.stringify(rows, null, 2);
+      }
+    };
+
+    const renderPreview = (rows: string[][]) => {
+      const previewRows = rows.slice(0, MAX_PREVIEW_ROWS);
+      const fragment = document.createDocumentFragment();
+      const thead = document.createElement('thead');
+      const tbody = document.createElement('tbody');
+      const headerRow = document.createElement('tr');
+      const width = Math.max(...rows.map((row) => row.length));
+
+      for (let index = 0; index < width; index += 1) {
+        const th = document.createElement('th');
+        th.textContent = rows[0]?.[index] || `Column ${index + 1}`;
+        headerRow.append(th);
+      }
+
+      thead.append(headerRow);
+
+      previewRows.slice(1).forEach((row) => {
+        const tr = document.createElement('tr');
+
+        for (let index = 0; index < width; index += 1) {
+          const td = document.createElement('td');
+          td.textContent = row[index] ?? '';
+          tr.append(td);
+        }
+
+        tbody.append(tr);
+      });
+
+      fragment.append(thead, tbody);
+      previewTable.replaceChildren(fragment);
+      previewMeta.textContent = `${rows.length} filas · ${width} columnas · separador detectado: ${delimiterLabel(currentDelimiter)}${rows.length > MAX_PREVIEW_ROWS ? ` · mostrando primeras ${MAX_PREVIEW_ROWS} filas` : ''}`;
+      previewSection.hidden = false;
+    };
+
+    const parseAndConvert = () => {
+      const text = csvInput.value;
+
+      if (!text.trim()) {
+        setStatus('Pega CSV o carga un archivo antes de convertir.', 'error');
+        return;
+      }
+
+      if (text.length > MAX_FILE_SIZE) {
+        setStatus('El contenido supera 2 MB. Usa un archivo más pequeño para evitar bloquear el navegador.', 'error');
+        return;
+      }
+
+      try {
+        currentDelimiter = delimiterSelect.value === 'auto' ? detectDelimiter(text) : delimiterSelect.value === 'tab' ? '\t' : delimiterSelect.value;
+        parsedRows = normalizeRows(parseCsv(text, currentDelimiter));
+
+        if (!parsedRows.length) {
+          setStatus('No se han encontrado filas válidas en el CSV.', 'error');
+          return;
+        }
+
+        output.value = convertRows(parsedRows);
+        renderPreview(parsedRows);
+        setStatus(`CSV convertido correctamente: ${parsedRows.length} filas procesadas.`, 'success');
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'CSV mal formado.';
+        setStatus(message, 'error');
+      }
+    };
+
+    const extensionForFormat = () => {
+      switch (formatSelect.value) {
+        case 'markdown':
+          return 'md';
+        case 'html':
+          return 'html';
+        case 'json-array':
+        case 'json-objects':
+        default:
+          return 'json';
+      }
+    };
+
+    csvFile.addEventListener('change', async () => {
+      const file = csvFile.files?.[0];
+
+      if (!file) {
+        return;
+      }
+
+      if (file.size > MAX_FILE_SIZE) {
+        setStatus('El archivo supera 2 MB. Usa un CSV más pequeño para procesarlo en el navegador.', 'error');
+        csvFile.value = '';
+        return;
+      }
+
+      try {
+        csvInput.value = await file.text();
+        setStatus(`Archivo local cargado: ${file.name}.`, 'success');
+        parseAndConvert();
+      } catch {
+        setStatus('No se pudo leer el archivo seleccionado.', 'error');
+      }
+    });
+
+    parseBtn.addEventListener('click', parseAndConvert);
+    formatSelect.addEventListener('change', () => {
+      if (parsedRows.length) {
+        output.value = convertRows(parsedRows);
+        setStatus('Formato de salida actualizado.', 'success');
+      }
+    });
+
+    copyResultBtn.addEventListener('click', async () => {
+      if (!output.value) {
+        setStatus('No hay resultado para copiar.', 'error');
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(output.value);
+        setStatus('Resultado copiado.', 'success');
+      } catch {
+        setStatus('No se pudo copiar el resultado.', 'error');
+      }
+    });
+
+    downloadResultBtn.addEventListener('click', () => {
+      if (!output.value) {
+        setStatus('No hay resultado para descargar.', 'error');
+        return;
+      }
+
+      const extension = extensionForFormat();
+      const blob = new Blob([output.value], { type: extension === 'json' ? 'application/json;charset=utf-8' : 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `csv-convertido.${extension}`;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setStatus('Resultado descargado.', 'success');
+    });
+
+    clearBtn.addEventListener('click', () => {
+      csvFile.value = '';
+      csvInput.value = '';
+      output.value = '';
+      parsedRows = [];
+      previewTable.replaceChildren();
+      previewSection.hidden = true;
+      setStatus('Datos limpiados. Puedes empezar de nuevo.', 'success');
+    });
+
+    parseAndConvert();
+  </script>
+</Layout>
