@@ -1,31 +1,80 @@
-<footer>
-  <div class="page-shell footer-inner">
-    <p>© 2026 Alon Tools</p>
+---
+const { lang = 'en' } = Astro.props;
+---
 
-    <p>
-      Herramientas rápidas creadas con Astro.
-    </p>
+<footer class="site-footer">
+  <div class="page-shell footer-inner">
+    <div>
+      <strong>Alon Tools</strong>
+      <p>{lang === 'es' ? 'Herramientas rápidas, privadas y ligeras creadas con Astro.' : 'Fast, private and lightweight tools built with Astro.'}</p>
+    </div>
+
+    <nav aria-label={lang === 'es' ? 'Enlaces del pie' : 'Footer links'}>
+      <a href={lang === 'es' ? '/es/' : '/'}>{lang === 'es' ? 'Inicio' : 'Home'}</a>
+      <a href="/json-viewer/">JSON</a>
+      <a href="/image-compressor/">{lang === 'es' ? 'Imágenes' : 'Images'}</a>
+      <a href="/curl-builder/">cURL</a>
+    </nav>
   </div>
 </footer>
 
 <style>
-  footer {
-    margin-top: 5rem;
-    border-top: 1px solid rgba(148,163,184,.12);
+  .site-footer {
+    margin-top: var(--space-20);
+    border-top: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-surface) 72%, transparent);
   }
 
   .footer-inner {
-    padding: 2rem 0;
+    padding: var(--space-8) 0;
     display: flex;
+    align-items: flex-start;
     justify-content: space-between;
-    gap: 1rem;
-    color: var(--muted);
+    gap: var(--space-6);
+    color: var(--color-text-muted);
     font-size: .95rem;
+  }
+
+  strong {
+    display: block;
+    margin-bottom: var(--space-2);
+    color: var(--color-text);
+    font-size: 1rem;
+  }
+
+  p {
+    max-width: 42ch;
+    margin: 0;
+  }
+
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-2);
+  }
+
+  a {
+    border-radius: var(--radius-full);
+    color: var(--color-text-muted);
+    padding: .45rem .7rem;
+    text-decoration: none;
+    font-weight: 700;
+    transition: background-color var(--transition-base), color var(--transition-base);
+  }
+
+  a:hover {
+    background: var(--color-surface-soft);
+    color: var(--color-text);
   }
 
   @media (max-width: 700px) {
     .footer-inner {
       flex-direction: column;
+    }
+
+    nav {
+      justify-content: flex-start;
     }
   }
 </style>
