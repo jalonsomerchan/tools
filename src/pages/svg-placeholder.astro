@@ -1,0 +1,432 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Generador de placeholders SVG';
+const description = 'Genera placeholders SVG ligeros, data URLs y snippets HTML/CSS directamente en el navegador.';
+---
+
+<Layout title={title} description={description} path="/svg-placeholder/" translated={false}>
+  <section class="placeholder-page">
+    <div class="eyebrow">100% local</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Crea placeholders para imágenes, maquetas y webs estáticas. El SVG, la data URL y los snippets se generan en tu navegador, sin backend ni APIs externas.
+    </p>
+
+    <section class="tool-card" aria-labelledby="settingsTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="settingsTitle">Configuración</h2>
+          <p>Ajusta tamaño, texto y colores. La previsualización se actualiza en vivo.</p>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <div class="field">
+          <label for="widthInput">Ancho</label>
+          <input id="widthInput" type="number" min="1" max="10000" step="1" value="1200" inputmode="numeric" />
+        </div>
+
+        <div class="field">
+          <label for="heightInput">Alto</label>
+          <input id="heightInput" type="number" min="1" max="10000" step="1" value="630" inputmode="numeric" />
+        </div>
+
+        <div class="field text-field">
+          <label for="textInput">Texto</label>
+          <input id="textInput" type="text" value="1200 × 630" maxlength="120" autocomplete="off" />
+        </div>
+
+        <div class="field color-field">
+          <label for="backgroundInput">Fondo</label>
+          <input id="backgroundInput" type="color" value="#0f172a" />
+        </div>
+
+        <div class="field color-field">
+          <label for="textColorInput">Color de texto</label>
+          <input id="textColorInput" type="color" value="#e2e8f0" />
+        </div>
+      </div>
+
+      <div class="toolbar" aria-label="Acciones de placeholder SVG">
+        <button class="primary" id="downloadSvgBtn" type="button">Descargar SVG</button>
+        <button id="copySvgBtn" type="button">Copiar SVG</button>
+        <button id="copyDataUrlBtn" type="button">Copiar data URL</button>
+        <button id="copyHtmlBtn" type="button">Copiar HTML img</button>
+        <button id="copyCssBtn" type="button">Copiar CSS background</button>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">Placeholder generado en el navegador.</p>
+    </section>
+
+    <section class="preview-card" aria-labelledby="previewTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="previewTitle">Previsualización</h2>
+          <p>La imagen se limita visualmente para no romper el layout aunque generes tamaños grandes.</p>
+        </div>
+      </div>
+
+      <div class="preview-frame">
+        <img id="previewImage" alt="Previsualización del placeholder SVG generado" />
+      </div>
+    </section>
+
+    <section class="outputs-grid" aria-label="Código generado">
+      <div class="output-panel">
+        <div class="output-heading">
+          <h2>SVG inline</h2>
+          <button data-copy-target="svgOutput" type="button">Copiar</button>
+        </div>
+        <textarea id="svgOutput" readonly spellcheck="false"></textarea>
+      </div>
+
+      <div class="output-panel">
+        <div class="output-heading">
+          <h2>Data URL</h2>
+          <button data-copy-target="dataUrlOutput" type="button">Copiar</button>
+        </div>
+        <textarea id="dataUrlOutput" readonly spellcheck="false"></textarea>
+      </div>
+
+      <div class="output-panel">
+        <div class="output-heading">
+          <h2>HTML</h2>
+          <button data-copy-target="htmlOutput" type="button">Copiar</button>
+        </div>
+        <textarea id="htmlOutput" readonly spellcheck="false"></textarea>
+      </div>
+
+      <div class="output-panel">
+        <div class="output-heading">
+          <h2>CSS</h2>
+          <button data-copy-target="cssOutput" type="button">Copiar</button>
+        </div>
+        <textarea id="cssOutput" readonly spellcheck="false"></textarea>
+      </div>
+    </section>
+  </section>
+
+  <style>
+    .placeholder-page {
+      padding: 4rem 0;
+    }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h2 {
+      margin: 0 0 .35rem;
+      font-size: 1.35rem;
+    }
+
+    .section-heading p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .text-field {
+      grid-column: span 2;
+    }
+
+    label {
+      display: block;
+      margin-bottom: .55rem;
+      font-weight: 700;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font: inherit;
+    }
+
+    input[type='color'] {
+      min-height: 54px;
+      padding: .35rem;
+      cursor: pointer;
+    }
+
+    textarea {
+      min-height: 190px;
+      resize: vertical;
+      line-height: 1.6;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--muted);
+    }
+
+    .toolbar,
+    .output-heading {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      align-items: center;
+    }
+
+    .toolbar {
+      margin-top: 1rem;
+    }
+
+    button {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: white;
+      padding: .9rem 1rem;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .15s ease, border-color .15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(56,189,248,.45);
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #020617;
+      border-color: transparent;
+    }
+
+    .status {
+      color: var(--muted);
+      margin: 1rem 0 0;
+      line-height: 1.7;
+    }
+
+    .status.success {
+      color: #86efac;
+    }
+
+    .status.error {
+      color: #fca5a5;
+    }
+
+    .preview-card,
+    .outputs-grid {
+      margin-top: 1.5rem;
+    }
+
+    .preview-card,
+    .output-panel {
+      padding: 1.5rem;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+
+    .preview-frame {
+      display: grid;
+      place-items: center;
+      max-height: 520px;
+      overflow: auto;
+      border-radius: 22px;
+      border: 1px dashed rgba(148, 163, 184, .32);
+      background:
+        linear-gradient(45deg, rgba(148,163,184,.08) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(148,163,184,.08) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(148,163,184,.08) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.08) 75%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+      padding: 1rem;
+    }
+
+    #previewImage {
+      display: block;
+      max-width: 100%;
+      max-height: 460px;
+      width: auto;
+      height: auto;
+      border-radius: 14px;
+      box-shadow: 0 24px 70px rgba(0,0,0,.35);
+    }
+
+    .outputs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .output-heading {
+      justify-content: space-between;
+      margin-bottom: .8rem;
+    }
+
+    .output-heading h2 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .output-heading button {
+      padding: .65rem .85rem;
+    }
+
+    @media (max-width: 900px) {
+      .settings-grid,
+      .outputs-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .text-field {
+        grid-column: auto;
+      }
+    }
+  </style>
+
+  <script>
+    const widthInput = document.getElementById('widthInput') as HTMLInputElement;
+    const heightInput = document.getElementById('heightInput') as HTMLInputElement;
+    const textInput = document.getElementById('textInput') as HTMLInputElement;
+    const backgroundInput = document.getElementById('backgroundInput') as HTMLInputElement;
+    const textColorInput = document.getElementById('textColorInput') as HTMLInputElement;
+    const previewImage = document.getElementById('previewImage') as HTMLImageElement;
+    const svgOutput = document.getElementById('svgOutput') as HTMLTextAreaElement;
+    const dataUrlOutput = document.getElementById('dataUrlOutput') as HTMLTextAreaElement;
+    const htmlOutput = document.getElementById('htmlOutput') as HTMLTextAreaElement;
+    const cssOutput = document.getElementById('cssOutput') as HTMLTextAreaElement;
+    const status = document.getElementById('status') as HTMLParagraphElement;
+    const downloadSvgBtn = document.getElementById('downloadSvgBtn') as HTMLButtonElement;
+    const copySvgBtn = document.getElementById('copySvgBtn') as HTMLButtonElement;
+    const copyDataUrlBtn = document.getElementById('copyDataUrlBtn') as HTMLButtonElement;
+    const copyHtmlBtn = document.getElementById('copyHtmlBtn') as HTMLButtonElement;
+    const copyCssBtn = document.getElementById('copyCssBtn') as HTMLButtonElement;
+
+    let currentSvg = '';
+    let currentDataUrl = '';
+
+    const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => {
+      status.textContent = message;
+      status.classList.toggle('success', type === 'success');
+      status.classList.toggle('error', type === 'error');
+    };
+
+    const clampNumber = (value: string, min: number, max: number, fallback: number) => {
+      const number = Number.parseInt(value, 10);
+
+      if (Number.isNaN(number)) {
+        return fallback;
+      }
+
+      return Math.min(max, Math.max(min, number));
+    };
+
+    const escapeXml = (value: string) => value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+
+    const escapeAttribute = (value: string) => value
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    const encodeSvgDataUrl = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)
+      .replace(/'/g, '%27')
+      .replace(/\(/g, '%28')
+      .replace(/\)/g, '%29')}`;
+
+    const buildSvg = () => {
+      const width = clampNumber(widthInput.value, 1, 10000, 1200);
+      const height = clampNumber(heightInput.value, 1, 10000, 630);
+      const text = textInput.value.trim() || `${width} × ${height}`;
+      const fontSize = Math.max(12, Math.min(width, height) / 12);
+      const safeText = escapeXml(text);
+      const background = backgroundInput.value || '#0f172a';
+      const textColor = textColorInput.value || '#e2e8f0';
+
+      widthInput.value = String(width);
+      heightInput.value = String(height);
+
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeAttribute(text)}">
+  <rect width="100%" height="100%" fill="${background}"/>
+  <text x="50%" y="50%" fill="${textColor}" font-family="Inter, Arial, sans-serif" font-size="${fontSize.toFixed(2)}" font-weight="700" text-anchor="middle" dominant-baseline="middle">${safeText}</text>
+</svg>`;
+    };
+
+    const update = () => {
+      currentSvg = buildSvg();
+      currentDataUrl = encodeSvgDataUrl(currentSvg);
+      const width = clampNumber(widthInput.value, 1, 10000, 1200);
+      const height = clampNumber(heightInput.value, 1, 10000, 630);
+      const text = textInput.value.trim() || `${width} × ${height}`;
+
+      previewImage.src = currentDataUrl;
+      previewImage.width = width;
+      previewImage.height = height;
+      svgOutput.value = currentSvg;
+      dataUrlOutput.value = currentDataUrl;
+      htmlOutput.value = `<img src="${currentDataUrl}" width="${width}" height="${height}" alt="${escapeAttribute(text)}">`;
+      cssOutput.value = `background-image: url("${currentDataUrl}");\nbackground-size: cover;\nbackground-position: center;`;
+      setStatus('Placeholder actualizado.', 'success');
+    };
+
+    const copyText = async (text: string, successMessage: string) => {
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus(successMessage, 'success');
+      } catch {
+        setStatus('No se pudo copiar al portapapeles.', 'error');
+      }
+    };
+
+    const downloadSvg = () => {
+      const blob = new Blob([currentSvg], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'placeholder.svg';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setStatus('SVG descargado.', 'success');
+    };
+
+    [widthInput, heightInput, textInput, backgroundInput, textColorInput].forEach((input) => {
+      input.addEventListener('input', update);
+      input.addEventListener('change', update);
+    });
+
+    downloadSvgBtn.addEventListener('click', downloadSvg);
+    copySvgBtn.addEventListener('click', () => copyText(svgOutput.value, 'SVG copiado.'));
+    copyDataUrlBtn.addEventListener('click', () => copyText(dataUrlOutput.value, 'Data URL copiada.'));
+    copyHtmlBtn.addEventListener('click', () => copyText(htmlOutput.value, 'Código HTML copiado.'));
+    copyCssBtn.addEventListener('click', () => copyText(cssOutput.value, 'Código CSS copiado.'));
+
+    document.querySelectorAll('[data-copy-target]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const targetId = (button as HTMLButtonElement).dataset.copyTarget;
+        const target = targetId ? document.getElementById(targetId) as HTMLTextAreaElement | null : null;
+
+        if (target) {
+          copyText(target.value, 'Código copiado.');
+        }
+      });
+    });
+
+    update();
+  </script>
+</Layout>
