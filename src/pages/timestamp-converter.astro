@@ -1,0 +1,393 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Conversor de timestamps y zonas horarias';
+const description = 'Convierte Unix timestamp en segundos o milisegundos, ISO 8601, fecha local, UTC y zonas horarias desde el navegador.';
+---
+
+<Layout title={title} description={description} path="/timestamp-converter/" translated={false}>
+  <section class="timestamp-page">
+    <div class="eyebrow">100% local</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Convierte fechas entre Unix timestamp, ISO 8601, fecha local del navegador, UTC y una zona horaria concreta. No usa APIs externas ni llamadas de red.
+    </p>
+
+    <section class="tool-card" aria-labelledby="converterTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="converterTitle">Entrada</h2>
+          <p>Introduce un timestamp, una fecha ISO o usa la fecha actual.</p>
+        </div>
+      </div>
+
+      <div class="controls-grid">
+        <div class="field input-field">
+          <label for="dateInput">Fecha o timestamp</label>
+          <input id="dateInput" type="text" spellcheck="false" placeholder="1715169600, 1715169600000 o 2026-05-08T12:00:00Z" />
+        </div>
+
+        <div class="field">
+          <label for="inputType">Tipo de entrada</label>
+          <select id="inputType">
+            <option value="auto">Detectar automáticamente</option>
+            <option value="seconds">Unix timestamp en segundos</option>
+            <option value="milliseconds">Unix timestamp en milisegundos</option>
+            <option value="iso">ISO 8601 / fecha parseable</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="timeZoneSelect">Zona horaria</label>
+          <select id="timeZoneSelect"></select>
+        </div>
+      </div>
+
+      <div class="toolbar" aria-label="Acciones de conversión">
+        <button class="primary" id="convertBtn" type="button">Convertir</button>
+        <button id="nowBtn" type="button">Usar fecha actual</button>
+        <button id="clearBtn" type="button">Limpiar</button>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">Listo para convertir fechas.</p>
+    </section>
+
+    <section class="results-section" id="resultsSection" aria-labelledby="resultsTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="resultsTitle">Resultados</h2>
+          <p id="detectedInfo">Sin conversión todavía.</p>
+        </div>
+      </div>
+
+      <div class="results-grid" id="resultsGrid"></div>
+    </section>
+  </section>
+
+  <style>
+    .timestamp-page { padding: 4rem 0; }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h2 { margin: 0 0 .35rem; font-size: 1.35rem; }
+
+    .section-heading p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) minmax(220px, 280px) minmax(220px, 320px);
+      gap: 1rem;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      margin-bottom: .55rem;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font: inherit;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: white;
+      padding: .95rem 1rem;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .15s ease, border-color .15s ease, opacity .15s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(56,189,248,.45);
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #020617;
+      border-color: transparent;
+    }
+
+    .status { color: var(--muted); margin: 1rem 0 0; line-height: 1.7; }
+    .status.success { color: #86efac; }
+    .status.error { color: #fca5a5; }
+
+    .results-section {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .result-card {
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(2, 6, 23, .55);
+      padding: 1rem;
+      min-width: 0;
+    }
+
+    .result-card span {
+      display: block;
+      color: var(--muted);
+      font-size: .9rem;
+      margin-bottom: .45rem;
+    }
+
+    .result-card code {
+      display: block;
+      color: white;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      margin-bottom: .8rem;
+    }
+
+    .result-card button { padding: .7rem .85rem; }
+
+    @media (max-width: 900px) {
+      .controls-grid { grid-template-columns: 1fr; }
+      .section-heading { flex-direction: column; }
+    }
+
+    @media (max-width: 560px) {
+      .timestamp-page { padding: 2.5rem 0; }
+      button { width: 100%; }
+    }
+  </style>
+
+  <script>
+    const dateInput = document.getElementById('dateInput') as HTMLInputElement;
+    const inputType = document.getElementById('inputType') as HTMLSelectElement;
+    const timeZoneSelect = document.getElementById('timeZoneSelect') as HTMLSelectElement;
+    const convertBtn = document.getElementById('convertBtn') as HTMLButtonElement;
+    const nowBtn = document.getElementById('nowBtn') as HTMLButtonElement;
+    const clearBtn = document.getElementById('clearBtn') as HTMLButtonElement;
+    const status = document.getElementById('status') as HTMLParagraphElement;
+    const detectedInfo = document.getElementById('detectedInfo') as HTMLParagraphElement;
+    const resultsGrid = document.getElementById('resultsGrid') as HTMLDivElement;
+
+    const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => {
+      status.textContent = message;
+      status.classList.toggle('success', type === 'success');
+      status.classList.toggle('error', type === 'error');
+    };
+
+    const getBrowserTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+
+    const populateTimeZones = () => {
+      const browserZone = getBrowserTimeZone();
+      let zones: string[] = [];
+
+      if ('supportedValuesOf' in Intl) {
+        zones = (Intl as unknown as { supportedValuesOf: (key: string) => string[] }).supportedValuesOf('timeZone');
+      }
+
+      if (!zones.includes(browserZone)) zones.unshift(browserZone);
+      if (!zones.includes('UTC')) zones.unshift('UTC');
+
+      timeZoneSelect.replaceChildren(...Array.from(new Set(zones)).map((zone) => {
+        const option = document.createElement('option');
+        option.value = zone;
+        option.textContent = zone === browserZone ? `${zone} · navegador` : zone;
+        return option;
+      }));
+      timeZoneSelect.value = browserZone;
+    };
+
+    const parseInput = () => {
+      const raw = dateInput.value.trim();
+      const type = inputType.value;
+
+      if (!raw) {
+        throw new Error('Introduce una fecha o timestamp antes de convertir.');
+      }
+
+      if ((type === 'seconds' || type === 'milliseconds' || type === 'auto') && /^[-+]?\d+(?:\.\d+)?$/.test(raw)) {
+        const number = Number(raw);
+
+        if (!Number.isFinite(number)) {
+          throw new Error('El timestamp no es un número válido.');
+        }
+
+        const detectedType = type === 'auto'
+          ? Math.abs(number) < 100000000000 ? 'seconds' : 'milliseconds'
+          : type;
+        const milliseconds = detectedType === 'seconds' ? number * 1000 : number;
+
+        if (Math.abs(milliseconds) > 8640000000000000) {
+          throw new Error('El timestamp está fuera del rango soportado por JavaScript Date.');
+        }
+
+        const date = new Date(milliseconds);
+        if (Number.isNaN(date.getTime())) {
+          throw new Error('El timestamp no se puede convertir en una fecha válida.');
+        }
+
+        return { date, detectedType };
+      }
+
+      if (type === 'seconds' || type === 'milliseconds') {
+        throw new Error('El valor no parece un timestamp numérico válido para el tipo seleccionado.');
+      }
+
+      const date = new Date(raw);
+      if (Number.isNaN(date.getTime())) {
+        throw new Error('No se ha podido interpretar la fecha. Prueba con ISO 8601, por ejemplo 2026-05-08T12:00:00Z.');
+      }
+
+      return { date, detectedType: 'iso' };
+    };
+
+    const formatInTimeZone = (date: Date, timeZone: string) => new Intl.DateTimeFormat(undefined, {
+      timeZone,
+      dateStyle: 'full',
+      timeStyle: 'long'
+    }).format(date);
+
+    const formatPartsInTimeZone = (date: Date, timeZone: string) => {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }).formatToParts(date).reduce<Record<string, string>>((acc, part) => {
+        acc[part.type] = part.value;
+        return acc;
+      }, {});
+
+      return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+    };
+
+    const createResultCard = (label: string, value: string) => {
+      const card = document.createElement('div');
+      card.className = 'result-card';
+
+      const title = document.createElement('span');
+      title.textContent = label;
+
+      const code = document.createElement('code');
+      code.textContent = value;
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = 'Copiar';
+      button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(value);
+          setStatus(`${label} copiado.`, 'success');
+        } catch {
+          setStatus('No se pudo copiar el resultado.', 'error');
+        }
+      });
+
+      card.append(title, code, button);
+      return card;
+    };
+
+    const renderResults = (date: Date, detectedType: string) => {
+      const milliseconds = date.getTime();
+      const seconds = Math.floor(milliseconds / 1000);
+      const browserZone = getBrowserTimeZone();
+      const selectedZone = timeZoneSelect.value || browserZone;
+
+      const detectedText = detectedType === 'seconds'
+        ? 'Entrada detectada como Unix timestamp en segundos.'
+        : detectedType === 'milliseconds'
+          ? 'Entrada detectada como Unix timestamp en milisegundos.'
+          : 'Entrada detectada como fecha ISO 8601 / fecha parseable.';
+
+      detectedInfo.textContent = `${detectedText} Zona seleccionada: ${selectedZone}.`;
+
+      resultsGrid.replaceChildren(
+        createResultCard('Unix timestamp · segundos', String(seconds)),
+        createResultCard('Unix timestamp · milisegundos', String(milliseconds)),
+        createResultCard('ISO 8601', date.toISOString()),
+        createResultCard('UTC', date.toUTCString()),
+        createResultCard(`Fecha local del navegador · ${browserZone}`, formatInTimeZone(date, browserZone)),
+        createResultCard(`Fecha en zona seleccionada · ${selectedZone}`, formatInTimeZone(date, selectedZone)),
+        createResultCard(`Formato técnico · ${selectedZone}`, formatPartsInTimeZone(date, selectedZone))
+      );
+
+      setStatus('Conversión completada.', 'success');
+    };
+
+    const convert = () => {
+      try {
+        const { date, detectedType } = parseInput();
+        renderResults(date, detectedType);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'No se pudo convertir la fecha.';
+        resultsGrid.replaceChildren();
+        detectedInfo.textContent = 'Conversión no disponible hasta que introduzcas un valor válido.';
+        setStatus(message, 'error');
+      }
+    };
+
+    nowBtn.addEventListener('click', () => {
+      const now = new Date();
+      dateInput.value = now.toISOString();
+      inputType.value = 'iso';
+      renderResults(now, 'iso');
+    });
+
+    convertBtn.addEventListener('click', convert);
+    timeZoneSelect.addEventListener('change', convert);
+    inputType.addEventListener('change', convert);
+    dateInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') convert();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      dateInput.value = '';
+      resultsGrid.replaceChildren();
+      detectedInfo.textContent = 'Sin conversión todavía.';
+      setStatus('Campos limpiados.');
+    });
+
+    populateTimeZones();
+    dateInput.value = new Date().toISOString();
+    renderResults(new Date(dateInput.value), 'iso');
+  </script>
+</Layout>
