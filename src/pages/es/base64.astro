@@ -1,100 +1,17 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import Base64Tool from '../../components/tools/Base64Tool.astro';
+import { useTranslations } from '../../i18n';
+
+const lang = 'es';
+const t = useTranslations(lang);
 ---
 
 <Layout
-  title="Base64 encoder y decoder"
-  description="Codifica y decodifica Base64 online de forma privada y local."
-  lang="es"
+  title={t('base64.title')}
+  description={t('base64.description')}
+  lang={lang}
   path="/base64/"
 >
-  <section style="padding:4rem 0;">
-    <div class="eyebrow">Base64 Tool</div>
-
-    <h1>Base64 encoder y decoder</h1>
-
-    <p class="hero-text">
-      Codifica y decodifica texto Base64 directamente en tu navegador.
-      Nada se sube a servidores externos.
-    </p>
-
-    <section class="tool-card">
-      <div class="toolbar">
-        <button class="primary" id="encodeBtn">Codificar</button>
-        <button id="decodeBtn">Decodificar</button>
-        <button id="clearBtn">Limpiar</button>
-      </div>
-
-      <div class="editor-grid">
-        <textarea id="inputText" placeholder="Texto original"></textarea>
-        <textarea id="outputText" placeholder="Resultado"></textarea>
-      </div>
-    </section>
-  </section>
-
-  <style>
-    .toolbar {
-      display:flex;
-      gap:1rem;
-      margin-bottom:1rem;
-      flex-wrap:wrap;
-    }
-
-    button {
-      border-radius:14px;
-      border:1px solid var(--border);
-      background:#020617;
-      color:white;
-      padding:1rem;
-      cursor:pointer;
-    }
-
-    .primary {
-      background:var(--primary);
-      color:black;
-      border:none;
-      font-weight:700;
-    }
-
-    .editor-grid {
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-      gap:1rem;
-    }
-
-    textarea {
-      min-height:320px;
-      border-radius:24px;
-      border:1px solid var(--border);
-      background:#020617;
-      color:white;
-      padding:1rem;
-      resize:vertical;
-      font-family:ui-monospace, monospace;
-    }
-  </style>
-
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const input = document.getElementById('inputText');
-      const output = document.getElementById('outputText');
-
-      document.getElementById('encodeBtn').onclick = () => {
-        output.value = btoa(unescape(encodeURIComponent(input.value)));
-      };
-
-      document.getElementById('decodeBtn').onclick = () => {
-        try {
-          output.value = decodeURIComponent(escape(atob(input.value)));
-        } catch {
-          alert('Base64 inválido');
-        }
-      };
-
-      document.getElementById('clearBtn').onclick = () => {
-        input.value = '';
-        output.value = '';
-      };
-    });
-  </script>
+  <Base64Tool lang={lang} />
 </Layout>
