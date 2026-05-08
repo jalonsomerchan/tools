@@ -1,0 +1,40 @@
+---
+const { current = 'en', path = '/' } = Astro.props;
+
+const cleanPath = path.startsWith('/es/')
+  ? path.replace('/es', '')
+  : path;
+
+const esUrl = `/es${cleanPath === '/' ? '' : cleanPath}`;
+const enUrl = cleanPath;
+---
+
+<div class="language-switcher">
+  <a href={enUrl} class={current === 'en' ? 'active' : ''}>EN</a>
+  <a href={esUrl} class={current === 'es' ? 'active' : ''}>ES</a>
+</div>
+
+<style>
+  .language-switcher {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+  }
+
+  .language-switcher a {
+    padding: .45rem .8rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--muted);
+    font-size: .85rem;
+    transition: .15s ease;
+  }
+
+  .language-switcher a.active {
+    background: var(--primary);
+    color: black;
+    border-color: transparent;
+    font-weight: 700;
+  }
+</style>
