@@ -1,75 +1,17 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import JsonViewerTool from '../../components/tools/JsonViewerTool.astro';
+import { useTranslations } from '../../i18n';
+
+const lang = 'es';
+const t = useTranslations(lang);
 ---
 
 <Layout
-  title="Visualizador JSON"
-  description="Valida, formatea y visualiza JSON online de forma privada."
-  lang="es"
+  title={t('json.title')}
+  description={t('json.description')}
+  lang={lang}
   path="/json-viewer/"
 >
-  <section style="padding:4rem 0;">
-    <div class="eyebrow">JSON Tool</div>
-
-    <h1>Visualizador JSON</h1>
-
-    <p class="hero-text">
-      Valida, formatea y analiza JSON directamente en tu navegador.
-      Nada se envía a servidores externos.
-    </p>
-
-    <section class="tool-card">
-      <div class="toolbar">
-        <button class="primary" id="formatBtn">Formatear</button>
-        <button id="minifyBtn">Minificar</button>
-        <button id="validateBtn">Validar</button>
-      </div>
-
-      <textarea id="jsonInput" placeholder='{"hello":"world"}'></textarea>
-
-      <div id="status"></div>
-    </section>
-  </section>
-
-  <style>
-    .toolbar{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
-    button{padding:1rem;border-radius:14px;border:1px solid var(--border);background:#020617;color:#fff;cursor:pointer}
-    .primary{background:var(--primary);color:#000;border:none;font-weight:700}
-    textarea{width:100%;min-height:420px;border-radius:24px;border:1px solid var(--border);background:#020617;color:#fff;padding:1rem;font-family:ui-monospace,monospace}
-    #status{margin-top:1rem;color:var(--muted)}
-  </style>
-
-  <script>
-    window.addEventListener('DOMContentLoaded',()=>{
-      const input=document.getElementById('jsonInput');
-      const status=document.getElementById('status');
-
-      document.getElementById('formatBtn').onclick=()=>{
-        try{
-          input.value=JSON.stringify(JSON.parse(input.value),null,2);
-          status.textContent='JSON formateado correctamente';
-        }catch{
-          status.textContent='JSON inválido';
-        }
-      };
-
-      document.getElementById('minifyBtn').onclick=()=>{
-        try{
-          input.value=JSON.stringify(JSON.parse(input.value));
-          status.textContent='JSON minificado';
-        }catch{
-          status.textContent='JSON inválido';
-        }
-      };
-
-      document.getElementById('validateBtn').onclick=()=>{
-        try{
-          JSON.parse(input.value);
-          status.textContent='JSON válido';
-        }catch{
-          status.textContent='JSON inválido';
-        }
-      };
-    });
-  </script>
+  <JsonViewerTool lang={lang} />
 </Layout>
