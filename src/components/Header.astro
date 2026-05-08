@@ -13,8 +13,8 @@ const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light
 <header class="site-header">
   <div class="page-shell header-inner">
     <a href={getLocalizedPath('/', lang)} class="brand" aria-label="Alon Tools">
-      <span class="brand-mark" aria-hidden="true">A</span>
-      <span>Alon Tools</span>
+      <span class="brand-mark" aria-hidden="true">AT</span>
+      <strong>Alon Tools</strong>
     </a>
 
     <div class="header-right">
@@ -26,14 +26,14 @@ const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light
       </nav>
 
       <div class="header-actions">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label={themeLabel} title={themeLabel}>
+          <span class="theme-toggle-icon" aria-hidden="true">☀️</span>
+        </button>
+
         <div class="language-switcher" aria-label={lang === 'es' ? 'Selector de idioma' : 'Language selector'}>
           <a href={enPath} class={lang === 'en' ? 'active' : ''} aria-current={lang === 'en' ? 'page' : undefined}>EN</a>
           <a href={esPath} class={lang === 'es' ? 'active' : ''} aria-current={lang === 'es' ? 'page' : undefined}>ES</a>
         </div>
-
-        <button class="theme-toggle" type="button" data-theme-toggle aria-label={themeLabel} title={themeLabel}>
-          <span class="theme-toggle-icon" aria-hidden="true">☾</span>
-        </button>
       </div>
     </div>
   </div>
@@ -50,7 +50,7 @@ const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light
     const render = () => {
       const theme = document.documentElement.dataset.theme || 'light';
       button.setAttribute('aria-pressed', String(theme === 'dark'));
-      if (icon) icon.textContent = theme === 'dark' ? '☀' : '☾';
+      if (icon) icon.textContent = theme === 'dark' ? '🌙' : '☀️';
     };
 
     button.addEventListener('click', () => {
@@ -58,6 +58,7 @@ const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.dataset.theme = next;
       localStorage.setItem(storageKey, next);
+      localStorage.setItem('theme', next);
       render();
     });
 
@@ -70,28 +71,36 @@ const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light
     position: sticky;
     top: 0;
     z-index: var(--z-header);
-    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 86%, transparent);
-    background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+  }
+
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0 calc((100vw - 100%) / -2);
+    z-index: -1;
+    background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
+    box-shadow: 0 1px 0 rgba(27, 31, 45, .03);
     backdrop-filter: blur(18px);
   }
 
   .header-inner {
-    min-height: 72px;
-    display: flex;
+    min-height: 4.6rem;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
-    justify-content: space-between;
-    gap: var(--space-4);
-    padding-block: var(--space-3);
+    gap: clamp(1rem, 2.2vw, 2rem);
+    padding-block: 0;
   }
 
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: .8rem;
+    gap: .7rem;
     color: var(--color-text);
+    font-weight: 950;
+    letter-spacing: -.055em;
     text-decoration: none;
-    font-weight: 800;
-    letter-spacing: -0.02em;
     white-space: nowrap;
   }
 
@@ -100,15 +109,21 @@ const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light
   }
 
   .brand-mark {
-    width: 42px;
-    height: 42px;
-    border-radius: var(--radius-md);
-    display: grid;
+    display: inline-grid;
     place-items: center;
+    width: 2.55rem;
+    height: 2.55rem;
+    border-radius: .85rem;
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     color: #fff;
-    font-weight: 900;
-    box-shadow: var(--shadow-xs);
+    font-size: .72rem;
+    letter-spacing: -.03em;
+    font-weight: 950;
+    box-shadow: var(--shadow-brand);
+  }
+
+  .brand strong {
+    font-size: clamp(1.15rem, 1.6vw, 1.45rem);
   }
 
   .header-right,
@@ -116,115 +131,133 @@ const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light
   .header-actions,
   .language-switcher {
     display: flex;
-    gap: var(--space-3);
     align-items: center;
-    flex-wrap: wrap;
+  }
+
+  .header-right {
     justify-content: flex-end;
+    gap: clamp(.75rem, 2vw, 1.5rem);
   }
 
   nav {
-    gap: var(--space-2);
+    justify-content: center;
+    gap: clamp(.35rem, .8vw, 1rem);
   }
 
   nav a,
   .language-switcher a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.8rem;
+    padding: 0 .75rem;
     border-radius: var(--radius-full);
-    color: var(--color-text-muted);
+    color: var(--color-text);
+    font-size: .96rem;
+    font-weight: 850;
     text-decoration: none;
-    transition: color var(--transition-base), background-color var(--transition-base), border-color var(--transition-base);
-  }
-
-  nav a {
-    padding: .55rem .75rem;
-    font-weight: 700;
+    white-space: nowrap;
+    transition: background var(--transition-base), color var(--transition-base), transform var(--transition-base);
   }
 
   nav a:hover,
   .language-switcher a:hover {
     background: var(--color-surface-soft);
     color: var(--color-text);
+    transform: translateY(-1px);
+  }
+
+  .header-actions {
+    justify-content: flex-end;
+    gap: .45rem;
   }
 
   .language-switcher {
-    gap: .35rem;
-    padding: .2rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-full);
-    background: var(--color-surface);
+    gap: .25rem;
   }
 
   .language-switcher a {
-    padding: .32rem .62rem;
-    font-size: .82rem;
-    font-weight: 800;
+    min-height: 2.25rem;
+    padding-inline: .55rem;
+    color: var(--color-text-muted);
+    font-size: .75rem;
   }
 
   .language-switcher a.active {
-    background: var(--color-primary);
-    color: #fff;
-  }
-
-  [data-theme="dark"] .language-switcher a.active {
-    color: #020617;
+    background: var(--color-text);
+    color: var(--color-surface);
   }
 
   .theme-toggle {
-    width: 2.75rem;
-    height: 2.75rem;
+    width: 2.55rem;
+    height: 2.55rem;
     display: inline-grid;
     place-items: center;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-full);
-    background: var(--color-surface);
+    border-radius: .7rem;
+    background: transparent;
     color: var(--color-text);
     cursor: pointer;
-    box-shadow: var(--shadow-xs);
-    transition: transform var(--transition-fast), border-color var(--transition-base), background-color var(--transition-base);
+    transition: transform var(--transition-base), background var(--transition-base);
   }
 
   .theme-toggle:hover {
     transform: translateY(-1px);
-    border-color: var(--color-border-strong);
+    background: var(--color-surface-soft);
   }
 
   .theme-toggle-icon {
     line-height: 1;
-    font-size: 1.05rem;
+    font-size: 1rem;
+  }
+
+  @media (max-width: 1240px) {
+    .header-inner {
+      grid-template-columns: 1fr auto;
+    }
+
+    .header-right {
+      grid-column: 1 / -1;
+      justify-content: space-between;
+      overflow-x: auto;
+      padding-bottom: .65rem;
+    }
   }
 
   @media (max-width: 760px) {
+    .site-header {
+      position: sticky;
+    }
+
+    .site-header::before {
+      inset: 0 calc(var(--page-gutter) * -1);
+    }
+
     .header-inner {
-      min-height: auto;
-      align-items: flex-start;
-      flex-direction: column;
+      grid-template-columns: 1fr;
+      align-items: start;
+      padding: var(--space-4) 0 0;
     }
 
     .header-right {
       width: 100%;
       align-items: flex-start;
-      justify-content: space-between;
       gap: var(--space-3);
     }
 
     nav {
-      flex: 1 1 16rem;
       justify-content: flex-start;
+      overflow-x: auto;
+      width: 100%;
     }
 
     nav a {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-    }
-  }
-
-  @media (max-width: 460px) {
-    .header-right,
-    .header-actions {
-      width: 100%;
+      min-height: 2.45rem;
+      padding-inline: .7rem;
+      font-size: .875rem;
     }
 
     .header-actions {
       justify-content: space-between;
+      width: 100%;
     }
   }
 </style>
