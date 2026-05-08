@@ -2,139 +2,272 @@
 import Layout from '../layouts/Layout.astro';
 
 const title = 'Censurador de fotos';
+const description = 'Censura, mueve zonas pixeladas, recorta y exporta fotos localmente desde el navegador.';
 ---
 
-<Layout title={title}>
-  <section style="padding: 4rem 0;">
-    <div class="eyebrow">Alon Tools</div>
+<Layout title={title} description={description} path="/photo-censor/" translated={false}>
+  <section class="photo-page">
+    <div class="eyebrow">100% local</div>
 
     <h1>{title}</h1>
 
     <p class="hero-text">
-      Sube una imagen, marca con precisión las zonas sensibles y censúralas con pixelado, desenfoque o bloque negro. Todo ocurre en tu navegador.
+      Sube una imagen, crea zonas de censura editables, muévelas, cambia su tamaño, recorta la foto y exporta el resultado. Todo ocurre en tu navegador.
     </p>
 
-    <section class="tool-card">
-      <div class="controls">
-        <label class="file-button">
-          Subir imagen
+    <section class="tool-card editor-card">
+      <div class="top-toolbar" aria-label="Acciones principales">
+        <label class="tool-button primary file-button" title="Subir imagen">
+          <span>📷</span>
+          <strong>Subir</strong>
           <input id="fileInput" type="file" accept="image/*" hidden />
         </label>
 
-        <label>
-          Modo
-          <select id="mode">
-            <option value="pixelate">Pixelar</option>
-            <option value="blur">Desenfocar</option>
-            <option value="black">Bloque negro</option>
-          </select>
-        </label>
+        <button class="tool-button active" id="drawTool" type="button" data-tool="draw" title="Crear zona">
+          <span>▣</span>
+          <strong>Zona</strong>
+        </button>
 
-        <label>
-          Intensidad
-          <input id="intensity" type="range" min="4" max="40" value="18" />
-        </label>
+        <button class="tool-button" id="moveTool" type="button" data-tool="move" title="Mover zonas">
+          <span>✋</span>
+          <strong>Mover</strong>
+        </button>
 
-        <div class="zoom-controls" aria-label="Controles de zoom">
-          <span>Zoom</span>
-          <div class="zoom-buttons">
-            <button id="zoomOutBtn" type="button" title="Alejar">−</button>
-            <output id="zoomValue">100%</output>
-            <button id="zoomInBtn" type="button" title="Acercar">+</button>
-            <button id="fitBtn" type="button" title="Ajustar imagen">Ajustar</button>
+        <button class="tool-button" id="cropTool" type="button" data-tool="crop" title="Recortar imagen">
+          <span>✂️</span>
+          <strong>Recortar</strong>
+        </button>
+
+        <button class="tool-button" id="zoomOutBtn" type="button" title="Alejar">
+          <span>🔍−</span>
+          <strong>Alejar</strong>
+        </button>
+
+        <button class="tool-button" id="zoomInBtn" type="button" title="Acercar">
+          <span>🔍+</span>
+          <strong>Acercar</strong>
+        </button>
+
+        <button class="tool-button" id="fitBtn" type="button" title="Ajustar al ancho">
+          <span>⤢</span>
+          <strong>Ajustar</strong>
+        </button>
+
+        <button class="tool-button" id="undoBtn" type="button" title="Deshacer">
+          <span>↶</span>
+          <strong>Deshacer</strong>
+        </button>
+
+        <button class="tool-button" id="resetBtn" type="button" title="Reiniciar">
+          <span>↺</span>
+          <strong>Reset</strong>
+        </button>
+
+        <button class="tool-button primary" id="downloadBtn" type="button" title="Descargar imagen">
+          <span>⬇️</span>
+          <strong>Descargar</strong>
+        </button>
+      </div>
+
+      <div class="editor-layout">
+        <aside class="side-panel" aria-label="Opciones de edición">
+          <div class="panel-section">
+            <h2>Opciones</h2>
+
+            <label>
+              Tipo de censura
+              <select id="censorType">
+                <option value="pixelate">Pixelar</option>
+                <option value="blur">Desenfocar</option>
+                <option value="black">Bloque negro</option>
+                <option value="white">Bloque blanco</option>
+              </select>
+            </label>
+
+            <label>
+              Intensidad
+              <input id="intensity" type="range" min="4" max="48" value="18" />
+            </label>
+
+            <label>
+              Radio de zona
+              <input id="zoneRadius" type="range" min="0" max="48" value="8" />
+            </label>
+
+            <label>
+              Opacidad del bloque
+              <input id="zoneOpacity" type="range" min="20" max="100" value="100" />
+            </label>
           </div>
-        </div>
 
-        <button id="undoBtn" type="button">Deshacer</button>
-        <button id="resetBtn" type="button">Reiniciar</button>
-        <button class="primary" id="downloadBtn" type="button">Descargar</button>
+          <div class="panel-section selected-panel">
+            <h2>Zona seleccionada</h2>
+            <p id="selectedInfo">No hay ninguna zona seleccionada.</p>
+
+            <div class="nudge-grid" aria-label="Mover zona seleccionada">
+              <button id="nudgeUp" type="button">↑</button>
+              <button id="nudgeLeft" type="button">←</button>
+              <button id="nudgeDown" type="button">↓</button>
+              <button id="nudgeRight" type="button">→</button>
+            </div>
+
+            <div class="mini-actions">
+              <button id="growZoneBtn" type="button">➕ Agrandar</button>
+              <button id="shrinkZoneBtn" type="button">➖ Reducir</button>
+              <button id="duplicateZoneBtn" type="button">⧉ Duplicar</button>
+              <button id="deleteZoneBtn" type="button">🗑️ Borrar</button>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <h2>Recorte</h2>
+            <p class="hint">Elige ✂️ Recortar, arrastra una zona y se aplicará el recorte al soltar.</p>
+            <button id="restoreCropBtn" type="button">Restaurar imagen completa</button>
+          </div>
+        </aside>
+
+        <main class="canvas-column">
+          <div class="canvas-meta">
+            <output id="zoomValue">100%</output>
+            <output id="zonesCount">0 zonas</output>
+            <output id="imageSize">Sin imagen</output>
+          </div>
+
+          <div class="canvas-wrap" id="canvasWrap">
+            <div class="canvas-stage" id="canvasStage">
+              <canvas id="canvas"></canvas>
+            </div>
+            <p id="emptyState">Sube una imagen para empezar. En móvil, usa un dedo para editar y dos dedos para zoom.</p>
+          </div>
+
+          <p class="mobile-tip">
+            Móvil: la barra de herramientas queda arriba, los controles se adaptan a una columna y el lienzo permite zoom con dos dedos. Las zonas pixeladas son capas: tócalas en modo Mover para recolocarlas.
+          </p>
+        </main>
       </div>
 
-      <div class="canvas-wrap" id="canvasWrap">
-        <div class="canvas-stage" id="canvasStage">
-          <canvas id="canvas"></canvas>
-          <div id="selectionBox"></div>
-        </div>
-        <p id="emptyState">Sube una imagen para empezar. Después arrastra sobre la foto para censurar una zona.</p>
-      </div>
-
-      <p class="mobile-tip">
-        En móvil: un dedo selecciona una zona; dos dedos hacen zoom. En ordenador usa los botones +, − y Ajustar.
-      </p>
-
-      <p class="status" id="status">Listo.</p>
+      <p class="status" id="status" role="status" aria-live="polite">Listo.</p>
     </section>
   </section>
 
   <style>
-    .controls {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      align-items: end;
-      margin-bottom: 1.5rem;
+    .photo-page { padding: 4rem 0; }
+    .editor-card { overflow: visible; }
+
+    .top-toolbar {
+      position: sticky;
+      top: .75rem;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+      gap: .6rem;
+      margin-bottom: 1rem;
+      padding: .6rem;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: rgba(2, 6, 23, .92);
+      backdrop-filter: blur(14px);
     }
 
-    label,
-    .zoom-controls {
-      display: flex;
-      flex-direction: column;
-      gap: .45rem;
-      color: var(--muted);
-      font-size: .92rem;
-    }
-
-    select,
-    input[type="range"] {
-      min-width: 180px;
-    }
-
-    select,
+    .tool-button,
     button,
+    select,
+    input,
     .file-button {
       border-radius: 14px;
       border: 1px solid var(--border);
       background: #020617;
       color: white;
-      padding: 1rem;
+      padding: .85rem .9rem;
       cursor: pointer;
       font: inherit;
     }
 
-    button.primary {
-      background: var(--primary);
-      color: black;
-      border: none;
-      font-weight: 700;
-    }
-
-    .file-button {
-      color: black;
-      background: var(--primary);
-      font-weight: 700;
-    }
-
-    .zoom-buttons {
+    .tool-button {
       display: flex;
-      gap: .45rem;
+      flex-direction: column;
+      gap: .25rem;
       align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .zoom-buttons button {
-      min-width: 48px;
-      padding: .85rem 1rem;
-      font-weight: 800;
-    }
-
-    .zoom-buttons output {
-      min-width: 72px;
+      justify-content: center;
+      min-height: 64px;
       text-align: center;
-      color: white;
-      border-radius: 12px;
+      text-decoration: none;
+    }
+
+    .tool-button span { font-size: 1.1rem; }
+    .tool-button strong { font-size: .78rem; }
+    .tool-button.primary,
+    .tool-button.active,
+    .file-button { background: var(--primary); color: #020617; border-color: transparent; font-weight: 800; }
+
+    .editor-layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .side-panel,
+    .canvas-column {
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: rgba(2, 6, 23, .42);
+      padding: 1rem;
+      min-width: 0;
+    }
+
+    .panel-section + .panel-section { margin-top: 1.4rem; }
+    h2 { margin: 0 0 1rem; font-size: 1.08rem; }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+      color: var(--muted);
+      font-size: .92rem;
+      margin-bottom: .9rem;
+    }
+
+    label input,
+    label select { width: 100%; }
+
+    .hint,
+    #selectedInfo,
+    .mobile-tip,
+    .status { color: var(--muted); line-height: 1.7; }
+
+    .nudge-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .45rem;
+      max-width: 210px;
+      margin-bottom: .8rem;
+    }
+
+    .nudge-grid button:nth-child(1) { grid-column: 2; }
+    .nudge-grid button:nth-child(2) { grid-column: 1; }
+    .nudge-grid button:nth-child(3) { grid-column: 2; }
+    .nudge-grid button:nth-child(4) { grid-column: 3; grid-row: 2; }
+
+    .mini-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .5rem;
+    }
+
+    .canvas-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+      margin-bottom: .8rem;
+    }
+
+    .canvas-meta output {
+      border-radius: 999px;
       border: 1px solid var(--border);
       background: #020617;
-      padding: .85rem .75rem;
+      color: var(--muted);
+      padding: .45rem .75rem;
     }
 
     .canvas-wrap {
@@ -157,64 +290,42 @@ const title = 'Censurador de fotos';
       overscroll-behavior: contain;
     }
 
-    .canvas-stage {
-      position: relative;
-      display: none;
-      flex: 0 0 auto;
-    }
+    .canvas-stage { display: none; flex: 0 0 auto; }
 
     canvas {
       display: block;
-      cursor: crosshair;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.28);
       touch-action: none;
       user-select: none;
+      cursor: crosshair;
     }
 
-    #selectionBox {
-      position: absolute;
-      z-index: 2;
-      border: 2px dashed var(--primary);
-      background: rgba(56,189,248,.15);
-      pointer-events: none;
-      display: none;
-      border-radius: 8px;
+    .is-move canvas { cursor: grab; }
+    .is-crop canvas { cursor: cell; }
+
+    #emptyState { margin: auto; color: var(--muted); text-align: center; line-height: 1.7; max-width: 460px; }
+    .status { margin: 1rem 0 0; }
+    .status.success { color: #86efac; }
+    .status.error { color: #fca5a5; }
+
+    @media (max-width: 920px) {
+      .photo-page { padding: 2.5rem 0; }
+      .editor-layout { grid-template-columns: 1fr; }
+      .top-toolbar { grid-template-columns: repeat(5, minmax(64px, 1fr)); top: .4rem; }
+      .tool-button { min-height: 58px; padding: .65rem .4rem; }
+      .tool-button strong { font-size: .68rem; }
+      .canvas-wrap { min-height: 360px; max-height: 66vh; padding: .6rem; }
     }
 
-    #emptyState,
-    .mobile-tip,
-    .status {
-      color: var(--muted);
-    }
-
-    #emptyState {
-      margin: auto;
-      text-align: center;
-      line-height: 1.7;
-    }
-
-    .mobile-tip {
-      margin-top: 1rem;
-      line-height: 1.7;
-    }
-
-    @media (max-width: 768px) {
-      .controls {
-        gap: .7rem;
-      }
-
+    @media (max-width: 560px) {
+      .top-toolbar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .mini-actions { grid-template-columns: 1fr; }
+      .side-panel,
+      .canvas-column { padding: .8rem; }
       button,
-      .file-button,
       select,
-      .zoom-controls {
-        width: 100%;
-      }
-
-      .zoom-buttons {
-        display: grid;
-        grid-template-columns: auto 1fr auto auto;
-      }
+      input { width: 100%; }
     }
   </style>
 
@@ -225,37 +336,83 @@ const title = 'Censurador de fotos';
       const canvasStage = document.getElementById('canvasStage');
       const canvasWrap = document.getElementById('canvasWrap');
       const ctx = canvas.getContext('2d');
-      const mode = document.getElementById('mode');
-      const intensity = document.getElementById('intensity');
       const emptyState = document.getElementById('emptyState');
       const status = document.getElementById('status');
-      const selectionBox = document.getElementById('selectionBox');
-      const zoomInBtn = document.getElementById('zoomInBtn');
-      const zoomOutBtn = document.getElementById('zoomOutBtn');
-      const fitBtn = document.getElementById('fitBtn');
+      const censorType = document.getElementById('censorType');
+      const intensity = document.getElementById('intensity');
+      const zoneRadius = document.getElementById('zoneRadius');
+      const zoneOpacity = document.getElementById('zoneOpacity');
       const zoomValue = document.getElementById('zoomValue');
+      const zonesCount = document.getElementById('zonesCount');
+      const imageSize = document.getElementById('imageSize');
+      const selectedInfo = document.getElementById('selectedInfo');
 
-      let originalImage = null;
-      let history = [];
+      let baseCanvas = document.createElement('canvas');
+      let baseCtx = baseCanvas.getContext('2d');
+      let originalCanvas = document.createElement('canvas');
+      let originalCtx = originalCanvas.getContext('2d');
+      let hasImage = false;
+      let zones = [];
+      let selectedId = null;
+      let tool = 'draw';
       let drawing = false;
+      let moving = false;
+      let resizing = false;
       let startPoint = null;
-      let lastPoint = null;
+      let currentPoint = null;
+      let dragOffset = { x: 0, y: 0 };
+      let history = [];
       let displayScale = 1;
       let fitScale = 1;
+      let pointers = new Map();
       let pinchStartDistance = 0;
       let pinchStartScale = 1;
 
-      const setStatus = (message) => {
+      const setStatus = (message, type) => {
         status.textContent = message;
+        status.classList.toggle('success', type === 'success');
+        status.classList.toggle('error', type === 'error');
       };
 
       const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
+      const saveHistory = () => {
+        history.push({
+          width: baseCanvas.width,
+          height: baseCanvas.height,
+          data: baseCtx.getImageData(0, 0, baseCanvas.width, baseCanvas.height),
+          zones: JSON.parse(JSON.stringify(zones)),
+          selectedId
+        });
+        if (history.length > 30) history.shift();
+      };
+
+      const restoreState = (state) => {
+        baseCanvas.width = state.width;
+        baseCanvas.height = state.height;
+        baseCtx.putImageData(state.data, 0, 0);
+        zones = JSON.parse(JSON.stringify(state.zones));
+        selectedId = state.selectedId;
+        canvas.width = baseCanvas.width;
+        canvas.height = baseCanvas.height;
+        fitToViewport();
+        render();
+      };
+
+      const setTool = (nextTool) => {
+        tool = nextTool;
+        document.querySelectorAll('[data-tool]').forEach((button) => {
+          button.classList.toggle('active', button.dataset.tool === tool);
+        });
+        canvasWrap.classList.toggle('is-move', tool === 'move');
+        canvasWrap.classList.toggle('is-crop', tool === 'crop');
+        setStatus(tool === 'draw' ? 'Modo zona: arrastra para crear una censura editable.' : tool === 'move' ? 'Modo mover: toca una zona y arrástrala.' : 'Modo recorte: arrastra la zona que quieres conservar.');
+      };
+
       const updateCanvasCssSize = () => {
         if (!canvas.width || !canvas.height) return;
-
-        const cssWidth = Math.round(canvas.width * displayScale);
-        const cssHeight = Math.round(canvas.height * displayScale);
+        const cssWidth = Math.max(1, Math.round(canvas.width * displayScale));
+        const cssHeight = Math.max(1, Math.round(canvas.height * displayScale));
         canvas.style.width = `${cssWidth}px`;
         canvas.style.height = `${cssHeight}px`;
         canvasStage.style.width = `${cssWidth}px`;
@@ -264,15 +421,13 @@ const title = 'Censurador de fotos';
       };
 
       const setZoom = (nextScale) => {
-        if (!canvas.width || !canvas.height) return;
-
-        displayScale = clamp(nextScale, fitScale * 0.5, fitScale * 8);
+        if (!hasImage) return;
+        displayScale = clamp(nextScale, fitScale * .5, fitScale * 8);
         updateCanvasCssSize();
       };
 
       const fitToViewport = () => {
-        if (!canvas.width || !canvas.height) return;
-
+        if (!hasImage) return;
         const availableWidth = Math.max(240, canvasWrap.clientWidth - 32);
         fitScale = Math.min(1, availableWidth / canvas.width);
         displayScale = fitScale;
@@ -281,11 +436,7 @@ const title = 'Censurador de fotos';
         canvasWrap.scrollTop = 0;
       };
 
-      zoomInBtn.addEventListener('click', () => setZoom(displayScale * 1.25));
-      zoomOutBtn.addEventListener('click', () => setZoom(displayScale / 1.25));
-      fitBtn.addEventListener('click', fitToViewport);
-
-      const getCanvasPoint = (clientX, clientY) => {
+      const getPoint = (clientX, clientY) => {
         const rect = canvas.getBoundingClientRect();
         return {
           x: clamp((clientX - rect.left) * (canvas.width / rect.width), 0, canvas.width),
@@ -293,243 +444,418 @@ const title = 'Censurador de fotos';
         };
       };
 
-      const updateSelection = (a, b) => {
-        const scaleX = canvas.clientWidth / canvas.width;
-        const scaleY = canvas.clientHeight / canvas.height;
-        const left = Math.min(a.x, b.x) * scaleX;
-        const top = Math.min(a.y, b.y) * scaleY;
-        const width = Math.abs(a.x - b.x) * scaleX;
-        const height = Math.abs(a.y - b.y) * scaleY;
+      const normalizeRect = (a, b) => ({
+        x: Math.floor(Math.min(a.x, b.x)),
+        y: Math.floor(Math.min(a.y, b.y)),
+        w: Math.floor(Math.abs(a.x - b.x)),
+        h: Math.floor(Math.abs(a.y - b.y))
+      });
 
-        selectionBox.style.display = 'block';
-        selectionBox.style.left = `${left}px`;
-        selectionBox.style.top = `${top}px`;
-        selectionBox.style.width = `${width}px`;
-        selectionBox.style.height = `${height}px`;
+      const selectedZone = () => zones.find((zone) => zone.id === selectedId) || null;
+
+      const hitZone = (point) => {
+        for (let i = zones.length - 1; i >= 0; i -= 1) {
+          const zone = zones[i];
+          if (point.x >= zone.x && point.x <= zone.x + zone.w && point.y >= zone.y && point.y <= zone.y + zone.h) return zone;
+        }
+        return null;
       };
 
-      const saveState = () => {
-        history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-        if (history.length > 20) history.shift();
+      const drawRoundedRect = (context, x, y, width, height, radius) => {
+        const r = Math.min(radius, width / 2, height / 2);
+        context.beginPath();
+        context.moveTo(x + r, y);
+        context.arcTo(x + width, y, x + width, y + height, r);
+        context.arcTo(x + width, y + height, x, y + height, r);
+        context.arcTo(x, y + height, x, y, r);
+        context.arcTo(x, y, x + width, y, r);
+        context.closePath();
       };
 
-      const drawImage = (image) => {
-        const maxWidth = 2200;
-        const ratio = Math.min(1, maxWidth / image.width);
-
-        canvas.width = Math.round(image.width * ratio);
-        canvas.height = Math.round(image.height * ratio);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-        canvasStage.style.display = 'block';
-        emptyState.hidden = true;
-        history = [];
-        saveState();
-        fitToViewport();
-      };
-
-      const pixelate = (x, y, width, height, blockSize) => {
-        const safeBlockSize = Math.max(2, blockSize);
-
-        for (let yy = y; yy < y + height; yy += safeBlockSize) {
-          for (let xx = x; xx < x + width; xx += safeBlockSize) {
-            const sampleX = clamp(Math.floor(xx), 0, canvas.width - 1);
-            const sampleY = clamp(Math.floor(yy), 0, canvas.height - 1);
-            const pixel = ctx.getImageData(sampleX, sampleY, 1, 1).data;
-            ctx.fillStyle = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
-            ctx.fillRect(Math.floor(xx), Math.floor(yy), safeBlockSize, safeBlockSize);
+      const pixelateArea = (context, zone) => {
+        const blockSize = Math.max(2, Number(zone.intensity));
+        for (let yy = zone.y; yy < zone.y + zone.h; yy += blockSize) {
+          for (let xx = zone.x; xx < zone.x + zone.w; xx += blockSize) {
+            const sx = clamp(Math.floor(xx), 0, canvas.width - 1);
+            const sy = clamp(Math.floor(yy), 0, canvas.height - 1);
+            const pixel = context.getImageData(sx, sy, 1, 1).data;
+            context.fillStyle = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+            context.fillRect(Math.floor(xx), Math.floor(yy), blockSize, blockSize);
           }
         }
       };
 
-      const blurArea = (x, y, width, height, amount) => {
+      const blurArea = (context, zone) => {
         const temp = document.createElement('canvas');
-        temp.width = width;
-        temp.height = height;
+        temp.width = Math.max(1, zone.w);
+        temp.height = Math.max(1, zone.h);
         const tempCtx = temp.getContext('2d');
-
-        tempCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
-
-        ctx.save();
-        ctx.filter = `blur(${amount}px)`;
-        ctx.drawImage(temp, x, y);
-        ctx.restore();
+        tempCtx.drawImage(context.canvas, zone.x, zone.y, zone.w, zone.h, 0, 0, zone.w, zone.h);
+        context.save();
+        context.filter = `blur(${Math.max(2, Math.round(zone.intensity / 3))}px)`;
+        context.drawImage(temp, zone.x, zone.y);
+        context.restore();
       };
 
-      const censorArea = (a, b) => {
-        const x = Math.floor(Math.min(a.x, b.x));
-        const y = Math.floor(Math.min(a.y, b.y));
-        const width = Math.floor(Math.abs(a.x - b.x));
-        const height = Math.floor(Math.abs(a.y - b.y));
+      const applyZone = (context, zone) => {
+        context.save();
+        drawRoundedRect(context, zone.x, zone.y, zone.w, zone.h, zone.radius);
+        context.clip();
+        context.globalAlpha = zone.opacity / 100;
+        if (zone.type === 'pixelate') pixelateArea(context, zone);
+        if (zone.type === 'blur') blurArea(context, zone);
+        if (zone.type === 'black' || zone.type === 'white') {
+          context.fillStyle = zone.type === 'black' ? '#000' : '#fff';
+          context.fillRect(zone.x, zone.y, zone.w, zone.h);
+        }
+        context.restore();
+      };
 
-        if (width < 4 || height < 4) {
-          setStatus('Selección demasiado pequeña. Arrastra una zona más grande.');
+      const drawOverlay = (context, zone) => {
+        context.save();
+        context.lineWidth = Math.max(2, canvas.width / 650);
+        context.setLineDash(zone.id === selectedId ? [10, 6] : [5, 5]);
+        context.strokeStyle = zone.id === selectedId ? '#38bdf8' : 'rgba(255,255,255,.75)';
+        context.fillStyle = zone.id === selectedId ? 'rgba(56,189,248,.12)' : 'rgba(255,255,255,.05)';
+        drawRoundedRect(context, zone.x, zone.y, zone.w, zone.h, zone.radius);
+        context.fill();
+        context.stroke();
+        if (zone.id === selectedId) {
+          context.setLineDash([]);
+          context.fillStyle = '#38bdf8';
+          context.fillRect(zone.x + zone.w - 10, zone.y + zone.h - 10, 20, 20);
+        }
+        context.restore();
+      };
+
+      const updateMeta = () => {
+        zonesCount.textContent = `${zones.length} zona${zones.length === 1 ? '' : 's'}`;
+        imageSize.textContent = hasImage ? `${canvas.width} × ${canvas.height}px` : 'Sin imagen';
+        const zone = selectedZone();
+        selectedInfo.textContent = zone ? `Zona ${zone.id}: ${Math.round(zone.w)}×${Math.round(zone.h)}px · ${zone.type}` : 'No hay ninguna zona seleccionada.';
+      };
+
+      const render = () => {
+        if (!hasImage) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(baseCanvas, 0, 0);
+        zones.forEach((zone) => applyZone(ctx, zone));
+        zones.forEach((zone) => drawOverlay(ctx, zone));
+        if ((drawing || resizing) && startPoint && currentPoint) {
+          const rect = normalizeRect(startPoint, currentPoint);
+          drawOverlay(ctx, { id: -1, x: rect.x, y: rect.y, w: rect.w, h: rect.h, radius: Number(zoneRadius.value), type: tool });
+        }
+        updateMeta();
+      };
+
+      const createZone = (rect) => {
+        if (rect.w < 6 || rect.h < 6) {
+          setStatus('Selección demasiado pequeña.', 'error');
           return;
         }
+        saveHistory();
+        const id = Date.now();
+        zones.push({
+          id,
+          x: rect.x,
+          y: rect.y,
+          w: rect.w,
+          h: rect.h,
+          type: censorType.value,
+          intensity: Number(intensity.value),
+          radius: Number(zoneRadius.value),
+          opacity: Number(zoneOpacity.value)
+        });
+        selectedId = id;
+        setTool('move');
+        render();
+        setStatus('Zona creada. Ahora puedes moverla o ajustarla.', 'success');
+      };
 
-        saveState();
-
-        if (mode.value === 'pixelate') {
-          pixelate(x, y, width, height, Number(intensity.value));
+      const applyCrop = (rect) => {
+        if (rect.w < 20 || rect.h < 20) {
+          setStatus('Recorte demasiado pequeño.', 'error');
+          return;
         }
-
-        if (mode.value === 'blur') {
-          blurArea(x, y, width, height, Math.max(2, Math.round(Number(intensity.value) / 3)));
-        }
-
-        if (mode.value === 'black') {
-          ctx.fillStyle = '#000';
-          ctx.fillRect(x, y, width, height);
-        }
-
-        setStatus('Zona censurada correctamente.');
+        saveHistory();
+        const next = document.createElement('canvas');
+        next.width = rect.w;
+        next.height = rect.h;
+        next.getContext('2d').drawImage(baseCanvas, rect.x, rect.y, rect.w, rect.h, 0, 0, rect.w, rect.h);
+        baseCanvas = next;
+        baseCtx = baseCanvas.getContext('2d');
+        canvas.width = rect.w;
+        canvas.height = rect.h;
+        zones = zones.map((zone) => ({ ...zone, x: zone.x - rect.x, y: zone.y - rect.y }))
+          .filter((zone) => zone.x + zone.w > 0 && zone.y + zone.h > 0 && zone.x < rect.w && zone.y < rect.h)
+          .map((zone) => {
+            const x = clamp(zone.x, 0, rect.w);
+            const y = clamp(zone.y, 0, rect.h);
+            const right = clamp(zone.x + zone.w, 0, rect.w);
+            const bottom = clamp(zone.y + zone.h, 0, rect.h);
+            return { ...zone, x, y, w: Math.max(1, right - x), h: Math.max(1, bottom - y) };
+          });
+        selectedId = zones.length ? zones[0].id : null;
+        fitToViewport();
+        setTool('move');
+        render();
+        setStatus('Imagen recortada. Las zonas se han ajustado al nuevo encuadre.', 'success');
       };
 
-      const distanceBetweenTouches = (touches) => {
-        const dx = touches[0].clientX - touches[1].clientX;
-        const dy = touches[0].clientY - touches[1].clientY;
-        return Math.hypot(dx, dy);
-      };
-
-      const startDraw = (clientX, clientY) => {
-        if (!originalImage) return;
-        drawing = true;
-        startPoint = getCanvasPoint(clientX, clientY);
-        lastPoint = startPoint;
-        updateSelection(startPoint, startPoint);
-      };
-
-      const moveDraw = (clientX, clientY) => {
-        if (!drawing || !startPoint) return;
-        lastPoint = getCanvasPoint(clientX, clientY);
-        updateSelection(startPoint, lastPoint);
-      };
-
-      const endDraw = () => {
-        if (!drawing || !startPoint || !lastPoint) return;
-        drawing = false;
-        selectionBox.style.display = 'none';
-        censorArea(startPoint, lastPoint);
-        startPoint = null;
-        lastPoint = null;
+      const loadImage = (image) => {
+        const maxWidth = 2400;
+        const ratio = Math.min(1, maxWidth / image.width);
+        const width = Math.round(image.width * ratio);
+        const height = Math.round(image.height * ratio);
+        originalCanvas.width = width;
+        originalCanvas.height = height;
+        originalCtx.drawImage(image, 0, 0, width, height);
+        baseCanvas.width = width;
+        baseCanvas.height = height;
+        baseCtx.drawImage(image, 0, 0, width, height);
+        canvas.width = width;
+        canvas.height = height;
+        hasImage = true;
+        zones = [];
+        selectedId = null;
+        history = [];
+        canvasStage.style.display = 'block';
+        emptyState.hidden = true;
+        fitToViewport();
+        setTool('draw');
+        render();
       };
 
       fileInput.addEventListener('change', () => {
         const file = fileInput.files && fileInput.files[0];
         if (!file) return;
-
         if (!file.type.startsWith('image/')) {
-          setStatus('El archivo seleccionado no parece una imagen.');
+          setStatus('El archivo seleccionado no parece una imagen.', 'error');
           return;
         }
-
         const image = new Image();
         const url = URL.createObjectURL(file);
-
         image.onload = () => {
           URL.revokeObjectURL(url);
-          originalImage = image;
-          drawImage(image);
-          setStatus('Imagen cargada correctamente.');
+          loadImage(image);
+          setStatus('Imagen cargada correctamente.', 'success');
         };
-
         image.onerror = () => {
           URL.revokeObjectURL(url);
-          setStatus('No se pudo cargar la imagen seleccionada.');
+          setStatus('No se pudo cargar la imagen.', 'error');
         };
-
         image.src = url;
       });
 
-      canvas.addEventListener('mousedown', (event) => {
-        event.preventDefault();
-        startDraw(event.clientX, event.clientY);
-      });
+      const distance = () => {
+        const points = Array.from(pointers.values());
+        if (points.length < 2) return 0;
+        return Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+      };
 
-      window.addEventListener('mousemove', (event) => {
-        if (!drawing) return;
-        event.preventDefault();
-        moveDraw(event.clientX, event.clientY);
-      });
-
-      window.addEventListener('mouseup', () => {
-        endDraw();
-      });
-
-      canvas.addEventListener('touchstart', (event) => {
-        if (!originalImage) return;
-
-        if (event.touches.length === 1) {
-          event.preventDefault();
-          startDraw(event.touches[0].clientX, event.touches[0].clientY);
-        }
-
-        if (event.touches.length === 2) {
-          event.preventDefault();
-          drawing = false;
-          selectionBox.style.display = 'none';
-          pinchStartDistance = distanceBetweenTouches(event.touches);
+      canvas.addEventListener('pointerdown', (event) => {
+        if (!hasImage) return;
+        canvas.setPointerCapture(event.pointerId);
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (pointers.size === 2) {
+          pinchStartDistance = distance();
           pinchStartScale = displayScale;
+          drawing = moving = resizing = false;
+          return;
         }
-      }, { passive: false });
-
-      canvas.addEventListener('touchmove', (event) => {
-        if (!originalImage) return;
-
-        if (event.touches.length === 1 && drawing) {
-          event.preventDefault();
-          moveDraw(event.touches[0].clientX, event.touches[0].clientY);
-        }
-
-        if (event.touches.length === 2 && pinchStartDistance > 0) {
-          event.preventDefault();
-          const distance = distanceBetweenTouches(event.touches);
-          setZoom(pinchStartScale * (distance / pinchStartDistance));
-        }
-      }, { passive: false });
-
-      canvas.addEventListener('touchend', (event) => {
         event.preventDefault();
+        const point = getPoint(event.clientX, event.clientY);
+        startPoint = point;
+        currentPoint = point;
 
-        if (event.touches.length === 0 && drawing) {
-          endDraw();
-        }
-
-        if (event.touches.length < 2) {
-          pinchStartDistance = 0;
-        }
-      }, { passive: false });
-
-      document.getElementById('undoBtn').onclick = () => {
-        if (history.length <= 1) {
-          setStatus('No hay más cambios que deshacer.');
+        if (tool === 'move') {
+          const zone = hitZone(point);
+          if (zone) {
+            selectedId = zone.id;
+            const nearResize = point.x > zone.x + zone.w - 28 && point.y > zone.y + zone.h - 28;
+            resizing = nearResize;
+            moving = !nearResize;
+            dragOffset = { x: point.x - zone.x, y: point.y - zone.y };
+            saveHistory();
+          } else {
+            selectedId = null;
+          }
+          render();
           return;
         }
 
-        history.pop();
-        ctx.putImageData(history[history.length - 1], 0, 0);
-        setStatus('Último cambio deshecho.');
+        drawing = true;
+        render();
+      });
+
+      canvas.addEventListener('pointermove', (event) => {
+        if (!hasImage) return;
+        if (pointers.has(event.pointerId)) pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (pointers.size === 2 && pinchStartDistance > 0) {
+          setZoom(pinchStartScale * (distance() / pinchStartDistance));
+          return;
+        }
+        if (!drawing && !moving && !resizing) return;
+        event.preventDefault();
+        const point = getPoint(event.clientX, event.clientY);
+        currentPoint = point;
+        const zone = selectedZone();
+        if (moving && zone) {
+          zone.x = clamp(point.x - dragOffset.x, 0, canvas.width - zone.w);
+          zone.y = clamp(point.y - dragOffset.y, 0, canvas.height - zone.h);
+        }
+        if (resizing && zone) {
+          zone.w = clamp(point.x - zone.x, 8, canvas.width - zone.x);
+          zone.h = clamp(point.y - zone.y, 8, canvas.height - zone.y);
+        }
+        render();
+      });
+
+      const finishPointer = (event) => {
+        pointers.delete(event.pointerId);
+        pinchStartDistance = pointers.size < 2 ? 0 : pinchStartDistance;
+        if (drawing && startPoint && currentPoint) {
+          const rect = normalizeRect(startPoint, currentPoint);
+          if (tool === 'crop') applyCrop(rect);
+          else createZone(rect);
+        }
+        drawing = moving = resizing = false;
+        startPoint = null;
+        currentPoint = null;
+        render();
       };
 
-      document.getElementById('resetBtn').onclick = () => {
-        if (!originalImage) return;
-        drawImage(originalImage);
-        setStatus('Imagen reiniciada.');
+      canvas.addEventListener('pointerup', finishPointer);
+      canvas.addEventListener('pointercancel', finishPointer);
+
+      document.querySelectorAll('[data-tool]').forEach((button) => {
+        button.addEventListener('click', () => setTool(button.dataset.tool));
+      });
+      document.getElementById('zoomInBtn').addEventListener('click', () => setZoom(displayScale * 1.25));
+      document.getElementById('zoomOutBtn').addEventListener('click', () => setZoom(displayScale / 1.25));
+      document.getElementById('fitBtn').addEventListener('click', fitToViewport);
+
+      const updateSelectedZoneOptions = () => {
+        const zone = selectedZone();
+        if (!zone) return;
+        saveHistory();
+        zone.type = censorType.value;
+        zone.intensity = Number(intensity.value);
+        zone.radius = Number(zoneRadius.value);
+        zone.opacity = Number(zoneOpacity.value);
+        render();
       };
+      [censorType, intensity, zoneRadius, zoneOpacity].forEach((input) => input.addEventListener('change', updateSelectedZoneOptions));
 
-      document.getElementById('downloadBtn').onclick = () => {
-        if (!originalImage) return;
+      const moveSelected = (dx, dy) => {
+        const zone = selectedZone();
+        if (!zone) return;
+        saveHistory();
+        zone.x = clamp(zone.x + dx, 0, canvas.width - zone.w);
+        zone.y = clamp(zone.y + dy, 0, canvas.height - zone.h);
+        render();
+      };
+      document.getElementById('nudgeUp').addEventListener('click', () => moveSelected(0, -8));
+      document.getElementById('nudgeDown').addEventListener('click', () => moveSelected(0, 8));
+      document.getElementById('nudgeLeft').addEventListener('click', () => moveSelected(-8, 0));
+      document.getElementById('nudgeRight').addEventListener('click', () => moveSelected(8, 0));
 
+      document.getElementById('growZoneBtn').addEventListener('click', () => {
+        const zone = selectedZone();
+        if (!zone) return;
+        saveHistory();
+        zone.x = clamp(zone.x - 8, 0, canvas.width - 1);
+        zone.y = clamp(zone.y - 8, 0, canvas.height - 1);
+        zone.w = clamp(zone.w + 16, 8, canvas.width - zone.x);
+        zone.h = clamp(zone.h + 16, 8, canvas.height - zone.y);
+        render();
+      });
+
+      document.getElementById('shrinkZoneBtn').addEventListener('click', () => {
+        const zone = selectedZone();
+        if (!zone) return;
+        saveHistory();
+        zone.x += 6;
+        zone.y += 6;
+        zone.w = Math.max(8, zone.w - 12);
+        zone.h = Math.max(8, zone.h - 12);
+        render();
+      });
+
+      document.getElementById('duplicateZoneBtn').addEventListener('click', () => {
+        const zone = selectedZone();
+        if (!zone) return;
+        saveHistory();
+        const copy = { ...zone, id: Date.now(), x: clamp(zone.x + 18, 0, canvas.width - zone.w), y: clamp(zone.y + 18, 0, canvas.height - zone.h) };
+        zones.push(copy);
+        selectedId = copy.id;
+        render();
+      });
+
+      document.getElementById('deleteZoneBtn').addEventListener('click', () => {
+        if (!selectedId) return;
+        saveHistory();
+        zones = zones.filter((zone) => zone.id !== selectedId);
+        selectedId = zones.length ? zones[zones.length - 1].id : null;
+        render();
+      });
+
+      document.getElementById('undoBtn').addEventListener('click', () => {
+        if (!history.length) {
+          setStatus('No hay cambios que deshacer.', 'error');
+          return;
+        }
+        restoreState(history.pop());
+        setStatus('Cambio deshecho.', 'success');
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        if (!hasImage) return;
+        saveHistory();
+        baseCanvas.width = originalCanvas.width;
+        baseCanvas.height = originalCanvas.height;
+        baseCtx.drawImage(originalCanvas, 0, 0);
+        canvas.width = baseCanvas.width;
+        canvas.height = baseCanvas.height;
+        zones = [];
+        selectedId = null;
+        fitToViewport();
+        setTool('draw');
+        render();
+        setStatus('Imagen reiniciada.', 'success');
+      });
+
+      document.getElementById('restoreCropBtn').addEventListener('click', () => {
+        if (!hasImage) return;
+        saveHistory();
+        baseCanvas.width = originalCanvas.width;
+        baseCanvas.height = originalCanvas.height;
+        baseCtx.drawImage(originalCanvas, 0, 0);
+        canvas.width = baseCanvas.width;
+        canvas.height = baseCanvas.height;
+        zones = [];
+        selectedId = null;
+        fitToViewport();
+        render();
+        setStatus('Imagen completa restaurada. Las zonas se han eliminado para evitar desajustes.', 'success');
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        if (!hasImage) return;
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = canvas.width;
+        exportCanvas.height = canvas.height;
+        const exportCtx = exportCanvas.getContext('2d');
+        exportCtx.drawImage(baseCanvas, 0, 0);
+        zones.forEach((zone) => applyZone(exportCtx, zone));
         const link = document.createElement('a');
         link.download = 'imagen-censurada.png';
-        link.href = canvas.toDataURL('image/png');
+        link.href = exportCanvas.toDataURL('image/png');
         link.click();
-      };
+      });
 
       window.addEventListener('resize', () => {
-        if (!originalImage) return;
-        fitToViewport();
+        if (hasImage) fitToViewport();
       });
     });
   </script>
