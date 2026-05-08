@@ -1,0 +1,502 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Generador y lector de códigos QR';
+const description = 'Genera códigos QR y lee códigos desde imágenes locales directamente en tu navegador. Sin subir textos ni archivos a servidores.';
+---
+
+<Layout title={title} description={description} path="/qr-code/" translated={false}>
+  <section class="qr-page">
+    <div class="eyebrow">Privacidad local</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Crea códigos QR descargables en PNG o SVG y analiza imágenes locales con QR cuando tu navegador soporte detección nativa. Todo se procesa en tu dispositivo.
+    </p>
+
+    <div class="tool-grid">
+      <section class="tool-card qr-panel" aria-labelledby="generatorTitle">
+        <div class="section-heading">
+          <div>
+            <h2 id="generatorTitle">Generar QR</h2>
+            <p>Introduce texto o una URL y ajusta el tamaño y margen.</p>
+          </div>
+        </div>
+
+        <label for="qrText">Texto o URL</label>
+        <textarea id="qrText" placeholder="https://alon.one/" spellcheck="false">https://alon.one/</textarea>
+
+        <div class="settings-grid">
+          <div>
+            <label for="qrSize">Tamaño</label>
+            <input id="qrSize" type="number" min="128" max="1024" step="32" value="320" inputmode="numeric" />
+          </div>
+
+          <div>
+            <label for="qrMargin">Margen</label>
+            <input id="qrMargin" type="number" min="0" max="8" step="1" value="2" inputmode="numeric" />
+          </div>
+        </div>
+
+        <div class="toolbar" aria-label="Acciones de generación QR">
+          <button class="primary" id="generateBtn" type="button">Generar QR</button>
+          <button id="downloadPngBtn" type="button" disabled>Descargar PNG</button>
+          <button id="downloadSvgBtn" type="button" disabled>Descargar SVG</button>
+          <button id="copyImageBtn" type="button" disabled>Copiar imagen</button>
+        </div>
+
+        <p class="status" id="generatorStatus" role="status" aria-live="polite">Listo para generar un código QR.</p>
+      </section>
+
+      <section class="tool-card preview-panel" aria-labelledby="previewTitle">
+        <div class="section-heading">
+          <div>
+            <h2 id="previewTitle">Vista previa</h2>
+            <p>El QR generado aparecerá aquí.</p>
+          </div>
+        </div>
+
+        <div class="qr-preview" id="qrPreview" aria-label="Vista previa del código QR generado">
+          <span>Genera un QR para verlo aquí</span>
+        </div>
+      </section>
+    </div>
+
+    <section class="tool-card reader-panel" aria-labelledby="readerTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="readerTitle">Leer QR desde imagen</h2>
+          <p>Sube una imagen local y, si tu navegador lo permite, se detectará el QR con canvas y BarcodeDetector.</p>
+        </div>
+      </div>
+
+      <div class="reader-grid">
+        <div>
+          <label for="qrImage">Imagen con código QR</label>
+          <input id="qrImage" type="file" accept="image/*" />
+          <canvas id="readerCanvas" hidden></canvas>
+          <p class="status" id="readerStatus" role="status" aria-live="polite">Selecciona una imagen para intentar leer un QR.</p>
+        </div>
+
+        <div>
+          <label for="readerResult">Resultado detectado</label>
+          <textarea id="readerResult" readonly placeholder="Texto detectado..."></textarea>
+          <div class="toolbar reader-actions">
+            <button id="copyResultBtn" type="button" disabled>Copiar resultado</button>
+            <button id="clearReaderBtn" type="button">Limpiar lector</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <style>
+    .qr-page {
+      padding: 4rem 0;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, .8fr);
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .tool-card {
+      overflow: hidden;
+    }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h2 {
+      margin: 0 0 .35rem;
+      font-size: 1.35rem;
+    }
+
+    .section-heading p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    label {
+      display: block;
+      margin-bottom: .55rem;
+      font-weight: 700;
+    }
+
+    textarea,
+    input[type='number'],
+    input[type='file'] {
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 160px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    input[type='file']::file-selector-button {
+      margin-right: 1rem;
+      border: 0;
+      border-radius: 12px;
+      background: var(--primary);
+      color: #020617;
+      font-weight: 800;
+      padding: .75rem 1rem;
+      cursor: pointer;
+    }
+
+    .settings-grid,
+    .reader-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      background: #0f172a;
+      color: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: .95rem 1rem;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .15s ease, border-color .15s ease, opacity .15s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(56,189,248,.45);
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #020617;
+      border-color: transparent;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+    }
+
+    .status {
+      color: var(--muted);
+      margin: 1rem 0 0;
+      line-height: 1.7;
+    }
+
+    .status.error {
+      color: #fca5a5;
+    }
+
+    .status.success {
+      color: #86efac;
+    }
+
+    .preview-panel {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .qr-preview {
+      min-height: 360px;
+      display: grid;
+      place-items: center;
+      border-radius: 24px;
+      border: 1px dashed rgba(148, 163, 184, .32);
+      background: rgba(2, 6, 23, .6);
+      padding: 1.25rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .qr-preview canvas,
+    .qr-preview img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 18px;
+      background: white;
+      padding: .5rem;
+    }
+
+    .reader-panel {
+      margin-top: 1.5rem;
+    }
+
+    #readerResult {
+      min-height: 190px;
+    }
+
+    @media (max-width: 900px) {
+      .tool-grid,
+      .reader-grid,
+      .settings-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <script>
+    import QRCode from 'qrcode';
+
+    const qrText = document.getElementById('qrText') as HTMLTextAreaElement;
+    const qrSize = document.getElementById('qrSize') as HTMLInputElement;
+    const qrMargin = document.getElementById('qrMargin') as HTMLInputElement;
+    const qrPreview = document.getElementById('qrPreview') as HTMLDivElement;
+    const generateBtn = document.getElementById('generateBtn') as HTMLButtonElement;
+    const downloadPngBtn = document.getElementById('downloadPngBtn') as HTMLButtonElement;
+    const downloadSvgBtn = document.getElementById('downloadSvgBtn') as HTMLButtonElement;
+    const copyImageBtn = document.getElementById('copyImageBtn') as HTMLButtonElement;
+    const generatorStatus = document.getElementById('generatorStatus') as HTMLParagraphElement;
+
+    const qrImage = document.getElementById('qrImage') as HTMLInputElement;
+    const readerCanvas = document.getElementById('readerCanvas') as HTMLCanvasElement;
+    const readerResult = document.getElementById('readerResult') as HTMLTextAreaElement;
+    const readerStatus = document.getElementById('readerStatus') as HTMLParagraphElement;
+    const copyResultBtn = document.getElementById('copyResultBtn') as HTMLButtonElement;
+    const clearReaderBtn = document.getElementById('clearReaderBtn') as HTMLButtonElement;
+
+    let currentCanvas: HTMLCanvasElement | null = null;
+    let currentSvg = '';
+
+    const setStatus = (element: HTMLElement, message: string, type: 'default' | 'success' | 'error' = 'default') => {
+      element.textContent = message;
+      element.classList.toggle('success', type === 'success');
+      element.classList.toggle('error', type === 'error');
+    };
+
+    const clampNumber = (value: string, min: number, max: number, fallback: number) => {
+      const number = Number.parseInt(value, 10);
+
+      if (Number.isNaN(number)) {
+        return fallback;
+      }
+
+      return Math.min(max, Math.max(min, number));
+    };
+
+    const downloadBlob = (blob: Blob, filename: string) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    const getQrOptions = () => ({
+      width: clampNumber(qrSize.value, 128, 1024, 320),
+      margin: clampNumber(qrMargin.value, 0, 8, 2),
+      errorCorrectionLevel: 'M' as const,
+      color: {
+        dark: '#020617',
+        light: '#ffffff'
+      }
+    });
+
+    const generateQr = async () => {
+      const text = qrText.value.trim();
+
+      if (!text) {
+        setStatus(generatorStatus, 'Introduce texto o una URL para generar el código QR.', 'error');
+        qrText.focus();
+        return;
+      }
+
+      try {
+        const canvas = document.createElement('canvas');
+        const options = getQrOptions();
+        await QRCode.toCanvas(canvas, text, options);
+        currentSvg = await QRCode.toString(text, { ...options, type: 'svg' });
+        currentCanvas = canvas;
+
+        qrPreview.replaceChildren(canvas);
+        downloadPngBtn.disabled = false;
+        downloadSvgBtn.disabled = false;
+        copyImageBtn.disabled = !navigator.clipboard || typeof ClipboardItem === 'undefined';
+
+        const copySupportMessage = copyImageBtn.disabled ? ' La copia de imagen no está disponible en este navegador.' : '';
+        setStatus(generatorStatus, `QR generado correctamente.${copySupportMessage}`, 'success');
+      } catch {
+        setStatus(generatorStatus, 'No se pudo generar el QR. Prueba con menos texto o revisa los valores.', 'error');
+      }
+    };
+
+    generateBtn.addEventListener('click', generateQr);
+    qrText.addEventListener('input', () => setStatus(generatorStatus, 'Texto actualizado. Pulsa generar QR para refrescar la vista previa.'));
+
+    downloadPngBtn.addEventListener('click', () => {
+      if (!currentCanvas) return;
+
+      currentCanvas.toBlob((blob) => {
+        if (!blob) {
+          setStatus(generatorStatus, 'No se pudo preparar el PNG.', 'error');
+          return;
+        }
+
+        downloadBlob(blob, 'codigo-qr.png');
+        setStatus(generatorStatus, 'PNG descargado.', 'success');
+      }, 'image/png');
+    });
+
+    downloadSvgBtn.addEventListener('click', () => {
+      if (!currentSvg) return;
+
+      downloadBlob(new Blob([currentSvg], { type: 'image/svg+xml;charset=utf-8' }), 'codigo-qr.svg');
+      setStatus(generatorStatus, 'SVG descargado.', 'success');
+    });
+
+    copyImageBtn.addEventListener('click', async () => {
+      if (!currentCanvas || !navigator.clipboard || typeof ClipboardItem === 'undefined') {
+        setStatus(generatorStatus, 'Tu navegador no permite copiar imágenes al portapapeles.', 'error');
+        return;
+      }
+
+      currentCanvas.toBlob(async (blob) => {
+        if (!blob) {
+          setStatus(generatorStatus, 'No se pudo preparar la imagen para copiar.', 'error');
+          return;
+        }
+
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+          setStatus(generatorStatus, 'Imagen copiada al portapapeles.', 'success');
+        } catch {
+          setStatus(generatorStatus, 'El navegador ha bloqueado la copia de imagen.', 'error');
+        }
+      }, 'image/png');
+    });
+
+    const getBarcodeDetector = async () => {
+      const detectorConstructor = (window as typeof window & {
+        BarcodeDetector?: new (options?: { formats?: string[] }) => { detect: (source: CanvasImageSource) => Promise<Array<{ rawValue: string }>> };
+      }).BarcodeDetector;
+
+      if (!detectorConstructor) {
+        return null;
+      }
+
+      if ('getSupportedFormats' in detectorConstructor) {
+        const formats = await (detectorConstructor as unknown as { getSupportedFormats: () => Promise<string[]> }).getSupportedFormats();
+
+        if (!formats.includes('qr_code')) {
+          return null;
+        }
+      }
+
+      return new detectorConstructor({ formats: ['qr_code'] });
+    };
+
+    const loadImage = (file: File) => new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      const url = URL.createObjectURL(file);
+
+      image.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(image);
+      };
+
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('invalid-image'));
+      };
+
+      image.src = url;
+    });
+
+    qrImage.addEventListener('change', async () => {
+      const file = qrImage.files?.[0];
+      readerResult.value = '';
+      copyResultBtn.disabled = true;
+
+      if (!file) {
+        setStatus(readerStatus, 'Selecciona una imagen para intentar leer un QR.');
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        setStatus(readerStatus, 'El archivo seleccionado no parece ser una imagen.', 'error');
+        return;
+      }
+
+      try {
+        const detector = await getBarcodeDetector();
+
+        if (!detector) {
+          setStatus(readerStatus, 'Este navegador no soporta lectura local de QR con BarcodeDetector. Puedes generar y descargar QR, pero no leer imágenes aquí.', 'error');
+          return;
+        }
+
+        const image = await loadImage(file);
+        const context = readerCanvas.getContext('2d', { willReadFrequently: true });
+
+        if (!context) {
+          setStatus(readerStatus, 'No se pudo inicializar el canvas para analizar la imagen.', 'error');
+          return;
+        }
+
+        readerCanvas.width = image.naturalWidth;
+        readerCanvas.height = image.naturalHeight;
+        context.clearRect(0, 0, readerCanvas.width, readerCanvas.height);
+        context.drawImage(image, 0, 0);
+
+        const results = await detector.detect(readerCanvas);
+        const result = results.find((item) => item.rawValue)?.rawValue || '';
+
+        if (!result) {
+          setStatus(readerStatus, 'No se detectó ningún código QR en la imagen.', 'error');
+          return;
+        }
+
+        readerResult.value = result;
+        copyResultBtn.disabled = false;
+        setStatus(readerStatus, 'QR leído correctamente desde la imagen local.', 'success');
+      } catch {
+        setStatus(readerStatus, 'No se pudo leer la imagen. Prueba con una imagen más nítida o con otro navegador.', 'error');
+      }
+    });
+
+    copyResultBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(readerResult.value);
+        setStatus(readerStatus, 'Resultado copiado.', 'success');
+      } catch {
+        setStatus(readerStatus, 'No se pudo copiar el resultado.', 'error');
+      }
+    });
+
+    clearReaderBtn.addEventListener('click', () => {
+      qrImage.value = '';
+      readerResult.value = '';
+      copyResultBtn.disabled = true;
+      setStatus(readerStatus, 'Lector limpiado. Selecciona otra imagen para analizarla.');
+    });
+
+    generateQr();
+  </script>
+</Layout>
