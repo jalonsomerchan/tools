@@ -11,7 +11,7 @@ const title = 'Censurador de fotos';
     <h1>{title}</h1>
 
     <p class="hero-text">
-      Sube una imagen, marca las zonas sensibles y censúralas con pixelado, desenfoque o bloque negro. Todo ocurre en tu navegador.
+      Sube una imagen, marca con precisión las zonas sensibles y censúralas con pixelado, desenfoque o bloque negro. Todo ocurre en tu navegador.
     </p>
 
     <section class="tool-card">
@@ -35,14 +35,19 @@ const title = 'Censurador de fotos';
           <input id="intensity" type="range" min="4" max="40" value="18" />
         </label>
 
-        <label>
-          Zoom
-          <input id="zoom" type="range" min="50" max="300" value="100" />
-        </label>
+        <div class="zoom-controls" aria-label="Controles de zoom">
+          <span>Zoom</span>
+          <div class="zoom-buttons">
+            <button id="zoomOutBtn" type="button" title="Alejar">−</button>
+            <output id="zoomValue">100%</output>
+            <button id="zoomInBtn" type="button" title="Acercar">+</button>
+            <button id="fitBtn" type="button" title="Ajustar imagen">Ajustar</button>
+          </div>
+        </div>
 
-        <button id="undoBtn">Deshacer</button>
-        <button id="resetBtn">Reiniciar</button>
-        <button class="primary" id="downloadBtn">Descargar</button>
+        <button id="undoBtn" type="button">Deshacer</button>
+        <button id="resetBtn" type="button">Reiniciar</button>
+        <button class="primary" id="downloadBtn" type="button">Descargar</button>
       </div>
 
       <div class="canvas-wrap" id="canvasWrap">
@@ -52,7 +57,7 @@ const title = 'Censurador de fotos';
       </div>
 
       <p class="mobile-tip">
-        La imagen ahora se ajusta automáticamente al ancho del móvil. Después puedes ampliarla usando el control de zoom.
+        En móvil puedes seleccionar con un dedo y hacer zoom con dos dedos. En ordenador usa los botones de lupa para acercar o alejar.
       </p>
 
       <p class="status" id="status">Listo.</p>
@@ -68,7 +73,8 @@ const title = 'Censurador de fotos';
       margin-bottom: 1.5rem;
     }
 
-    label {
+    label,
+    .zoom-controls {
       display: flex;
       flex-direction: column;
       gap: .45rem;
@@ -106,16 +112,39 @@ const title = 'Censurador de fotos';
       font-weight: 700;
     }
 
+    .zoom-buttons {
+      display: flex;
+      gap: .45rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .zoom-buttons button {
+      min-width: 48px;
+      padding: .85rem 1rem;
+      font-weight: 800;
+    }
+
+    .zoom-buttons output {
+      min-width: 72px;
+      text-align: center;
+      color: white;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #020617;
+      padding: .85rem .75rem;
+    }
+
     .canvas-wrap {
       position: relative;
       min-height: 420px;
+      max-height: 72vh;
       border-radius: 24px;
       border: 1px solid var(--border);
       overflow: auto;
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      touch-action: pan-x pan-y pinch-zoom;
       background:
         linear-gradient(45deg, rgba(148,163,184,.08) 25%, transparent 25%),
         linear-gradient(-45deg, rgba(148,163,184,.08) 25%, transparent 25%),
@@ -123,18 +152,22 @@ const title = 'Censurador de fotos';
         linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.08) 75%);
       background-size: 24px 24px;
       padding: 1rem;
+      overscroll-behavior: contain;
     }
 
     canvas {
-      max-width: 100%;
-      height: auto;
       display: none;
       cursor: crosshair;
-      transform-origin: top center;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      touch-action: none;
+      user-select: none;
+      flex: 0 0 auto;
     }
 
     #selectionBox {
       position: absolute;
+      z-index: 2;
       border: 2px dashed var(--primary);
       background: rgba(56,189,248,.15);
       pointer-events: none;
@@ -146,6 +179,12 @@ const title = 'Censurador de fotos';
     .mobile-tip,
     .status {
       color: var(--muted);
+    }
+
+    #emptyState {
+      margin: auto;
+      text-align: center;
+      line-height: 1.7;
     }
 
     .mobile-tip {
@@ -160,13 +199,14 @@ const title = 'Censurador de fotos';
 
       button,
       .file-button,
-      select {
+      select,
+      .zoom-controls {
         width: 100%;
       }
 
-      canvas {
-        width: 100%;
-        height: auto;
+      .zoom-buttons {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
       }
     }
   </style>
@@ -175,43 +215,108 @@ const title = 'Censurador de fotos';
     window.addEventListener('DOMContentLoaded', () => {
       const fileInput = document.getElementById('fileInput');
       const canvas = document.getElementById('canvas');
+      const canvasWrap = document.getElementById('canvasWrap');
       const ctx = canvas.getContext('2d');
-      const zoom = document.getElementById('zoom');
       const mode = document.getElementById('mode');
       const intensity = document.getElementById('intensity');
       const emptyState = document.getElementById('emptyState');
       const status = document.getElementById('status');
       const selectionBox = document.getElementById('selectionBox');
+      const zoomInBtn = document.getElementById('zoomInBtn');
+      const zoomOutBtn = document.getElementById('zoomOutBtn');
+      const fitBtn = document.getElementById('fitBtn');
+      const zoomValue = document.getElementById('zoomValue');
 
       let originalImage = null;
       let history = [];
       let drawing = false;
-      let startX = 0;
-      let startY = 0;
-      let zoomLevel = 1;
+      let startPoint = null;
+      let lastPoint = null;
+      let displayScale = 1;
+      let fitScale = 1;
+      let pinchStartDistance = 0;
+      let pinchStartScale = 1;
+      let pinchStartScroll = { left: 0, top: 0 };
+      let pinchStartCenter = { x: 0, y: 0 };
 
       const setStatus = (message) => {
         status.textContent = message;
       };
 
-      const updateZoom = () => {
-        zoomLevel = Number(zoom.value) / 100;
-        canvas.style.transform = `scale(${zoomLevel})`;
+      const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+      const updateCanvasCssSize = () => {
+        if (!canvas.width || !canvas.height) return;
+
+        canvas.style.width = `${Math.round(canvas.width * displayScale)}px`;
+        canvas.style.height = `${Math.round(canvas.height * displayScale)}px`;
+        zoomValue.textContent = `${Math.round((displayScale / fitScale) * 100)}%`;
       };
 
-      zoom.addEventListener('input', updateZoom);
+      const setZoom = (nextScale, anchorClientX = null, anchorClientY = null) => {
+        if (!canvas.width || !canvas.height) return;
 
-      const getPointer = (event) => {
+        const oldRect = canvas.getBoundingClientRect();
+        const wrapRect = canvasWrap.getBoundingClientRect();
+        const anchorX = anchorClientX ?? (wrapRect.left + wrapRect.width / 2);
+        const anchorY = anchorClientY ?? (wrapRect.top + wrapRect.height / 2);
+        const imageX = (anchorX - oldRect.left) / oldRect.width;
+        const imageY = (anchorY - oldRect.top) / oldRect.height;
+
+        displayScale = clamp(nextScale, fitScale * 0.5, fitScale * 8);
+        updateCanvasCssSize();
+
+        const newRect = canvas.getBoundingClientRect();
+        canvasWrap.scrollLeft += (newRect.left + imageX * newRect.width) - anchorX;
+        canvasWrap.scrollTop += (newRect.top + imageY * newRect.height) - anchorY;
+      };
+
+      const fitToViewport = () => {
+        if (!canvas.width || !canvas.height) return;
+
+        const availableWidth = Math.max(240, canvasWrap.clientWidth - 32);
+        fitScale = Math.min(1, availableWidth / canvas.width);
+        displayScale = fitScale;
+        updateCanvasCssSize();
+        canvasWrap.scrollLeft = 0;
+        canvasWrap.scrollTop = 0;
+      };
+
+      zoomInBtn.addEventListener('click', () => setZoom(displayScale * 1.25));
+      zoomOutBtn.addEventListener('click', () => setZoom(displayScale / 1.25));
+      fitBtn.addEventListener('click', fitToViewport);
+
+      const getCanvasPoint = (clientX, clientY) => {
         const rect = canvas.getBoundingClientRect();
-        const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-        const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+        return {
+          x: clamp((clientX - rect.left) * (canvas.width / rect.width), 0, canvas.width),
+          y: clamp((clientY - rect.top) * (canvas.height / rect.height), 0, canvas.height),
+          clientX,
+          clientY
+        };
+      };
+
+      const getSelectionBoxRect = (a, b) => {
+        const canvasLeft = canvas.offsetLeft;
+        const canvasTop = canvas.offsetTop;
+        const visualScaleX = canvas.clientWidth / canvas.width;
+        const visualScaleY = canvas.clientHeight / canvas.height;
 
         return {
-          x: (clientX - rect.left) / zoomLevel,
-          y: (clientY - rect.top) / zoomLevel,
-          rawX: clientX - rect.left,
-          rawY: clientY - rect.top
+          left: canvasLeft + Math.min(a.x, b.x) * visualScaleX,
+          top: canvasTop + Math.min(a.y, b.y) * visualScaleY,
+          width: Math.abs(a.x - b.x) * visualScaleX,
+          height: Math.abs(a.y - b.y) * visualScaleY
         };
+      };
+
+      const updateSelection = (a, b) => {
+        const rect = getSelectionBoxRect(a, b);
+        selectionBox.style.display = 'block';
+        selectionBox.style.left = `${rect.left}px`;
+        selectionBox.style.top = `${rect.top}px`;
+        selectionBox.style.width = `${rect.width}px`;
+        selectionBox.style.height = `${rect.height}px`;
       };
 
       const saveState = () => {
@@ -220,30 +325,31 @@ const title = 'Censurador de fotos';
       };
 
       const drawImage = (image) => {
-        const maxWidth = 1600;
+        const maxWidth = 2200;
         const ratio = Math.min(1, maxWidth / image.width);
 
         canvas.width = Math.round(image.width * ratio);
         canvas.height = Math.round(image.height * ratio);
-
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
         canvas.style.display = 'block';
         emptyState.hidden = true;
         history = [];
         saveState();
-
-        zoom.value = 100;
-        zoomLevel = 1;
-        updateZoom();
+        fitToViewport();
       };
 
       const pixelate = (x, y, width, height, blockSize) => {
-        for (let yy = y; yy < y + height; yy += blockSize) {
-          for (let xx = x; xx < x + width; xx += blockSize) {
-            const pixel = ctx.getImageData(xx, yy, 1, 1).data;
+        const safeBlockSize = Math.max(2, blockSize);
+
+        for (let yy = y; yy < y + height; yy += safeBlockSize) {
+          for (let xx = x; xx < x + width; xx += safeBlockSize) {
+            const sampleX = clamp(Math.floor(xx), 0, canvas.width - 1);
+            const sampleY = clamp(Math.floor(yy), 0, canvas.height - 1);
+            const pixel = ctx.getImageData(sampleX, sampleY, 1, 1).data;
             ctx.fillStyle = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
-            ctx.fillRect(xx, yy, blockSize, blockSize);
+            ctx.fillRect(Math.floor(xx), Math.floor(yy), safeBlockSize, safeBlockSize);
           }
         }
       };
@@ -263,12 +369,15 @@ const title = 'Censurador de fotos';
       };
 
       const censorArea = (a, b) => {
-        const x = Math.min(a.x, b.x);
-        const y = Math.min(a.y, b.y);
-        const width = Math.abs(a.x - b.x);
-        const height = Math.abs(a.y - b.y);
+        const x = Math.floor(Math.min(a.x, b.x));
+        const y = Math.floor(Math.min(a.y, b.y));
+        const width = Math.floor(Math.abs(a.x - b.x));
+        const height = Math.floor(Math.abs(a.y - b.y));
 
-        if (width < 4 || height < 4) return;
+        if (width < 4 || height < 4) {
+          setStatus('Selección demasiado pequeña. Arrastra una zona más grande.');
+          return;
+        }
 
         saveState();
 
@@ -277,88 +386,158 @@ const title = 'Censurador de fotos';
         }
 
         if (mode.value === 'blur') {
-          blurArea(x, y, width, height, Math.round(Number(intensity.value) / 3));
+          blurArea(x, y, width, height, Math.max(2, Math.round(Number(intensity.value) / 3)));
         }
 
         if (mode.value === 'black') {
           ctx.fillStyle = '#000';
           ctx.fillRect(x, y, width, height);
         }
+
+        setStatus('Zona censurada correctamente.');
       };
 
-      const updateSelection = (a, b) => {
-        selectionBox.style.display = 'block';
-        selectionBox.style.left = `${Math.min(a.rawX, b.rawX)}px`;
-        selectionBox.style.top = `${Math.min(a.rawY, b.rawY)}px`;
-        selectionBox.style.width = `${Math.abs(a.rawX - b.rawX)}px`;
-        selectionBox.style.height = `${Math.abs(a.rawY - b.rawY)}px`;
+      const distanceBetweenTouches = (touches) => {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.hypot(dx, dy);
+      };
+
+      const centerBetweenTouches = (touches) => ({
+        x: (touches[0].clientX + touches[1].clientX) / 2,
+        y: (touches[0].clientY + touches[1].clientY) / 2
+      });
+
+      const startDraw = (clientX, clientY) => {
+        if (!originalImage) return;
+        drawing = true;
+        startPoint = getCanvasPoint(clientX, clientY);
+        lastPoint = startPoint;
+        updateSelection(startPoint, startPoint);
+      };
+
+      const moveDraw = (clientX, clientY) => {
+        if (!drawing || !startPoint) return;
+        lastPoint = getCanvasPoint(clientX, clientY);
+        updateSelection(startPoint, lastPoint);
+      };
+
+      const endDraw = () => {
+        if (!drawing || !startPoint || !lastPoint) return;
+        drawing = false;
+        selectionBox.style.display = 'none';
+        censorArea(startPoint, lastPoint);
+        startPoint = null;
+        lastPoint = null;
       };
 
       fileInput.addEventListener('change', () => {
-        const file = fileInput.files[0];
+        const file = fileInput.files?.[0];
         if (!file) return;
 
+        if (!file.type.startsWith('image/')) {
+          setStatus('El archivo seleccionado no parece una imagen.');
+          return;
+        }
+
         const image = new Image();
+        const url = URL.createObjectURL(file);
 
         image.onload = () => {
+          URL.revokeObjectURL(url);
           originalImage = image;
           drawImage(image);
           setStatus('Imagen cargada correctamente.');
         };
 
-        image.src = URL.createObjectURL(file);
+        image.onerror = () => {
+          URL.revokeObjectURL(url);
+          setStatus('No se pudo cargar la imagen seleccionada.');
+        };
+
+        image.src = url;
       });
 
-      const startDraw = (event) => {
+      canvas.addEventListener('mousedown', (event) => {
+        event.preventDefault();
+        startDraw(event.clientX, event.clientY);
+      });
+
+      window.addEventListener('mousemove', (event) => {
+        if (!drawing) return;
+        event.preventDefault();
+        moveDraw(event.clientX, event.clientY);
+      });
+
+      window.addEventListener('mouseup', () => {
+        endDraw();
+      });
+
+      canvas.addEventListener('touchstart', (event) => {
         if (!originalImage) return;
-        drawing = true;
-        const point = getPointer(event);
-        startX = point.x;
-        startY = point.y;
-      };
 
-      const moveDraw = (event) => {
-        if (!drawing) return;
-        updateSelection({ rawX: startX * zoomLevel, rawY: startY * zoomLevel }, getPointer(event));
-      };
+        if (event.touches.length === 1) {
+          event.preventDefault();
+          startDraw(event.touches[0].clientX, event.touches[0].clientY);
+        }
 
-      const endDraw = (event) => {
-        if (!drawing) return;
-        drawing = false;
-        selectionBox.style.display = 'none';
-        censorArea({ x: startX, y: startY }, getPointer(event));
-      };
-
-      canvas.addEventListener('mousedown', startDraw);
-      canvas.addEventListener('mousemove', moveDraw);
-      canvas.addEventListener('mouseup', endDraw);
-
-      canvas.addEventListener('touchstart', (e) => {
-        if (e.touches.length !== 1) return;
-        e.preventDefault();
-        startDraw(e);
+        if (event.touches.length === 2) {
+          event.preventDefault();
+          drawing = false;
+          selectionBox.style.display = 'none';
+          pinchStartDistance = distanceBetweenTouches(event.touches);
+          pinchStartScale = displayScale;
+          pinchStartScroll = { left: canvasWrap.scrollLeft, top: canvasWrap.scrollTop };
+          pinchStartCenter = centerBetweenTouches(event.touches);
+        }
       }, { passive: false });
 
-      canvas.addEventListener('touchmove', (e) => {
-        if (e.touches.length !== 1) return;
-        e.preventDefault();
-        moveDraw(e);
+      canvas.addEventListener('touchmove', (event) => {
+        if (!originalImage) return;
+
+        if (event.touches.length === 1 && drawing) {
+          event.preventDefault();
+          moveDraw(event.touches[0].clientX, event.touches[0].clientY);
+        }
+
+        if (event.touches.length === 2 && pinchStartDistance > 0) {
+          event.preventDefault();
+          const center = centerBetweenTouches(event.touches);
+          const distance = distanceBetweenTouches(event.touches);
+          const scale = pinchStartScale * (distance / pinchStartDistance);
+          setZoom(scale, pinchStartCenter.x, pinchStartCenter.y);
+          canvasWrap.scrollLeft = pinchStartScroll.left + (pinchStartCenter.x - center.x);
+          canvasWrap.scrollTop = pinchStartScroll.top + (pinchStartCenter.y - center.y);
+        }
       }, { passive: false });
 
-      canvas.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        endDraw(e.changedTouches ? { touches: [e.changedTouches[0]] } : e);
+      canvas.addEventListener('touchend', (event) => {
+        event.preventDefault();
+
+        if (event.touches.length === 0 && drawing) {
+          endDraw();
+        }
+
+        if (event.touches.length < 2) {
+          pinchStartDistance = 0;
+        }
       }, { passive: false });
 
       document.getElementById('undoBtn').onclick = () => {
-        if (history.length <= 1) return;
+        if (history.length <= 1) {
+          setStatus('No hay más cambios que deshacer.');
+          return;
+        }
+
         history.pop();
         ctx.putImageData(history[history.length - 1], 0, 0);
+        setStatus('Último cambio deshecho.');
       };
 
       document.getElementById('resetBtn').onclick = () => {
         if (!originalImage) return;
         drawImage(originalImage);
+        setStatus('Imagen reiniciada.');
       };
 
       document.getElementById('downloadBtn').onclick = () => {
@@ -369,6 +548,11 @@ const title = 'Censurador de fotos';
         link.href = canvas.toDataURL('image/png');
         link.click();
       };
+
+      window.addEventListener('resize', () => {
+        if (!originalImage) return;
+        fitToViewport();
+      });
     });
   </script>
 </Layout>
