@@ -1,10 +1,12 @@
 ---
 import { getLocalizedPath, useTranslations } from '../i18n/ui';
 
-const { lang = 'en' } = Astro.props;
+const { lang = 'en', path = '/' } = Astro.props;
 const t = useTranslations(lang);
-const enPath = '/';
-const esPath = '/es/';
+const pathWithoutLocale = String(path).replace(/^\/es(?=\/|$)/, '') || '/';
+const currentPath = pathWithoutLocale.startsWith('/') ? pathWithoutLocale : `/${pathWithoutLocale}`;
+const enPath = getLocalizedPath(currentPath, 'en');
+const esPath = getLocalizedPath(currentPath, 'es');
 ---
 
 <header>
