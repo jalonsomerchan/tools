@@ -51,13 +51,15 @@ const title = 'Censurador de fotos';
       </div>
 
       <div class="canvas-wrap" id="canvasWrap">
-        <canvas id="canvas"></canvas>
-        <div id="selectionBox"></div>
+        <div class="canvas-stage" id="canvasStage">
+          <canvas id="canvas"></canvas>
+          <div id="selectionBox"></div>
+        </div>
         <p id="emptyState">Sube una imagen para empezar. Después arrastra sobre la foto para censurar una zona.</p>
       </div>
 
       <p class="mobile-tip">
-        En móvil puedes seleccionar con un dedo y hacer zoom con dos dedos. En ordenador usa los botones de lupa para acercar o alejar.
+        En móvil: un dedo selecciona una zona; dos dedos hacen zoom. En ordenador usa los botones +, − y Ajustar.
       </p>
 
       <p class="status" id="status">Listo.</p>
@@ -155,14 +157,19 @@ const title = 'Censurador de fotos';
       overscroll-behavior: contain;
     }
 
-    canvas {
+    .canvas-stage {
+      position: relative;
       display: none;
+      flex: 0 0 auto;
+    }
+
+    canvas {
+      display: block;
       cursor: crosshair;
       border-radius: 12px;
       box-shadow: 0 20px 60px rgba(0,0,0,.25);
       touch-action: none;
       user-select: none;
-      flex: 0 0 auto;
     }
 
     #selectionBox {
@@ -215,6 +222,7 @@ const title = 'Censurador de fotos';
     window.addEventListener('DOMContentLoaded', () => {
       const fileInput = document.getElementById('fileInput');
       const canvas = document.getElementById('canvas');
+      const canvasStage = document.getElementById('canvasStage');
       const canvasWrap = document.getElementById('canvasWrap');
       const ctx = canvas.getContext('2d');
       const mode = document.getElementById('mode');
@@ -236,8 +244,6 @@ const title = 'Censurador de fotos';
       let fitScale = 1;
       let pinchStartDistance = 0;
       let pinchStartScale = 1;
-      let pinchStartScroll = { left: 0, top: 0 };
-      let pinchStartCenter = { x: 0, y: 0 };
 
       const setStatus = (message) => {
         status.textContent = message;
@@ -248,27 +254,20 @@ const title = 'Censurador de fotos';
       const updateCanvasCssSize = () => {
         if (!canvas.width || !canvas.height) return;
 
-        canvas.style.width = `${Math.round(canvas.width * displayScale)}px`;
-        canvas.style.height = `${Math.round(canvas.height * displayScale)}px`;
+        const cssWidth = Math.round(canvas.width * displayScale);
+        const cssHeight = Math.round(canvas.height * displayScale);
+        canvas.style.width = `${cssWidth}px`;
+        canvas.style.height = `${cssHeight}px`;
+        canvasStage.style.width = `${cssWidth}px`;
+        canvasStage.style.height = `${cssHeight}px`;
         zoomValue.textContent = `${Math.round((displayScale / fitScale) * 100)}%`;
       };
 
-      const setZoom = (nextScale, anchorClientX = null, anchorClientY = null) => {
+      const setZoom = (nextScale) => {
         if (!canvas.width || !canvas.height) return;
-
-        const oldRect = canvas.getBoundingClientRect();
-        const wrapRect = canvasWrap.getBoundingClientRect();
-        const anchorX = anchorClientX ?? (wrapRect.left + wrapRect.width / 2);
-        const anchorY = anchorClientY ?? (wrapRect.top + wrapRect.height / 2);
-        const imageX = (anchorX - oldRect.left) / oldRect.width;
-        const imageY = (anchorY - oldRect.top) / oldRect.height;
 
         displayScale = clamp(nextScale, fitScale * 0.5, fitScale * 8);
         updateCanvasCssSize();
-
-        const newRect = canvas.getBoundingClientRect();
-        canvasWrap.scrollLeft += (newRect.left + imageX * newRect.width) - anchorX;
-        canvasWrap.scrollTop += (newRect.top + imageY * newRect.height) - anchorY;
       };
 
       const fitToViewport = () => {
@@ -290,33 +289,23 @@ const title = 'Censurador de fotos';
         const rect = canvas.getBoundingClientRect();
         return {
           x: clamp((clientX - rect.left) * (canvas.width / rect.width), 0, canvas.width),
-          y: clamp((clientY - rect.top) * (canvas.height / rect.height), 0, canvas.height),
-          clientX,
-          clientY
-        };
-      };
-
-      const getSelectionBoxRect = (a, b) => {
-        const canvasLeft = canvas.offsetLeft;
-        const canvasTop = canvas.offsetTop;
-        const visualScaleX = canvas.clientWidth / canvas.width;
-        const visualScaleY = canvas.clientHeight / canvas.height;
-
-        return {
-          left: canvasLeft + Math.min(a.x, b.x) * visualScaleX,
-          top: canvasTop + Math.min(a.y, b.y) * visualScaleY,
-          width: Math.abs(a.x - b.x) * visualScaleX,
-          height: Math.abs(a.y - b.y) * visualScaleY
+          y: clamp((clientY - rect.top) * (canvas.height / rect.height), 0, canvas.height)
         };
       };
 
       const updateSelection = (a, b) => {
-        const rect = getSelectionBoxRect(a, b);
+        const scaleX = canvas.clientWidth / canvas.width;
+        const scaleY = canvas.clientHeight / canvas.height;
+        const left = Math.min(a.x, b.x) * scaleX;
+        const top = Math.min(a.y, b.y) * scaleY;
+        const width = Math.abs(a.x - b.x) * scaleX;
+        const height = Math.abs(a.y - b.y) * scaleY;
+
         selectionBox.style.display = 'block';
-        selectionBox.style.left = `${rect.left}px`;
-        selectionBox.style.top = `${rect.top}px`;
-        selectionBox.style.width = `${rect.width}px`;
-        selectionBox.style.height = `${rect.height}px`;
+        selectionBox.style.left = `${left}px`;
+        selectionBox.style.top = `${top}px`;
+        selectionBox.style.width = `${width}px`;
+        selectionBox.style.height = `${height}px`;
       };
 
       const saveState = () => {
@@ -333,7 +322,7 @@ const title = 'Censurador de fotos';
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-        canvas.style.display = 'block';
+        canvasStage.style.display = 'block';
         emptyState.hidden = true;
         history = [];
         saveState();
@@ -403,11 +392,6 @@ const title = 'Censurador de fotos';
         return Math.hypot(dx, dy);
       };
 
-      const centerBetweenTouches = (touches) => ({
-        x: (touches[0].clientX + touches[1].clientX) / 2,
-        y: (touches[0].clientY + touches[1].clientY) / 2
-      });
-
       const startDraw = (clientX, clientY) => {
         if (!originalImage) return;
         drawing = true;
@@ -432,7 +416,7 @@ const title = 'Censurador de fotos';
       };
 
       fileInput.addEventListener('change', () => {
-        const file = fileInput.files?.[0];
+        const file = fileInput.files && fileInput.files[0];
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
@@ -487,8 +471,6 @@ const title = 'Censurador de fotos';
           selectionBox.style.display = 'none';
           pinchStartDistance = distanceBetweenTouches(event.touches);
           pinchStartScale = displayScale;
-          pinchStartScroll = { left: canvasWrap.scrollLeft, top: canvasWrap.scrollTop };
-          pinchStartCenter = centerBetweenTouches(event.touches);
         }
       }, { passive: false });
 
@@ -502,12 +484,8 @@ const title = 'Censurador de fotos';
 
         if (event.touches.length === 2 && pinchStartDistance > 0) {
           event.preventDefault();
-          const center = centerBetweenTouches(event.touches);
           const distance = distanceBetweenTouches(event.touches);
-          const scale = pinchStartScale * (distance / pinchStartDistance);
-          setZoom(scale, pinchStartCenter.x, pinchStartCenter.y);
-          canvasWrap.scrollLeft = pinchStartScroll.left + (pinchStartCenter.x - center.x);
-          canvasWrap.scrollTop = pinchStartScroll.top + (pinchStartCenter.y - center.y);
+          setZoom(pinchStartScale * (distance / pinchStartDistance));
         }
       }, { passive: false });
 
