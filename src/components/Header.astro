@@ -1,16 +1,31 @@
+---
+import LanguageSwitcher from './LanguageSwitcher.astro';
+
+const {
+  lang = 'en',
+  path = '/'
+} = Astro.props;
+
+const isEs = lang === 'es';
+---
+
 <header>
   <div class="page-shell header-inner">
-    <a href="/" class="brand">
+    <a href={isEs ? '/es/' : '/'} class="brand">
       <span class="brand-mark">A</span>
       <span>Alon Tools</span>
     </a>
 
-    <nav>
-      <a href="/">Inicio</a>
-      <a href="/json-viewer/">JSON</a>
-      <a href="/image-compressor/">Imágenes</a>
-      <a href="/curl-builder/">cURL</a>
-    </nav>
+    <div class="header-right">
+      <nav>
+        <a href={isEs ? '/es/' : '/'}>{isEs ? 'Inicio' : 'Home'}</a>
+        <a href={isEs ? '/es/json-viewer/' : '/json-viewer/'}>JSON</a>
+        <a href={isEs ? '/es/image-compressor/' : '/image-compressor/'}>{isEs ? 'Imágenes' : 'Images'}</a>
+        <a href={isEs ? '/es/curl-builder/' : '/curl-builder/'}>cURL</a>
+      </nav>
+
+      <LanguageSwitcher current={lang} path={path} />
+    </div>
   </div>
 </header>
 
@@ -29,6 +44,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .header-right {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .brand {
@@ -75,6 +99,11 @@
       align-items: flex-start;
       flex-direction: column;
       gap: .8rem;
+    }
+
+    .header-right {
+      width: 100%;
+      justify-content: space-between;
     }
   }
 </style>
