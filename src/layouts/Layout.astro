@@ -1,17 +1,52 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { getLangFromUrl, getLocalizedPath, useTranslations } from '../i18n/ui';
 
-const { title } = Astro.props;
+const lang = Astro.props.lang || getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const {
+  title = 'Alon Tools',
+  description = t('site.description'),
+  path = Astro.url.pathname.replace(/^\/es/, '') || '/',
+  image = 'https://tools.alon.one/og-image.png'
+} = Astro.props;
+
+const site = 'https://tools.alon.one';
+const canonicalPath = getLocalizedPath(path, lang);
+const canonical = `${site}${canonicalPath}`;
+const enUrl = `${site}${getLocalizedPath(path, 'en')}`;
+const esUrl = `${site}${getLocalizedPath(path, 'es')}`;
 ---
 
-<html lang="es">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#020617" />
 
     <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="es" href={esUrl} />
+    <link rel="alternate" hreflang="x-default" href={enUrl} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Alon Tools" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
 
     <style is:global>
       :root {
@@ -72,7 +107,7 @@ const { title } = Astro.props;
   </head>
 
   <body>
-    <Header />
+    <Header lang={lang} path={path} />
 
     <main class="page-shell">
       <slot />
