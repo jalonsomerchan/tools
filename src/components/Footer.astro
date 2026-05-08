@@ -20,30 +20,29 @@ const { lang = 'en' } = Astro.props;
 
 <style>
   .site-footer {
-    margin-top: var(--space-20);
-    border-top: 1px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+    padding: var(--space-12) 0 var(--space-16);
+    color: var(--color-text-soft);
+    font-size: .875rem;
   }
 
   .footer-inner {
-    padding: var(--space-8) 0;
     display: flex;
-    align-items: flex-start;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: space-between;
-    gap: var(--space-6);
-    color: var(--color-text-muted);
-    font-size: .95rem;
+    gap: var(--space-3);
   }
 
   strong {
     display: block;
     margin-bottom: var(--space-2);
     color: var(--color-text);
-    font-size: 1rem;
+    font-weight: 950;
+    letter-spacing: -.04em;
   }
 
   p {
-    max-width: 42ch;
+    max-width: 46ch;
     margin: 0;
   }
 
@@ -59,17 +58,19 @@ const { lang = 'en' } = Astro.props;
     color: var(--color-text-muted);
     padding: .45rem .7rem;
     text-decoration: none;
-    font-weight: 700;
-    transition: background-color var(--transition-base), color var(--transition-base);
+    font-weight: 900;
+    transition: background var(--transition-base), color var(--transition-base), transform var(--transition-base);
   }
 
   a:hover {
     background: var(--color-surface-soft);
     color: var(--color-text);
+    transform: translateY(-1px);
   }
 
   @media (max-width: 700px) {
     .footer-inner {
+      align-items: flex-start;
       flex-direction: column;
     }
 
