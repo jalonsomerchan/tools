@@ -5,10 +5,13 @@
   "nav.images": "Imágenes",
   "nav.development": "Desarrollo",
   "base64.title": "Base64 encoder y decoder",
-  "base64.description": "Codifica y decodifica Base64 localmente en tu navegador.",
+  "base64.description": "Codifica y decodifica Base64 localmente en tu navegador. Tu texto nunca sale de tu dispositivo.",
   "base64.encode": "Codificar",
   "base64.decode": "Decodificar",
+  "base64.swap": "Intercambiar",
   "base64.clear": "Limpiar",
-  "base64.input": "Texto original",
-  "base64.output": "Resultado"
+  "base64.copy": "Copiar resultado",
+  "base64.input": "Texto de entrada...",
+  "base64.output": "Resultado...",
+  "base64.ready": "Listo para convertir."
 }
