@@ -15,7 +15,18 @@ const description = 'Pega un texto y cuenta caracteres, palabras, frases, párra
       Pega cualquier texto para analizarlo al instante: caracteres, palabras, frases, párrafos, espacios y rankings de letras y palabras más repetidas. No se envía nada fuera de tu navegador.
     </p>
 
-    <section class="tool-card" aria-labelledby="inputTitle">
+    <section class="stats-section" aria-labelledby="statsTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="statsTitle">Resumen</h2>
+          <p id="densityInfo">Sin texto todavía.</p>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="statsGrid"></div>
+    </section>
+
+    <section class="tool-card input-card" aria-labelledby="inputTitle">
       <div class="section-heading">
         <div>
           <h2 id="inputTitle">Texto</h2>
@@ -33,17 +44,6 @@ const description = 'Pega un texto y cuenta caracteres, palabras, frases, párra
       </div>
 
       <p class="status" id="status" role="status" aria-live="polite">Listo para analizar texto.</p>
-    </section>
-
-    <section class="stats-section" aria-labelledby="statsTitle">
-      <div class="section-heading">
-        <div>
-          <h2 id="statsTitle">Resumen</h2>
-          <p id="densityInfo">Sin texto todavía.</p>
-        </div>
-      </div>
-
-      <div class="stats-grid" id="statsGrid"></div>
     </section>
 
     <section class="rankings-grid" aria-label="Rankings de repeticiones">
@@ -138,9 +138,14 @@ const description = 'Pega un texto y cuenta caracteres, palabras, frases, párra
     .status.success { color: #86efac; }
     .status.error { color: #fca5a5; }
 
+    .input-card,
     .stats-section,
     .ranking-panel {
       margin-top: 1.5rem;
+    }
+
+    .stats-section,
+    .ranking-panel {
       padding: 1.5rem;
       border-radius: 24px;
       border: 1px solid var(--border);
@@ -154,6 +159,9 @@ const description = 'Pega un texto y cuenta caracteres, palabras, frases, párra
     }
 
     .stat-card {
+      display: flex;
+      flex-direction: column;
+      gap: .55rem;
       border-radius: 18px;
       border: 1px solid var(--border);
       background: rgba(2, 6, 23, .55);
@@ -163,14 +171,15 @@ const description = 'Pega un texto y cuenta caracteres, palabras, frases, párra
     .stat-card span {
       display: block;
       color: var(--muted);
-      margin-bottom: .4rem;
       font-size: .9rem;
+      line-height: 1.35;
     }
 
     .stat-card strong {
       display: block;
       color: white;
       font-size: 1.6rem;
+      line-height: 1.15;
       overflow-wrap: anywhere;
     }
 
@@ -196,9 +205,7 @@ const description = 'Pega un texto y cuenta caracteres, palabras, frases, párra
       padding: .75rem .85rem;
     }
 
-    .ranking-main {
-      min-width: 0;
-    }
+    .ranking-main { min-width: 0; }
 
     .ranking-main strong {
       display: block;
@@ -250,6 +257,8 @@ const description = 'Pega un texto y cuenta caracteres, palabras, frases, párra
       .counter-page { padding: 2.5rem 0; }
       button { width: 100%; }
       textarea { min-height: 260px; }
+      .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stat-card { padding: .85rem; }
       .stat-card strong { font-size: 1.35rem; }
     }
   </style>
