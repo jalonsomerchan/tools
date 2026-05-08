@@ -2,16 +2,46 @@
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
-const { title } = Astro.props;
+const {
+  title,
+  description = 'Privacy-first online developer tools. Everything runs locally in your browser without uploading files.',
+  lang = 'en',
+  path = '/',
+  image = 'https://tools.alon.one/og-image.png'
+} = Astro.props;
+
+const siteUrl = 'https://tools.alon.one';
+const canonical = `${siteUrl}${path}`;
 ---
 
-<html lang="es">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
 
     <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#020617" />
+
+    <link rel="canonical" href={canonical} />
+
+    <link rel="alternate" hreflang="es" href={`${siteUrl}/es${path === '/' ? '' : path}`} />
+    <link rel="alternate" hreflang="en" href={`${siteUrl}${path}`} />
+    <link rel="alternate" hreflang="x-default" href={`${siteUrl}${path}`} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Alon Tools" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
 
     <style is:global>
       :root {
@@ -26,6 +56,10 @@ const { title } = Astro.props;
 
       * { box-sizing: border-box; }
 
+      html {
+        scroll-behavior: smooth;
+      }
+
       body {
         margin: 0;
         min-height: 100vh;
@@ -34,6 +68,8 @@ const { title } = Astro.props;
           var(--bg);
         color: var(--text);
         font-family: Inter, system-ui, sans-serif;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
       }
 
       .page-shell {
