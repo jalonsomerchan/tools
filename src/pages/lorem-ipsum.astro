@@ -256,12 +256,7 @@ const description = 'Genera texto Lorem Ipsum por letras, párrafos o páginas, 
 
     const clampNumber = (value: string, min: number, max: number, fallback: number) => {
       const number = Number.parseInt(value, 10);
-
-      if (Number.isNaN(number)) {
-        return fallback;
-      }
-
-      return Math.min(max, Math.max(min, number));
+      return Number.isNaN(number) ? fallback : Math.min(max, Math.max(min, number));
     };
 
     const sentenceCase = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
@@ -428,7 +423,7 @@ const description = 'Genera texto Lorem Ipsum por letras, párrafos o páginas, 
         return;
       }
 
-      const printable = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700');
+      const printable = window.open('', '_blank', 'width=900,height=700');
 
       if (!printable) {
         setStatus('El navegador ha bloqueado la ventana de exportación PDF.', 'error');
@@ -440,6 +435,7 @@ const description = 'Genera texto Lorem Ipsum por letras, párrafos o páginas, 
         .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`)
         .join('\n');
 
+      printable.document.open();
       printable.document.write(`<!doctype html>
 <html lang="es">
 <head>
@@ -455,14 +451,15 @@ const description = 'Genera texto Lorem Ipsum por letras, párrafos o páginas, 
 <body>
   <h1>Lorem Ipsum</h1>
   ${paragraphs}
-  <script>
-    window.addEventListener('load', () => {
-      window.print();
-    });
-  <\/script>
 </body>
 </html>`);
       printable.document.close();
+
+      window.setTimeout(() => {
+        printable.focus();
+        printable.print();
+      }, 250);
+
       setStatus('Ventana de impresión abierta. Elige “Guardar como PDF”.', 'success');
     };
 
