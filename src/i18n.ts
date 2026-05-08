@@ -1,31 +1,37 @@
+import en from './i18n/en.json';
+import es from './i18n/es.json';
+
 export const languages = {
   en: 'English',
   es: 'Español'
-};
+} as const;
 
 export const defaultLang = 'en';
 
-export const ui = {
-  en: {
-    title: 'Alon Tools',
-    privacy: 'Everything runs locally in your browser',
-    development: 'Development',
-    images: 'Images',
-    internet: 'Internet & Maps',
-    writing: 'Writing'
-  },
-  es: {
-    title: 'Alon Tools',
-    privacy: 'Todo se ejecuta localmente en tu navegador',
-    development: 'Desarrollo',
-    images: 'Imágenes',
-    internet: 'Internet y mapas',
-    writing: 'Texto y escritura'
-  }
+export const translations = {
+  en,
+  es
 } as const;
 
-export function useTranslations(lang: keyof typeof ui) {
-  return function t(key: keyof typeof ui.en) {
-    return ui[lang][key] || ui.en[key];
+export type Language = keyof typeof translations;
+export type TranslationKey = keyof typeof en;
+
+export function getLangFromPath(pathname: string): Language {
+  return pathname.startsWith('/es') ? 'es' : 'en';
+}
+
+export function localizedPath(path: string, lang: Language): string {
+  if (lang === 'es') {
+    return `/es${path === '/' ? '' : path}`;
+  }
+
+  return path;
+}
+
+export function useTranslations(lang: Language = defaultLang) {
+  return function t(key: TranslationKey | string) {
+    return translations[lang]?.[key as TranslationKey]
+      || translations.en[key as TranslationKey]
+      || key;
   };
 }
