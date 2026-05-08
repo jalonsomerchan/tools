@@ -1,0 +1,56 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout
+  title="JWT decoder"
+  description="Decodifica tokens JWT online de forma privada y local."
+  lang="es"
+  path="/jwt-decoder/"
+>
+  <section style="padding:4rem 0;">
+    <div class="eyebrow">JWT Tool</div>
+
+    <h1>JWT decoder</h1>
+
+    <p class="hero-text">
+      Decodifica payloads JWT directamente en tu navegador.
+      Los tokens nunca se envían a servidores externos.
+    </p>
+
+    <section class="tool-card">
+      <textarea id="jwtInput" placeholder="eyJhbGciOi..."></textarea>
+
+      <div class="editor-grid">
+        <pre id="headerOutput"></pre>
+        <pre id="payloadOutput"></pre>
+      </div>
+    </section>
+  </section>
+
+  <style>
+    textarea{width:100%;min-height:180px;border-radius:24px;border:1px solid var(--border);background:#020617;color:#fff;padding:1rem;font-family:ui-monospace,monospace;margin-bottom:1rem}
+    .editor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem}
+    pre{border-radius:24px;border:1px solid var(--border);background:#020617;color:#94a3b8;padding:1rem;overflow:auto;min-height:320px}
+  </style>
+
+  <script>
+    const decode=(str)=>JSON.parse(atob(str.replace(/-/g,'+').replace(/_/g,'/')));
+
+    window.addEventListener('DOMContentLoaded',()=>{
+      const input=document.getElementById('jwtInput');
+
+      input.addEventListener('input',()=>{
+        try{
+          const [header,payload]=input.value.split('.');
+
+          document.getElementById('headerOutput').textContent=JSON.stringify(decode(header),null,2);
+          document.getElementById('payloadOutput').textContent=JSON.stringify(decode(payload),null,2);
+        }catch{
+          document.getElementById('headerOutput').textContent='JWT inválido';
+          document.getElementById('payloadOutput').textContent='JWT inválido';
+        }
+      });
+    });
+  </script>
+</Layout>
