@@ -1,0 +1,361 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl } from '../i18n/ui';
+
+const lang = getLangFromUrl(Astro.url);
+const isSpanish = lang === 'es';
+
+const tools = [
+  {
+    category: isSpanish ? 'Desarrollo' : 'Development',
+    items: [
+      ['Base64 encoder & decoder', isSpanish ? 'Codifica y decodifica Base64.' : 'Encode and decode Base64 text.', '/base64/', '64'],
+      [isSpanish ? 'Parser y conversor de CSV' : 'CSV parser & converter', isSpanish ? 'Previsualiza CSV y conviértelo a JSON, Markdown o HTML.' : 'Preview CSV and convert it to JSON, Markdown or HTML.', '/csv-converter/', 'CSV'],
+      ['JSON viewer & formatter', isSpanish ? 'Visualiza, valida y formatea JSON.' : 'View, validate and format JSON.', '/json-viewer/', '{}'],
+      [isSpanish ? 'Generador MD5' : 'MD5 generator', isSpanish ? 'Genera hashes MD5 en el navegador.' : 'Generate MD5 hashes in the browser.', '/md5/', 'MD5'],
+      ['JWT decoder', isSpanish ? 'Decodifica JWT localmente.' : 'Decode JWT tokens locally.', '/jwt-decoder/', 'JWT'],
+      ['URL encoder & decoder', isSpanish ? 'Codifica parámetros y URLs.' : 'Encode URLs and query parameters.', '/url-encoder/', 'ENC'],
+      [isSpanish ? 'Inspector de URLs' : 'URL inspector', isSpanish ? 'Analiza URLs para desarrolladores.' : 'Analyze URLs for developers.', '/url-inspector/', 'URL'],
+      [isSpanish ? 'Configurador cURL' : 'cURL builder', isSpanish ? 'Genera peticiones HTTP.' : 'Generate HTTP requests and code snippets.', '/curl-builder/', 'API'],
+      ['Diff checker', isSpanish ? 'Compara textos rápidamente.' : 'Compare texts quickly.', '/diff-checker/', 'DIFF']
+    ]
+  },
+  {
+    category: isSpanish ? 'Imágenes' : 'Images',
+    items: [
+      [isSpanish ? 'Generador de placeholders SVG' : 'SVG placeholder generator', isSpanish ? 'Crea SVG, data URLs y snippets HTML/CSS.' : 'Create SVG placeholders and data URLs.', '/svg-placeholder/', 'SVG'],
+      [isSpanish ? 'Generador y lector QR' : 'QR code generator & reader', isSpanish ? 'Crea códigos QR y lee imágenes locales.' : 'Generate QR codes and read local QR images.', '/qr-code/', 'QR'],
+      [isSpanish ? 'Compresor de imágenes' : 'Image compressor', isSpanish ? 'Reduce el tamaño de imágenes.' : 'Reduce image file size locally.', '/image-compressor/', 'ZIP'],
+      [isSpanish ? 'Conversor de imágenes' : 'Image converter', isSpanish ? 'Convierte PNG, JPEG y WebP.' : 'Convert between PNG, JPEG and WebP.', '/image-converter/', 'CONV'],
+      [isSpanish ? 'Información de imágenes' : 'Image information', isSpanish ? 'Obtén metadatos y tamaño.' : 'Get image size and metadata.', '/image-info/', 'IMG'],
+      [isSpanish ? 'Generador de favicon' : 'Favicon generator', isSpanish ? 'Crea favicons desde texto o imágenes.' : 'Create favicons from text or images.', '/favicon-generator/', 'ICO'],
+      [isSpanish ? 'Censurador de fotos' : 'Photo censor', isSpanish ? 'Pixelado, blur y censura.' : 'Pixelate, blur or cover image areas.', '/photo-censor/', 'CEN']
+    ]
+  },
+  {
+    category: isSpanish ? 'Internet y mapas' : 'Internet & maps',
+    items: [
+      ['DNS lookup', isSpanish ? 'Consulta registros DNS con Google Public DNS.' : 'Query DNS records with Google Public DNS.', '/dns-lookup/', 'DNS'],
+      [isSpanish ? 'Información de IP' : 'IP information', isSpanish ? 'Consulta información técnica de IPs.' : 'Look up technical IP information.', '/ip-info/', 'IP'],
+      [isSpanish ? 'Coordenadas de direcciones' : 'Address coordinates', isSpanish ? 'Busca coordenadas GPS.' : 'Find GPS coordinates from an address.', '/geocoder/', 'MAP'],
+      [isSpanish ? 'Preview social de URLs' : 'Social URL preview', isSpanish ? 'Comprueba Open Graph y Twitter.' : 'Check Open Graph and Twitter Cards.', '/social-preview/', 'SOC']
+    ]
+  },
+  {
+    category: isSpanish ? 'Texto y escritura' : 'Text & writing',
+    items: [
+      [isSpanish ? 'Generador de Lorem Ipsum' : 'Lorem Ipsum generator', isSpanish ? 'Genera texto por letras, párrafos o páginas.' : 'Generate filler text by letters, paragraphs or pages.', '/lorem-ipsum/', 'TXT'],
+      ['Markdown writer & preview', isSpanish ? 'Editor Markdown con preview.' : 'Markdown editor with live preview.', '/markdown-preview/', 'MD']
+    ]
+  }
+];
+
+const popularTools = [
+  '/json-viewer/',
+  '/csv-converter/',
+  '/qr-code/',
+  '/image-compressor/',
+  '/dns-lookup/',
+  '/lorem-ipsum/'
+];
+
+const flattenedTools = tools.flatMap((group) =>
+  group.items.map(([title, description, href, icon]) => ({
+    category: group.category,
+    title,
+    description,
+    href,
+    icon,
+    popular: popularTools.includes(String(href))
+  }))
+);
+
+const homeHref = isSpanish ? '/es/' : '/';
+const pageTitle = isSpanish ? 'Herramienta no encontrada — Alon Tools' : 'Tool not found — Alon Tools';
+const pageDescription = isSpanish
+  ? 'La herramienta que buscas no existe o se ha movido. Encuentra rápidamente una alternativa en Alon Tools.'
+  : 'The tool you are looking for does not exist or has moved. Quickly find another Alon Tools utility.';
+---
+
+<Layout title={pageTitle} description={pageDescription} lang={lang} path="/404" translated={false}>
+  <section class="not-found-hero">
+    <div class="eyebrow">404</div>
+
+    <h1>{isSpanish ? 'Herramienta no encontrada' : 'Tool not found'}</h1>
+
+    <p class="hero-text">
+      {isSpanish
+        ? 'La URL no existe, la herramienta se ha movido o todavía no está disponible. Usa el buscador o vuelve a una herramienta real.'
+        : 'This URL does not exist, the tool has moved, or it is not available yet. Use the search box or jump back to a real tool.'}
+    </p>
+
+    <div class="hero-actions">
+      <a class="primary-link" href={homeHref}>{isSpanish ? 'Volver al inicio' : 'Back to home'}</a>
+      <a class="secondary-link" href="#tools-directory">{isSpanish ? 'Ver herramientas' : 'Browse tools'}</a>
+    </div>
+  </section>
+
+  <section class="tool-card recovery-card" aria-labelledby="searchTitle">
+    <div class="section-heading">
+      <div>
+        <h2 id="searchTitle">{isSpanish ? 'Buscar una herramienta' : 'Find a tool'}</h2>
+        <p>
+          {isSpanish
+            ? 'Filtra por nombre, descripción o categoría. Todo ocurre en esta página.'
+            : 'Filter by name, description or category. Everything happens on this page.'}
+        </p>
+      </div>
+    </div>
+
+    <label for="toolSearch">{isSpanish ? 'Buscar' : 'Search'}</label>
+    <input id="toolSearch" type="search" placeholder={isSpanish ? 'Ejemplo: json, qr, imagen, dns...' : 'Example: json, qr, image, dns...'} autocomplete="off" />
+
+    <p class="result-count" id="resultCount"></p>
+  </section>
+
+  <section id="tools-directory" class="directory-section" aria-label={isSpanish ? 'Herramientas disponibles' : 'Available tools'}>
+    <div class="section-heading">
+      <div>
+        <h2>{isSpanish ? 'Herramientas populares' : 'Popular tools'}</h2>
+        <p>{isSpanish ? 'Accesos rápidos para recuperarte del 404.' : 'Quick links to recover from the 404.'}</p>
+      </div>
+    </div>
+
+    <div class="directory-grid popular-grid">
+      {flattenedTools.filter((tool) => tool.popular).map((tool) => (
+        <a class="tool-link-card" href={tool.href} data-tool-card data-search={`${tool.title} ${tool.description} ${tool.category}`.toLowerCase()}>
+          <div class="tool-icon">{tool.icon}</div>
+          <div>
+            <strong>{tool.title}</strong>
+            <small>{tool.description}</small>
+            <span>{tool.category}</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  {tools.map((group) => (
+    <section class="directory-section category-group" data-category-group>
+      <div class="category-header">
+        <h2>{group.category}</h2>
+      </div>
+
+      <div class="directory-grid">
+        {group.items.map(([title, description, href, icon]) => (
+          <a class="tool-link-card" href={href} data-tool-card data-search={`${title} ${description} ${group.category}`.toLowerCase()}>
+            <div class="tool-icon">{icon}</div>
+            <div>
+              <strong>{title}</strong>
+              <small>{description}</small>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  ))}
+
+  <style>
+    .not-found-hero {
+      padding: 4rem 0 2rem;
+    }
+
+    .not-found-hero h1 {
+      max-width: 920px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      margin-top: 1.5rem;
+    }
+
+    .primary-link,
+    .secondary-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      border-radius: 14px;
+      padding: .85rem 1.1rem;
+      text-decoration: none;
+      font-weight: 800;
+    }
+
+    .primary-link {
+      background: var(--primary);
+      color: #020617;
+    }
+
+    .secondary-link {
+      border: 1px solid var(--border);
+      color: white;
+      background: #0f172a;
+    }
+
+    .recovery-card {
+      margin-top: 1rem;
+    }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-heading h2,
+    .category-header h2 {
+      margin: 0;
+      font-size: 1.35rem;
+    }
+
+    .section-heading p {
+      margin: .35rem 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    label {
+      display: block;
+      margin-bottom: .55rem;
+      font-weight: 700;
+    }
+
+    input[type='search'] {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font: inherit;
+    }
+
+    .result-count {
+      color: var(--muted);
+      margin: 1rem 0 0;
+    }
+
+    .directory-section {
+      margin-top: 2.25rem;
+    }
+
+    .category-header {
+      margin-bottom: 1rem;
+    }
+
+    .directory-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .popular-grid {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .tool-link-card {
+      display: flex;
+      gap: 1rem;
+      padding: 1.35rem;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: inherit;
+      text-decoration: none;
+      transition: transform .15s ease, border-color .15s ease, opacity .15s ease;
+    }
+
+    .tool-link-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(56,189,248,.35);
+    }
+
+    .tool-link-card[hidden] {
+      display: none;
+    }
+
+    .tool-icon {
+      width: 60px;
+      height: 60px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: var(--primary);
+      color: black;
+      font-weight: 900;
+      font-size: .85rem;
+      flex-shrink: 0;
+    }
+
+    .tool-link-card strong {
+      display: block;
+      margin-bottom: .45rem;
+    }
+
+    .tool-link-card small,
+    .tool-link-card span {
+      display: block;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .category-group[hidden] {
+      display: none;
+    }
+
+    @media (max-width: 640px) {
+      .not-found-hero {
+        padding-top: 2.5rem;
+      }
+
+      .hero-actions,
+      .primary-link,
+      .secondary-link {
+        width: 100%;
+      }
+
+      .tool-link-card {
+        padding: 1rem;
+      }
+    }
+  </style>
+
+  <script>
+    const searchInput = document.getElementById('toolSearch');
+    const resultCount = document.getElementById('resultCount');
+    const cards = Array.from(document.querySelectorAll('[data-tool-card]'));
+    const groups = Array.from(document.querySelectorAll('[data-category-group]'));
+    const allCount = cards.length;
+    const isSpanishPage = document.documentElement.lang === 'es';
+
+    const updateCount = (count) => {
+      resultCount.textContent = isSpanishPage
+        ? `${count} de ${allCount} enlaces visibles`
+        : `${count} of ${allCount} links visible`;
+    };
+
+    const filterTools = () => {
+      const query = searchInput.value.trim().toLowerCase();
+      let visibleCount = 0;
+
+      cards.forEach((card) => {
+        const matches = !query || card.dataset.search.includes(query);
+        card.hidden = !matches;
+        if (matches) visibleCount += 1;
+      });
+
+      groups.forEach((group) => {
+        const hasVisibleCard = group.querySelector('[data-tool-card]:not([hidden])');
+        group.hidden = !hasVisibleCard;
+      });
+
+      updateCount(visibleCount);
+    };
+
+    searchInput.addEventListener('input', filterTools);
+    updateCount(allCount);
+  </script>
+</Layout>
