@@ -1,0 +1,771 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Generador de iconos para apps';
+const description = 'Crea iconos para apps desde texto e imágenes, recorta, ajusta bordes y descarga PNG o ZIP con varios tamaños.';
+---
+
+<Layout title={title} description={description} path="/app-icon-generator/" translated={false}>
+  <section class="app-icon-page">
+    <div class="eyebrow">100% local</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Diseña iconos para apps con fondo, imagen recortable, textos múltiples, bordes, radio y tamaños exportables. Todo se genera en tu navegador.
+    </p>
+
+    <section class="tool-card">
+      <div class="toolbar top-actions">
+        <label class="file-button">
+          Insertar imagen
+          <input id="imageInput" type="file" accept="image/*" hidden />
+        </label>
+        <button id="removeImageBtn" type="button">Quitar imagen</button>
+        <button id="addTextBtn" type="button">Añadir texto</button>
+        <button id="resetBtn" type="button">Reiniciar</button>
+        <button class="primary" id="downloadBtn" type="button">Descargar</button>
+      </div>
+
+      <div class="layout-grid">
+        <aside class="settings-panel" aria-label="Opciones del icono">
+          <div class="panel-section">
+            <h2>Fondo y forma</h2>
+
+            <label>
+              Color de fondo
+              <input id="backgroundColor" type="color" value="#38bdf8" />
+            </label>
+
+            <label>
+              Radio del borde
+              <input id="cornerRadius" type="range" min="0" max="50" value="22" />
+            </label>
+
+            <label>
+              Borde
+              <input id="borderWidth" type="range" min="0" max="80" value="0" />
+            </label>
+
+            <label>
+              Color del borde
+              <input id="borderColor" type="color" value="#020617" />
+            </label>
+
+            <label>
+              Sombra interior suave
+              <input id="innerShadow" type="range" min="0" max="60" value="12" />
+            </label>
+          </div>
+
+          <div class="panel-section">
+            <h2>Imagen</h2>
+
+            <label>
+              Zoom de imagen
+              <input id="imageScale" type="range" min="20" max="300" value="100" />
+            </label>
+
+            <div class="nudge-grid">
+              <button id="moveImageUp" type="button">↑</button>
+              <button id="moveImageLeft" type="button">←</button>
+              <button id="moveImageDown" type="button">↓</button>
+              <button id="moveImageRight" type="button">→</button>
+            </div>
+
+            <p class="hint">También puedes arrastrar la imagen directamente sobre la previsualización.</p>
+          </div>
+
+          <div class="panel-section">
+            <h2>Exportación</h2>
+
+            <div class="sizes-grid" id="sizesGrid">
+              <label><input type="checkbox" value="64" />64</label>
+              <label><input type="checkbox" value="128" />128</label>
+              <label><input type="checkbox" value="180" checked />180</label>
+              <label><input type="checkbox" value="192" checked />192</label>
+              <label><input type="checkbox" value="256" />256</label>
+              <label><input type="checkbox" value="512" checked />512</label>
+              <label><input type="checkbox" value="1024" checked />1024</label>
+            </div>
+
+            <label>
+              Tamaño personalizado
+              <input id="customSize" type="number" min="16" max="4096" step="1" placeholder="Ej. 1200" />
+            </label>
+
+            <button id="addCustomSizeBtn" type="button">Añadir tamaño</button>
+          </div>
+        </aside>
+
+        <main class="preview-panel">
+          <div class="preview-header">
+            <div>
+              <h2>Previsualización</h2>
+              <p>Arrastra la imagen para recolocarla. Los textos se seleccionan desde la lista inferior.</p>
+            </div>
+            <output id="exportInfo">4 tamaños seleccionados</output>
+          </div>
+
+          <div class="preview-wrap">
+            <canvas id="previewCanvas" width="512" height="512"></canvas>
+          </div>
+
+          <div class="text-panel">
+            <div class="text-panel-header">
+              <h2>Textos</h2>
+              <p id="selectedTextInfo">Selecciona un texto para editarlo.</p>
+            </div>
+
+            <div id="textsList" class="texts-list"></div>
+
+            <div class="text-editor" id="textEditor">
+              <label>
+                Texto
+                <input id="textValue" type="text" maxlength="40" />
+              </label>
+
+              <label>
+                Color
+                <input id="textColor" type="color" value="#020617" />
+              </label>
+
+              <label>
+                Tamaño
+                <input id="textSize" type="range" min="16" max="220" value="96" />
+              </label>
+
+              <label>
+                Peso
+                <select id="textWeight">
+                  <option value="500">Medio</option>
+                  <option value="700">Negrita</option>
+                  <option value="900" selected>Extra bold</option>
+                </select>
+              </label>
+
+              <label>
+                Posición X
+                <input id="textX" type="range" min="0" max="100" value="50" />
+              </label>
+
+              <label>
+                Posición Y
+                <input id="textY" type="range" min="0" max="100" value="53" />
+              </label>
+
+              <label>
+                Rotación
+                <input id="textRotation" type="range" min="-45" max="45" value="0" />
+              </label>
+
+              <label>
+                Sombra
+                <input id="textShadow" type="range" min="0" max="40" value="0" />
+              </label>
+
+              <button id="deleteTextBtn" type="button">Eliminar texto seleccionado</button>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">Listo para generar iconos.</p>
+    </section>
+  </section>
+
+  <style>
+    .app-icon-page { padding: 4rem 0; }
+
+    .toolbar {
+      display: flex;
+      gap: .8rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .top-actions { margin-bottom: 1.5rem; }
+
+    button,
+    input,
+    select,
+    .file-button {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: .9rem 1rem;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button.primary,
+    .file-button {
+      background: var(--primary);
+      color: black;
+      border: none;
+      font-weight: 800;
+    }
+
+    .layout-grid {
+      display: grid;
+      grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .settings-panel,
+    .preview-panel,
+    .text-panel {
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: rgba(2,6,23,.45);
+      padding: 1.25rem;
+    }
+
+    .panel-section + .panel-section { margin-top: 1.5rem; }
+
+    h2 { margin: 0 0 1rem; font-size: 1.15rem; }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+      color: var(--muted);
+      font-size: .92rem;
+      margin-bottom: .9rem;
+    }
+
+    input[type='color'] { min-height: 48px; padding: .3rem; }
+
+    .hint,
+    .preview-header p,
+    .text-panel-header p,
+    .status {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .nudge-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .45rem;
+      max-width: 190px;
+    }
+
+    .nudge-grid button:nth-child(1) { grid-column: 2; }
+    .nudge-grid button:nth-child(2) { grid-column: 1; }
+    .nudge-grid button:nth-child(3) { grid-column: 2; }
+    .nudge-grid button:nth-child(4) { grid-column: 3; grid-row: 2; }
+
+    .sizes-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: .5rem;
+      margin-bottom: 1rem;
+    }
+
+    .sizes-grid label {
+      margin: 0;
+      flex-direction: row;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: .75rem;
+      background: #020617;
+    }
+
+    .sizes-grid input { width: auto; accent-color: var(--primary); }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+
+    .preview-header h2,
+    .text-panel-header h2 { margin-bottom: .35rem; }
+
+    #exportInfo {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: .45rem .8rem;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .preview-wrap {
+      display: grid;
+      place-items: center;
+      border-radius: 24px;
+      border: 1px dashed rgba(148,163,184,.3);
+      background:
+        linear-gradient(45deg, rgba(148,163,184,.08) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(148,163,184,.08) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(148,163,184,.08) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.08) 75%);
+      background-size: 24px 24px;
+      padding: 1rem;
+      overflow: auto;
+    }
+
+    #previewCanvas {
+      width: min(512px, 100%);
+      height: auto;
+      border-radius: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,.35);
+      touch-action: none;
+      cursor: grab;
+    }
+
+    #previewCanvas:active { cursor: grabbing; }
+
+    .text-panel { margin-top: 1rem; }
+
+    .texts-list {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .text-chip {
+      border-color: var(--border);
+      padding: .65rem .8rem;
+    }
+
+    .text-chip.active {
+      background: var(--primary);
+      color: #020617;
+      border-color: transparent;
+    }
+
+    .text-editor {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .text-editor label { margin-bottom: 0; }
+
+    #deleteTextBtn { grid-column: span 2; }
+
+    .status { margin: 1rem 0 0; }
+    .status.success { color: #86efac; }
+    .status.error { color: #fca5a5; }
+
+    @media (max-width: 980px) {
+      .layout-grid { grid-template-columns: 1fr; }
+      .preview-header { flex-direction: column; }
+    }
+
+    @media (max-width: 640px) {
+      button,
+      .file-button { width: 100%; }
+      .text-editor { grid-template-columns: 1fr; }
+      #deleteTextBtn { grid-column: auto; }
+      .sizes-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <script>
+    import JSZip from 'jszip';
+
+    const canvas = document.getElementById('previewCanvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+    const imageInput = document.getElementById('imageInput') as HTMLInputElement;
+    const removeImageBtn = document.getElementById('removeImageBtn') as HTMLButtonElement;
+    const addTextBtn = document.getElementById('addTextBtn') as HTMLButtonElement;
+    const resetBtn = document.getElementById('resetBtn') as HTMLButtonElement;
+    const downloadBtn = document.getElementById('downloadBtn') as HTMLButtonElement;
+    const status = document.getElementById('status') as HTMLParagraphElement;
+    const exportInfo = document.getElementById('exportInfo') as HTMLOutputElement;
+    const sizesGrid = document.getElementById('sizesGrid') as HTMLDivElement;
+    const customSize = document.getElementById('customSize') as HTMLInputElement;
+    const addCustomSizeBtn = document.getElementById('addCustomSizeBtn') as HTMLButtonElement;
+    const textsList = document.getElementById('textsList') as HTMLDivElement;
+    const selectedTextInfo = document.getElementById('selectedTextInfo') as HTMLParagraphElement;
+
+    const backgroundColor = document.getElementById('backgroundColor') as HTMLInputElement;
+    const cornerRadius = document.getElementById('cornerRadius') as HTMLInputElement;
+    const borderWidth = document.getElementById('borderWidth') as HTMLInputElement;
+    const borderColor = document.getElementById('borderColor') as HTMLInputElement;
+    const innerShadow = document.getElementById('innerShadow') as HTMLInputElement;
+    const imageScale = document.getElementById('imageScale') as HTMLInputElement;
+
+    const textValue = document.getElementById('textValue') as HTMLInputElement;
+    const textColor = document.getElementById('textColor') as HTMLInputElement;
+    const textSize = document.getElementById('textSize') as HTMLInputElement;
+    const textWeight = document.getElementById('textWeight') as HTMLSelectElement;
+    const textX = document.getElementById('textX') as HTMLInputElement;
+    const textY = document.getElementById('textY') as HTMLInputElement;
+    const textRotation = document.getElementById('textRotation') as HTMLInputElement;
+    const textShadow = document.getElementById('textShadow') as HTMLInputElement;
+    const deleteTextBtn = document.getElementById('deleteTextBtn') as HTMLButtonElement;
+
+    let uploadedImage: HTMLImageElement | null = null;
+    let imageOffset = { x: 0, y: 0 };
+    let draggingImage = false;
+    let lastPointer = { x: 0, y: 0 };
+    let selectedTextId = 1;
+    let texts = [
+      { id: 1, value: 'APP', color: '#020617', size: 96, weight: '900', x: 50, y: 53, rotation: 0, shadow: 0 }
+    ];
+
+    const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => {
+      status.textContent = message;
+      status.classList.toggle('success', type === 'success');
+      status.classList.toggle('error', type === 'error');
+    };
+
+    const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+    const roundedRect = (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) => {
+      const safeRadius = Math.min(radius, width / 2, height / 2);
+      context.beginPath();
+      context.moveTo(x + safeRadius, y);
+      context.arcTo(x + width, y, x + width, y + height, safeRadius);
+      context.arcTo(x + width, y + height, x, y + height, safeRadius);
+      context.arcTo(x, y + height, x, y, safeRadius);
+      context.arcTo(x, y, x + width, y, safeRadius);
+      context.closePath();
+    };
+
+    const selectedText = () => texts.find((item) => item.id === selectedTextId) || texts[0];
+
+    const syncTextEditor = () => {
+      const item = selectedText();
+      if (!item) return;
+      textValue.value = item.value;
+      textColor.value = item.color;
+      textSize.value = String(item.size);
+      textWeight.value = item.weight;
+      textX.value = String(item.x);
+      textY.value = String(item.y);
+      textRotation.value = String(item.rotation);
+      textShadow.value = String(item.shadow);
+      selectedTextInfo.textContent = `Editando: ${item.value || 'texto vacío'}`;
+    };
+
+    const renderTextList = () => {
+      textsList.replaceChildren(...texts.map((item) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `text-chip${item.id === selectedTextId ? ' active' : ''}`;
+        button.textContent = item.value || 'Texto';
+        button.addEventListener('click', () => {
+          selectedTextId = item.id;
+          renderTextList();
+          syncTextEditor();
+        });
+        return button;
+      }));
+    };
+
+    const getSelectedSizes = () => Array.from(sizesGrid.querySelectorAll('input[type="checkbox"]'))
+      .filter((input) => (input as HTMLInputElement).checked)
+      .map((input) => Number((input as HTMLInputElement).value))
+      .filter((size) => Number.isFinite(size) && size > 0)
+      .sort((a, b) => a - b);
+
+    const updateExportInfo = () => {
+      const count = getSelectedSizes().length;
+      exportInfo.textContent = `${count} tamaño${count === 1 ? '' : 's'} seleccionado${count === 1 ? '' : 's'}`;
+    };
+
+    const drawIcon = (targetCanvas: HTMLCanvasElement, size: number) => {
+      targetCanvas.width = size;
+      targetCanvas.height = size;
+      const context = targetCanvas.getContext('2d') as CanvasRenderingContext2D;
+      const scale = size / 512;
+      const radius = size * (Number(cornerRadius.value) / 100);
+      const border = Number(borderWidth.value) * scale;
+
+      context.clearRect(0, 0, size, size);
+      context.save();
+      roundedRect(context, 0, 0, size, size, radius);
+      context.clip();
+
+      context.fillStyle = backgroundColor.value;
+      context.fillRect(0, 0, size, size);
+
+      if (uploadedImage) {
+        const userScale = Number(imageScale.value) / 100;
+        const coverScale = Math.max(size / uploadedImage.width, size / uploadedImage.height) * userScale;
+        const imageWidth = uploadedImage.width * coverScale;
+        const imageHeight = uploadedImage.height * coverScale;
+        const imageX = (size - imageWidth) / 2 + imageOffset.x * scale;
+        const imageY = (size - imageHeight) / 2 + imageOffset.y * scale;
+        context.drawImage(uploadedImage, imageX, imageY, imageWidth, imageHeight);
+      }
+
+      const shadowAmount = Number(innerShadow.value) * scale;
+      if (shadowAmount > 0) {
+        const gradient = context.createRadialGradient(size / 2, size / 2, size * .18, size / 2, size / 2, size * .72);
+        gradient.addColorStop(0, 'rgba(255,255,255,0)');
+        gradient.addColorStop(1, `rgba(0,0,0,${Math.min(.38, shadowAmount / 140)})`);
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, size, size);
+      }
+
+      texts.forEach((item) => {
+        if (!item.value) return;
+        context.save();
+        context.translate(size * (item.x / 100), size * (item.y / 100));
+        context.rotate((item.rotation * Math.PI) / 180);
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.font = `${item.weight} ${item.size * scale}px Inter, system-ui, sans-serif`;
+        if (item.shadow > 0) {
+          context.shadowColor = 'rgba(0,0,0,.45)';
+          context.shadowBlur = item.shadow * scale;
+          context.shadowOffsetY = item.shadow * scale * .25;
+        }
+        context.fillStyle = item.color;
+        context.fillText(item.value, 0, 0);
+        context.restore();
+      });
+
+      if (border > 0) {
+        context.restore();
+        context.save();
+        roundedRect(context, border / 2, border / 2, size - border, size - border, Math.max(0, radius - border / 2));
+        context.lineWidth = border;
+        context.strokeStyle = borderColor.value;
+        context.stroke();
+      }
+
+      context.restore();
+    };
+
+    const render = () => {
+      drawIcon(canvas, 512);
+      updateExportInfo();
+    };
+
+    const canvasToBlob = (sourceCanvas: HTMLCanvasElement) => new Promise<Blob>((resolve, reject) => {
+      sourceCanvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('blob-error')), 'image/png');
+    });
+
+    const downloadBlob = (blob: Blob, filename: string) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    const download = async () => {
+      const sizes = getSelectedSizes();
+      if (!sizes.length) {
+        setStatus('Selecciona al menos un tamaño para exportar.', 'error');
+        return;
+      }
+
+      try {
+        if (sizes.length === 1) {
+          const exportCanvas = document.createElement('canvas');
+          drawIcon(exportCanvas, sizes[0]);
+          downloadBlob(await canvasToBlob(exportCanvas), `app-icon-${sizes[0]}.png`);
+          setStatus('Icono descargado.', 'success');
+          return;
+        }
+
+        const zip = new JSZip();
+        for (const size of sizes) {
+          const exportCanvas = document.createElement('canvas');
+          drawIcon(exportCanvas, size);
+          zip.file(`app-icon-${size}.png`, await canvasToBlob(exportCanvas));
+        }
+
+        const manifest = {
+          icons: sizes.map((size) => ({ src: `/icons/app-icon-${size}.png`, sizes: `${size}x${size}`, type: 'image/png' }))
+        };
+        zip.file('manifest-icons.json', JSON.stringify(manifest, null, 2));
+        const blob = await zip.generateAsync({ type: 'blob' });
+        downloadBlob(blob, 'app-icons.zip');
+        setStatus('ZIP de iconos descargado.', 'success');
+      } catch {
+        setStatus('No se pudo exportar el icono.', 'error');
+      }
+    };
+
+    const updateSelectedText = () => {
+      const item = selectedText();
+      if (!item) return;
+      item.value = textValue.value;
+      item.color = textColor.value;
+      item.size = Number(textSize.value);
+      item.weight = textWeight.value;
+      item.x = Number(textX.value);
+      item.y = Number(textY.value);
+      item.rotation = Number(textRotation.value);
+      item.shadow = Number(textShadow.value);
+      renderTextList();
+      render();
+    };
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        setStatus('El archivo no parece una imagen.', 'error');
+        return;
+      }
+
+      const image = new Image();
+      const url = URL.createObjectURL(file);
+      image.onload = () => {
+        URL.revokeObjectURL(url);
+        uploadedImage = image;
+        imageOffset = { x: 0, y: 0 };
+        render();
+        setStatus('Imagen insertada. Arrástrala sobre el icono para recolocarla.', 'success');
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        setStatus('No se pudo cargar la imagen.', 'error');
+      };
+      image.src = url;
+    });
+
+    removeImageBtn.addEventListener('click', () => {
+      uploadedImage = null;
+      imageInput.value = '';
+      render();
+      setStatus('Imagen eliminada.', 'success');
+    });
+
+    addTextBtn.addEventListener('click', () => {
+      const nextId = Math.max(0, ...texts.map((item) => item.id)) + 1;
+      texts.push({ id: nextId, value: `Texto ${nextId}`, color: '#ffffff', size: 64, weight: '900', x: 50, y: 70, rotation: 0, shadow: 10 });
+      selectedTextId = nextId;
+      renderTextList();
+      syncTextEditor();
+      render();
+    });
+
+    deleteTextBtn.addEventListener('click', () => {
+      if (texts.length <= 1) {
+        setStatus('Debe quedar al menos un texto.', 'error');
+        return;
+      }
+      texts = texts.filter((item) => item.id !== selectedTextId);
+      selectedTextId = texts[0].id;
+      renderTextList();
+      syncTextEditor();
+      render();
+    });
+
+    addCustomSizeBtn.addEventListener('click', () => {
+      const size = clamp(Number(customSize.value), 16, 4096);
+      if (!Number.isFinite(size)) {
+        setStatus('Introduce un tamaño válido.', 'error');
+        return;
+      }
+
+      const label = document.createElement('label');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = String(Math.round(size));
+      checkbox.checked = true;
+      checkbox.addEventListener('change', updateExportInfo);
+      label.append(checkbox, document.createTextNode(String(Math.round(size))));
+      sizesGrid.append(label);
+      customSize.value = '';
+      updateExportInfo();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      uploadedImage = null;
+      imageInput.value = '';
+      imageOffset = { x: 0, y: 0 };
+      backgroundColor.value = '#38bdf8';
+      cornerRadius.value = '22';
+      borderWidth.value = '0';
+      borderColor.value = '#020617';
+      innerShadow.value = '12';
+      imageScale.value = '100';
+      texts = [{ id: 1, value: 'APP', color: '#020617', size: 96, weight: '900', x: 50, y: 53, rotation: 0, shadow: 0 }];
+      selectedTextId = 1;
+      renderTextList();
+      syncTextEditor();
+      render();
+      setStatus('Icono reiniciado.', 'success');
+    });
+
+    downloadBtn.addEventListener('click', download);
+
+    [backgroundColor, cornerRadius, borderWidth, borderColor, innerShadow, imageScale].forEach((element) => {
+      element.addEventListener('input', render);
+      element.addEventListener('change', render);
+    });
+
+    [textValue, textColor, textSize, textWeight, textX, textY, textRotation, textShadow].forEach((element) => {
+      element.addEventListener('input', updateSelectedText);
+      element.addEventListener('change', updateSelectedText);
+    });
+
+    sizesGrid.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+      input.addEventListener('change', updateExportInfo);
+    });
+
+    const nudgeImage = (x: number, y: number) => {
+      imageOffset.x += x;
+      imageOffset.y += y;
+      render();
+    };
+
+    document.getElementById('moveImageUp')?.addEventListener('click', () => nudgeImage(0, -12));
+    document.getElementById('moveImageDown')?.addEventListener('click', () => nudgeImage(0, 12));
+    document.getElementById('moveImageLeft')?.addEventListener('click', () => nudgeImage(-12, 0));
+    document.getElementById('moveImageRight')?.addEventListener('click', () => nudgeImage(12, 0));
+
+    const pointFromEvent = (event: MouseEvent | TouchEvent) => {
+      const touch = 'touches' in event ? event.touches[0] : null;
+      return {
+        x: touch ? touch.clientX : (event as MouseEvent).clientX,
+        y: touch ? touch.clientY : (event as MouseEvent).clientY
+      };
+    };
+
+    const startDrag = (event: MouseEvent | TouchEvent) => {
+      if (!uploadedImage) return;
+      event.preventDefault();
+      draggingImage = true;
+      lastPointer = pointFromEvent(event);
+    };
+
+    const moveDrag = (event: MouseEvent | TouchEvent) => {
+      if (!draggingImage) return;
+      event.preventDefault();
+      const point = pointFromEvent(event);
+      const rect = canvas.getBoundingClientRect();
+      const scale = 512 / rect.width;
+      imageOffset.x += (point.x - lastPointer.x) * scale;
+      imageOffset.y += (point.y - lastPointer.y) * scale;
+      lastPointer = point;
+      render();
+    };
+
+    const endDrag = () => {
+      draggingImage = false;
+    };
+
+    canvas.addEventListener('mousedown', startDrag);
+    canvas.addEventListener('touchstart', startDrag, { passive: false });
+    window.addEventListener('mousemove', moveDrag);
+    window.addEventListener('touchmove', moveDrag, { passive: false });
+    window.addEventListener('mouseup', endDrag);
+    window.addEventListener('touchend', endDrag);
+
+    renderTextList();
+    syncTextEditor();
+    render();
+  </script>
+</Layout>
