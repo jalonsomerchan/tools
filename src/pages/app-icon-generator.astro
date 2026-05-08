@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 
 const title = 'Generador de iconos para apps';
-const description = 'Crea iconos para apps desde texto e imágenes, recorta, ajusta bordes y descarga PNG o ZIP con varios tamaños.';
+const description = 'Crea iconos para apps desde texto, iconos Lucide e imágenes, recorta, ajusta bordes y descarga PNG o ZIP.';
 ---
 
 <Layout title={title} description={description} path="/app-icon-generator/" translated={false}>
@@ -12,7 +12,7 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
     <h1>{title}</h1>
 
     <p class="hero-text">
-      Diseña iconos para apps con fondo, imagen recortable, textos múltiples, bordes, radio y tamaños exportables. Todo se genera en tu navegador.
+      Diseña iconos para apps con fondo, imagen recortable, iconos open source, textos múltiples, bordes, radio y tamaños exportables. Todo se genera en tu navegador.
     </p>
 
     <section class="tool-card">
@@ -59,6 +59,76 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
           </div>
 
           <div class="panel-section">
+            <h2>Icono Lucide</h2>
+
+            <label>
+              Icono
+              <select id="lucideIcon">
+                <option value="none">Sin icono</option>
+                <option value="Rocket">Rocket</option>
+                <option value="Star">Star</option>
+                <option value="Heart">Heart</option>
+                <option value="Camera">Camera</option>
+                <option value="Image">Image</option>
+                <option value="Music">Music</option>
+                <option value="Video">Video</option>
+                <option value="MessageCircle">MessageCircle</option>
+                <option value="ShoppingBag">ShoppingBag</option>
+                <option value="MapPin">MapPin</option>
+                <option value="Calendar">Calendar</option>
+                <option value="Gamepad2">Gamepad2</option>
+                <option value="Trophy">Trophy</option>
+                <option value="Zap">Zap</option>
+                <option value="Shield">Shield</option>
+                <option value="Lock">Lock</option>
+                <option value="Cloud">Cloud</option>
+                <option value="Globe">Globe</option>
+                <option value="Code2">Code2</option>
+                <option value="Wrench">Wrench</option>
+                <option value="PenTool">PenTool</option>
+                <option value="Sparkles">Sparkles</option>
+              </select>
+            </label>
+
+            <label>
+              Color del icono
+              <input id="iconColor" type="color" value="#020617" />
+            </label>
+
+            <label>
+              Tamaño del icono
+              <input id="iconSize" type="range" min="40" max="420" value="180" />
+            </label>
+
+            <label>
+              Grosor del trazo
+              <input id="iconStroke" type="range" min="1" max="8" step="0.5" value="3" />
+            </label>
+
+            <label>
+              Posición X
+              <input id="iconX" type="range" min="0" max="100" value="50" />
+            </label>
+
+            <label>
+              Posición Y
+              <input id="iconY" type="range" min="0" max="100" value="42" />
+            </label>
+
+            <label>
+              Rotación
+              <input id="iconRotation" type="range" min="-180" max="180" value="0" />
+            </label>
+
+            <label>
+              Sombra
+              <input id="iconShadow" type="range" min="0" max="40" value="0" />
+            </label>
+
+            <p class="hint">Iconos de Lucide, biblioteca open source con licencia ISC.</p>
+          </div>
+
+          <div class="panel-section">
             <h2>Imagen</h2>
 
             <label>
@@ -102,7 +172,7 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
           <div class="preview-header">
             <div>
               <h2>Previsualización</h2>
-              <p>Arrastra la imagen para recolocarla. Los textos se seleccionan desde la lista inferior.</p>
+              <p>Arrastra la imagen para recolocarla. El icono y los textos se ajustan desde los controles.</p>
             </div>
             <output id="exportInfo">4 tamaños seleccionados</output>
           </div>
@@ -176,205 +246,50 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
 
   <style>
     .app-icon-page { padding: 4rem 0; }
-
-    .toolbar {
-      display: flex;
-      gap: .8rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
+    .toolbar { display: flex; gap: .8rem; flex-wrap: wrap; align-items: center; }
     .top-actions { margin-bottom: 1.5rem; }
-
-    button,
-    input,
-    select,
-    .file-button {
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: #020617;
-      color: white;
-      padding: .9rem 1rem;
-      cursor: pointer;
-      font: inherit;
-    }
-
-    button.primary,
-    .file-button {
-      background: var(--primary);
-      color: black;
-      border: none;
-      font-weight: 800;
-    }
-
-    .layout-grid {
-      display: grid;
-      grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
-      gap: 1.5rem;
-      align-items: start;
-    }
-
-    .settings-panel,
-    .preview-panel,
-    .text-panel {
-      border-radius: 24px;
-      border: 1px solid var(--border);
-      background: rgba(2,6,23,.45);
-      padding: 1.25rem;
-    }
-
+    button, input, select, .file-button { border-radius: 14px; border: 1px solid var(--border); background: #020617; color: white; padding: .9rem 1rem; cursor: pointer; font: inherit; }
+    button.primary, .file-button { background: var(--primary); color: black; border: none; font-weight: 800; }
+    .layout-grid { display: grid; grid-template-columns: minmax(260px, 360px) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+    .settings-panel, .preview-panel, .text-panel { border-radius: 24px; border: 1px solid var(--border); background: rgba(2,6,23,.45); padding: 1.25rem; }
     .panel-section + .panel-section { margin-top: 1.5rem; }
-
     h2 { margin: 0 0 1rem; font-size: 1.15rem; }
-
-    label {
-      display: flex;
-      flex-direction: column;
-      gap: .45rem;
-      color: var(--muted);
-      font-size: .92rem;
-      margin-bottom: .9rem;
-    }
-
+    label { display: flex; flex-direction: column; gap: .45rem; color: var(--muted); font-size: .92rem; margin-bottom: .9rem; }
     input[type='color'] { min-height: 48px; padding: .3rem; }
-
-    .hint,
-    .preview-header p,
-    .text-panel-header p,
-    .status {
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .nudge-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: .45rem;
-      max-width: 190px;
-    }
-
+    .hint, .preview-header p, .text-panel-header p, .status { color: var(--muted); line-height: 1.7; }
+    .nudge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; max-width: 190px; }
     .nudge-grid button:nth-child(1) { grid-column: 2; }
     .nudge-grid button:nth-child(2) { grid-column: 1; }
     .nudge-grid button:nth-child(3) { grid-column: 2; }
     .nudge-grid button:nth-child(4) { grid-column: 3; grid-row: 2; }
-
-    .sizes-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: .5rem;
-      margin-bottom: 1rem;
-    }
-
-    .sizes-grid label {
-      margin: 0;
-      flex-direction: row;
-      align-items: center;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: .75rem;
-      background: #020617;
-    }
-
+    .sizes-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem; margin-bottom: 1rem; }
+    .sizes-grid label { margin: 0; flex-direction: row; align-items: center; border: 1px solid var(--border); border-radius: 12px; padding: .75rem; background: #020617; }
     .sizes-grid input { width: auto; accent-color: var(--primary); }
-
-    .preview-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      align-items: start;
-      margin-bottom: 1rem;
-    }
-
-    .preview-header h2,
-    .text-panel-header h2 { margin-bottom: .35rem; }
-
-    #exportInfo {
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      padding: .45rem .8rem;
-      color: var(--primary);
-      white-space: nowrap;
-    }
-
-    .preview-wrap {
-      display: grid;
-      place-items: center;
-      border-radius: 24px;
-      border: 1px dashed rgba(148,163,184,.3);
-      background:
-        linear-gradient(45deg, rgba(148,163,184,.08) 25%, transparent 25%),
-        linear-gradient(-45deg, rgba(148,163,184,.08) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, rgba(148,163,184,.08) 75%),
-        linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.08) 75%);
-      background-size: 24px 24px;
-      padding: 1rem;
-      overflow: auto;
-    }
-
-    #previewCanvas {
-      width: min(512px, 100%);
-      height: auto;
-      border-radius: 24px;
-      box-shadow: 0 24px 70px rgba(0,0,0,.35);
-      touch-action: none;
-      cursor: grab;
-    }
-
+    .preview-header { display: flex; justify-content: space-between; gap: 1rem; align-items: start; margin-bottom: 1rem; }
+    .preview-header h2, .text-panel-header h2 { margin-bottom: .35rem; }
+    #exportInfo { border-radius: 999px; border: 1px solid var(--border); padding: .45rem .8rem; color: var(--primary); white-space: nowrap; }
+    .preview-wrap { display: grid; place-items: center; border-radius: 24px; border: 1px dashed rgba(148,163,184,.3); background: linear-gradient(45deg, rgba(148,163,184,.08) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.08) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.08) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.08) 75%); background-size: 24px 24px; padding: 1rem; overflow: auto; }
+    #previewCanvas { width: min(512px, 100%); height: auto; border-radius: 24px; box-shadow: 0 24px 70px rgba(0,0,0,.35); touch-action: none; cursor: grab; }
     #previewCanvas:active { cursor: grabbing; }
-
     .text-panel { margin-top: 1rem; }
-
-    .texts-list {
-      display: flex;
-      gap: .5rem;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-
-    .text-chip {
-      border-color: var(--border);
-      padding: .65rem .8rem;
-    }
-
-    .text-chip.active {
-      background: var(--primary);
-      color: #020617;
-      border-color: transparent;
-    }
-
-    .text-editor {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem;
-    }
-
+    .texts-list { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .text-chip { border-color: var(--border); padding: .65rem .8rem; }
+    .text-chip.active { background: var(--primary); color: #020617; border-color: transparent; }
+    .text-editor { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
     .text-editor label { margin-bottom: 0; }
-
     #deleteTextBtn { grid-column: span 2; }
-
     .status { margin: 1rem 0 0; }
     .status.success { color: #86efac; }
     .status.error { color: #fca5a5; }
-
-    @media (max-width: 980px) {
-      .layout-grid { grid-template-columns: 1fr; }
-      .preview-header { flex-direction: column; }
-    }
-
-    @media (max-width: 640px) {
-      button,
-      .file-button { width: 100%; }
-      .text-editor { grid-template-columns: 1fr; }
-      #deleteTextBtn { grid-column: auto; }
-      .sizes-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 980px) { .layout-grid { grid-template-columns: 1fr; } .preview-header { flex-direction: column; } }
+    @media (max-width: 640px) { button, .file-button { width: 100%; } .text-editor { grid-template-columns: 1fr; } #deleteTextBtn { grid-column: auto; } .sizes-grid { grid-template-columns: 1fr; } }
   </style>
 
   <script>
     import JSZip from 'jszip';
+    import { icons } from 'lucide';
 
     const canvas = document.getElementById('previewCanvas') as HTMLCanvasElement;
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
     const imageInput = document.getElementById('imageInput') as HTMLInputElement;
     const removeImageBtn = document.getElementById('removeImageBtn') as HTMLButtonElement;
     const addTextBtn = document.getElementById('addTextBtn') as HTMLButtonElement;
@@ -395,6 +310,15 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
     const innerShadow = document.getElementById('innerShadow') as HTMLInputElement;
     const imageScale = document.getElementById('imageScale') as HTMLInputElement;
 
+    const lucideIcon = document.getElementById('lucideIcon') as HTMLSelectElement;
+    const iconColor = document.getElementById('iconColor') as HTMLInputElement;
+    const iconSize = document.getElementById('iconSize') as HTMLInputElement;
+    const iconStroke = document.getElementById('iconStroke') as HTMLInputElement;
+    const iconX = document.getElementById('iconX') as HTMLInputElement;
+    const iconY = document.getElementById('iconY') as HTMLInputElement;
+    const iconRotation = document.getElementById('iconRotation') as HTMLInputElement;
+    const iconShadow = document.getElementById('iconShadow') as HTMLInputElement;
+
     const textValue = document.getElementById('textValue') as HTMLInputElement;
     const textColor = document.getElementById('textColor') as HTMLInputElement;
     const textSize = document.getElementById('textSize') as HTMLInputElement;
@@ -410,9 +334,8 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
     let draggingImage = false;
     let lastPointer = { x: 0, y: 0 };
     let selectedTextId = 1;
-    let texts = [
-      { id: 1, value: 'APP', color: '#020617', size: 96, weight: '900', x: 50, y: 53, rotation: 0, shadow: 0 }
-    ];
+    let renderToken = 0;
+    let texts = [{ id: 1, value: 'APP', color: '#020617', size: 96, weight: '900', x: 50, y: 53, rotation: 0, shadow: 0 }];
 
     const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => {
       status.textContent = message;
@@ -431,6 +354,28 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
       context.arcTo(x, y + height, x, y, safeRadius);
       context.arcTo(x, y, x + width, y, safeRadius);
       context.closePath();
+    };
+
+    const loadSvgImage = (svg: string) => new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error('icon-load-error'));
+      image.src = url;
+    });
+
+    const getLucideSvg = (size: number) => {
+      if (lucideIcon.value === 'none') return null;
+      const icon = (icons as Record<string, { toSvg?: (attrs?: Record<string, string | number>) => string }>)[lucideIcon.value];
+      if (!icon?.toSvg) return null;
+      return icon.toSvg({
+        width: size,
+        height: size,
+        color: iconColor.value,
+        strokeWidth: Number(iconStroke.value),
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round'
+      });
     };
 
     const selectedText = () => texts.find((item) => item.id === selectedTextId) || texts[0];
@@ -475,7 +420,7 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
       exportInfo.textContent = `${count} tamaño${count === 1 ? '' : 's'} seleccionado${count === 1 ? '' : 's'}`;
     };
 
-    const drawIcon = (targetCanvas: HTMLCanvasElement, size: number) => {
+    const drawIcon = async (targetCanvas: HTMLCanvasElement, size: number) => {
       targetCanvas.width = size;
       targetCanvas.height = size;
       const context = targetCanvas.getContext('2d') as CanvasRenderingContext2D;
@@ -487,7 +432,6 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
       context.save();
       roundedRect(context, 0, 0, size, size, radius);
       context.clip();
-
       context.fillStyle = backgroundColor.value;
       context.fillRect(0, 0, size, size);
 
@@ -508,6 +452,23 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
         gradient.addColorStop(1, `rgba(0,0,0,${Math.min(.38, shadowAmount / 140)})`);
         context.fillStyle = gradient;
         context.fillRect(0, 0, size, size);
+      }
+
+      const svg = getLucideSvg(Number(iconSize.value) * scale);
+      if (svg) {
+        const iconImage = await loadSvgImage(svg);
+        const finalIconSize = Number(iconSize.value) * scale;
+        context.save();
+        context.translate(size * (Number(iconX.value) / 100), size * (Number(iconY.value) / 100));
+        context.rotate((Number(iconRotation.value) * Math.PI) / 180);
+        const shadow = Number(iconShadow.value) * scale;
+        if (shadow > 0) {
+          context.shadowColor = 'rgba(0,0,0,.45)';
+          context.shadowBlur = shadow;
+          context.shadowOffsetY = shadow * .25;
+        }
+        context.drawImage(iconImage, -finalIconSize / 2, -finalIconSize / 2, finalIconSize, finalIconSize);
+        context.restore();
       }
 
       texts.forEach((item) => {
@@ -536,13 +497,13 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
         context.strokeStyle = borderColor.value;
         context.stroke();
       }
-
       context.restore();
     };
 
-    const render = () => {
-      drawIcon(canvas, 512);
-      updateExportInfo();
+    const render = async () => {
+      const token = ++renderToken;
+      await drawIcon(canvas, 512);
+      if (token === renderToken) updateExportInfo();
     };
 
     const canvasToBlob = (sourceCanvas: HTMLCanvasElement) => new Promise<Blob>((resolve, reject) => {
@@ -570,7 +531,7 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
       try {
         if (sizes.length === 1) {
           const exportCanvas = document.createElement('canvas');
-          drawIcon(exportCanvas, sizes[0]);
+          await drawIcon(exportCanvas, sizes[0]);
           downloadBlob(await canvasToBlob(exportCanvas), `app-icon-${sizes[0]}.png`);
           setStatus('Icono descargado.', 'success');
           return;
@@ -579,16 +540,13 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
         const zip = new JSZip();
         for (const size of sizes) {
           const exportCanvas = document.createElement('canvas');
-          drawIcon(exportCanvas, size);
+          await drawIcon(exportCanvas, size);
           zip.file(`app-icon-${size}.png`, await canvasToBlob(exportCanvas));
         }
 
-        const manifest = {
-          icons: sizes.map((size) => ({ src: `/icons/app-icon-${size}.png`, sizes: `${size}x${size}`, type: 'image/png' }))
-        };
+        const manifest = { icons: sizes.map((size) => ({ src: `/icons/app-icon-${size}.png`, sizes: `${size}x${size}`, type: 'image/png' })) };
         zip.file('manifest-icons.json', JSON.stringify(manifest, null, 2));
-        const blob = await zip.generateAsync({ type: 'blob' });
-        downloadBlob(blob, 'app-icons.zip');
+        downloadBlob(await zip.generateAsync({ type: 'blob' }), 'app-icons.zip');
         setStatus('ZIP de iconos descargado.', 'success');
       } catch {
         setStatus('No se pudo exportar el icono.', 'error');
@@ -617,7 +575,6 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
         setStatus('El archivo no parece una imagen.', 'error');
         return;
       }
-
       const image = new Image();
       const url = URL.createObjectURL(file);
       image.onload = () => {
@@ -668,7 +625,6 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
         setStatus('Introduce un tamaño válido.', 'error');
         return;
       }
-
       const label = document.createElement('label');
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
@@ -691,6 +647,14 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
       borderColor.value = '#020617';
       innerShadow.value = '12';
       imageScale.value = '100';
+      lucideIcon.value = 'none';
+      iconColor.value = '#020617';
+      iconSize.value = '180';
+      iconStroke.value = '3';
+      iconX.value = '50';
+      iconY.value = '42';
+      iconRotation.value = '0';
+      iconShadow.value = '0';
       texts = [{ id: 1, value: 'APP', color: '#020617', size: 96, weight: '900', x: 50, y: 53, rotation: 0, shadow: 0 }];
       selectedTextId = 1;
       renderTextList();
@@ -701,7 +665,7 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
 
     downloadBtn.addEventListener('click', download);
 
-    [backgroundColor, cornerRadius, borderWidth, borderColor, innerShadow, imageScale].forEach((element) => {
+    [backgroundColor, cornerRadius, borderWidth, borderColor, innerShadow, imageScale, lucideIcon, iconColor, iconSize, iconStroke, iconX, iconY, iconRotation, iconShadow].forEach((element) => {
       element.addEventListener('input', render);
       element.addEventListener('change', render);
     });
@@ -728,10 +692,7 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
 
     const pointFromEvent = (event: MouseEvent | TouchEvent) => {
       const touch = 'touches' in event ? event.touches[0] : null;
-      return {
-        x: touch ? touch.clientX : (event as MouseEvent).clientX,
-        y: touch ? touch.clientY : (event as MouseEvent).clientY
-      };
+      return { x: touch ? touch.clientX : (event as MouseEvent).clientX, y: touch ? touch.clientY : (event as MouseEvent).clientY };
     };
 
     const startDrag = (event: MouseEvent | TouchEvent) => {
@@ -753,9 +714,7 @@ const description = 'Crea iconos para apps desde texto e imágenes, recorta, aju
       render();
     };
 
-    const endDrag = () => {
-      draggingImage = false;
-    };
+    const endDrag = () => { draggingImage = false; };
 
     canvas.addEventListener('mousedown', startDrag);
     canvas.addEventListener('touchstart', startDrag, { passive: false });
