@@ -1,35 +1,43 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { useTranslations } from '../i18n';
 
-const title = 'Base64 encoder y decoder';
+const currentPath = Astro.url.pathname;
+const lang = currentPath.startsWith('/es') ? 'es' : 'en';
+const t = useTranslations(lang);
 ---
 
-<Layout title={title}>
+<Layout
+  title={t('base64.title')}
+  description={t('base64.description')}
+  lang={lang}
+  path="/base64/"
+>
   <section style="padding: 4rem 0;">
     <div class="eyebrow">Alon Tools</div>
 
-    <h1>{title}</h1>
+    <h1>{t('base64.title')}</h1>
 
     <p class="hero-text">
-      Convierte texto plano a Base64 y decodifica cadenas Base64 directamente desde el navegador.
+      {t('base64.description')}
     </p>
 
     <section class="tool-card">
       <div class="toolbar">
-        <button class="primary" id="encodeBtn">Codificar</button>
-        <button id="decodeBtn">Decodificar</button>
-        <button id="swapBtn">Intercambiar</button>
-        <button id="clearBtn">Limpiar</button>
-        <button id="copyBtn">Copiar resultado</button>
+        <button class="primary" id="encodeBtn">{t('base64.encode')}</button>
+        <button id="decodeBtn">{t('base64.decode')}</button>
+        <button id="swapBtn">Swap</button>
+        <button id="clearBtn">{t('base64.clear')}</button>
+        <button id="copyBtn">Copy</button>
       </div>
 
       <div class="workspace">
-        <textarea id="input" placeholder="Texto de entrada..."></textarea>
+        <textarea id="input" placeholder={t('base64.input')}></textarea>
 
-        <textarea id="output" readonly placeholder="Resultado..."></textarea>
+        <textarea id="output" readonly placeholder={t('base64.output')}></textarea>
       </div>
 
-      <p class="status" id="status">Listo para convertir.</p>
+      <p class="status" id="status">Ready.</p>
     </section>
   </section>
 
@@ -114,18 +122,18 @@ const title = 'Base64 encoder y decoder';
       document.getElementById('encodeBtn').onclick = () => {
         try {
           output.value = encode(input.value);
-          setStatus('Texto codificado correctamente.');
+          setStatus('OK');
         } catch {
-          setStatus('Error al codificar.', true);
+          setStatus('Error', true);
         }
       };
 
       document.getElementById('decodeBtn').onclick = () => {
         try {
           output.value = decode(input.value.trim());
-          setStatus('Texto decodificado correctamente.');
+          setStatus('OK');
         } catch {
-          setStatus('Base64 inválido.', true);
+          setStatus('Invalid Base64', true);
         }
       };
 
@@ -133,21 +141,19 @@ const title = 'Base64 encoder y decoder';
         const temp = input.value;
         input.value = output.value;
         output.value = temp;
-        setStatus('Contenido intercambiado.');
       };
 
       document.getElementById('clearBtn').onclick = () => {
         input.value = '';
         output.value = '';
-        setStatus('Contenido eliminado.');
       };
 
       document.getElementById('copyBtn').onclick = async () => {
         try {
           await navigator.clipboard.writeText(output.value);
-          setStatus('Resultado copiado.');
+          setStatus('Copied');
         } catch {
-          setStatus('No se pudo copiar.', true);
+          setStatus('Copy error', true);
         }
       };
     });
