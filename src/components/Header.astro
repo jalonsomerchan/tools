@@ -7,120 +7,223 @@ const pathWithoutLocale = String(path).replace(/^\/es(?=\/|$)/, '') || '/';
 const currentPath = pathWithoutLocale.startsWith('/') ? pathWithoutLocale : `/${pathWithoutLocale}`;
 const enPath = getLocalizedPath(currentPath, 'en');
 const esPath = getLocalizedPath(currentPath, 'es');
+const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light or dark mode';
 ---
 
-<header>
+<header class="site-header">
   <div class="page-shell header-inner">
-    <a href={getLocalizedPath('/', lang)} class="brand">
-      <span class="brand-mark">A</span>
+    <a href={getLocalizedPath('/', lang)} class="brand" aria-label="Alon Tools">
+      <span class="brand-mark" aria-hidden="true">A</span>
       <span>Alon Tools</span>
     </a>
 
     <div class="header-right">
-      <nav>
+      <nav aria-label={lang === 'es' ? 'Navegación principal' : 'Main navigation'}>
         <a href={getLocalizedPath('/', lang)}>{t('nav.home')}</a>
         <a href="/json-viewer/">JSON</a>
         <a href="/image-compressor/">{t('nav.images')}</a>
         <a href="/curl-builder/">{t('nav.curl')}</a>
       </nav>
 
-      <div class="language-switcher" aria-label="Language selector">
-        <a href={enPath} class={lang === 'en' ? 'active' : ''}>EN</a>
-        <a href={esPath} class={lang === 'es' ? 'active' : ''}>ES</a>
+      <div class="header-actions">
+        <div class="language-switcher" aria-label={lang === 'es' ? 'Selector de idioma' : 'Language selector'}>
+          <a href={enPath} class={lang === 'en' ? 'active' : ''} aria-current={lang === 'en' ? 'page' : undefined}>EN</a>
+          <a href={esPath} class={lang === 'es' ? 'active' : ''} aria-current={lang === 'es' ? 'page' : undefined}>ES</a>
+        </div>
+
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label={themeLabel} title={themeLabel}>
+          <span class="theme-toggle-icon" aria-hidden="true">☾</span>
+        </button>
       </div>
     </div>
   </div>
 </header>
 
+<script is:inline>
+  (() => {
+    const button = document.querySelector('[data-theme-toggle]');
+    if (!button) return;
+
+    const storageKey = 'alon-tools-theme';
+    const icon = button.querySelector('.theme-toggle-icon');
+
+    const render = () => {
+      const theme = document.documentElement.dataset.theme || 'light';
+      button.setAttribute('aria-pressed', String(theme === 'dark'));
+      if (icon) icon.textContent = theme === 'dark' ? '☀' : '☾';
+    };
+
+    button.addEventListener('click', () => {
+      const current = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      localStorage.setItem(storageKey, next);
+      render();
+    });
+
+    render();
+  })();
+</script>
+
 <style>
-  header {
+  .site-header {
     position: sticky;
     top: 0;
-    z-index: 10;
-    backdrop-filter: blur(20px);
-    background: rgba(2, 6, 23, .7);
-    border-bottom: 1px solid rgba(148,163,184,.12);
+    z-index: var(--z-header);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 86%, transparent);
+    background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+    backdrop-filter: blur(18px);
   }
 
   .header-inner {
-    height: 72px;
+    min-height: 72px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: var(--space-4);
+    padding-block: var(--space-3);
   }
 
   .brand {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: .8rem;
-    color: white;
+    color: var(--color-text);
     text-decoration: none;
-    font-weight: 700;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  .brand:hover {
+    color: var(--color-text);
   }
 
   .brand-mark {
     width: 42px;
     height: 42px;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     display: grid;
     place-items: center;
-    background: var(--primary);
-    color: black;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: #fff;
     font-weight: 900;
+    box-shadow: var(--shadow-xs);
   }
 
   .header-right,
   nav,
+  .header-actions,
   .language-switcher {
     display: flex;
-    gap: 1rem;
+    gap: var(--space-3);
     align-items: center;
     flex-wrap: wrap;
     justify-content: flex-end;
   }
 
+  nav {
+    gap: var(--space-2);
+  }
+
   nav a,
   .language-switcher a {
-    color: var(--muted);
+    border-radius: var(--radius-full);
+    color: var(--color-text-muted);
     text-decoration: none;
+    transition: color var(--transition-base), background-color var(--transition-base), border-color var(--transition-base);
+  }
+
+  nav a {
+    padding: .55rem .75rem;
+    font-weight: 700;
   }
 
   nav a:hover,
   .language-switcher a:hover {
-    color: white;
+    background: var(--color-surface-soft);
+    color: var(--color-text);
   }
 
   .language-switcher {
-    gap: .4rem;
+    gap: .35rem;
+    padding: .2rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
   }
 
   .language-switcher a {
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: .35rem .65rem;
-    font-size: .85rem;
+    padding: .32rem .62rem;
+    font-size: .82rem;
+    font-weight: 800;
   }
 
   .language-switcher a.active {
-    background: var(--primary);
-    color: black;
-    border-color: transparent;
-    font-weight: 700;
+    background: var(--color-primary);
+    color: #fff;
   }
 
-  @media (max-width: 700px) {
+  [data-theme="dark"] .language-switcher a.active {
+    color: #020617;
+  }
+
+  .theme-toggle {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    box-shadow: var(--shadow-xs);
+    transition: transform var(--transition-fast), border-color var(--transition-base), background-color var(--transition-base);
+  }
+
+  .theme-toggle:hover {
+    transform: translateY(-1px);
+    border-color: var(--color-border-strong);
+  }
+
+  .theme-toggle-icon {
+    line-height: 1;
+    font-size: 1.05rem;
+  }
+
+  @media (max-width: 760px) {
     .header-inner {
-      height: auto;
-      min-height: 72px;
-      padding: .9rem 0;
+      min-height: auto;
       align-items: flex-start;
       flex-direction: column;
-      gap: .8rem;
     }
 
     .header-right {
       width: 100%;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-3);
+    }
+
+    nav {
+      flex: 1 1 16rem;
+      justify-content: flex-start;
+    }
+
+    nav a {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+    }
+  }
+
+  @media (max-width: 460px) {
+    .header-right,
+    .header-actions {
+      width: 100%;
+    }
+
+    .header-actions {
       justify-content: space-between;
     }
   }
