@@ -1,6 +1,7 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { localizedPath } from '../i18n';
 
 const {
   title,
@@ -11,7 +12,9 @@ const {
 } = Astro.props;
 
 const siteUrl = 'https://tools.alon.one';
-const canonical = `${siteUrl}${path}`;
+const canonical = `${siteUrl}${localizedPath(path, lang)}`;
+const enUrl = `${siteUrl}${localizedPath(path, 'en')}`;
+const esUrl = `${siteUrl}${localizedPath(path, 'es')}`;
 ---
 
 <html lang={lang}>
@@ -26,10 +29,9 @@ const canonical = `${siteUrl}${path}`;
     <meta name="theme-color" content="#020617" />
 
     <link rel="canonical" href={canonical} />
-
-    <link rel="alternate" hreflang="es" href={`${siteUrl}/es${path === '/' ? '' : path}`} />
-    <link rel="alternate" hreflang="en" href={`${siteUrl}${path}`} />
-    <link rel="alternate" hreflang="x-default" href={`${siteUrl}${path}`} />
+    <link rel="alternate" hreflang="es" href={esUrl} />
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="x-default" href={enUrl} />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Alon Tools" />
@@ -56,9 +58,7 @@ const canonical = `${siteUrl}${path}`;
 
       * { box-sizing: border-box; }
 
-      html {
-        scroll-behavior: smooth;
-      }
+      html { scroll-behavior: smooth; }
 
       body {
         margin: 0;
@@ -108,7 +108,7 @@ const canonical = `${siteUrl}${path}`;
   </head>
 
   <body>
-    <Header />
+    <Header lang={lang} path={path} />
 
     <main class="page-shell">
       <slot />
