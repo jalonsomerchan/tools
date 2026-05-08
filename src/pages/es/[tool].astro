@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import UrlEncoderTool from '../../components/tools/UrlEncoderTool.astro';
 import Md5Tool from '../../components/tools/Md5Tool.astro';
+import JwtDecoderTool from '../../components/tools/JwtDecoderTool.astro';
 import { useTranslations } from '../../i18n';
 
 export function getStaticPaths() {
@@ -19,6 +20,13 @@ export function getStaticPaths() {
         toolKey: 'md5',
         path: '/md5/'
       }
+    },
+    {
+      params: { tool: 'jwt-decoder' },
+      props: {
+        toolKey: 'jwt',
+        path: '/jwt-decoder/'
+      }
     }
   ];
 }
@@ -29,7 +37,8 @@ const t = useTranslations(lang);
 
 const components = {
   urlEncoder: UrlEncoderTool,
-  md5: Md5Tool
+  md5: Md5Tool,
+  jwt: JwtDecoderTool
 };
 
 const ToolComponent = components[toolKey];
