@@ -31,41 +31,38 @@ import UuidGenerator from '../uuid-generator.astro';
 import VatCalculator from '../vat-calculator.astro';
 import XmlFormatter from '../xml-formatter.astro';
 
-const pageSlugs = [
-  'app-icon-generator',
-  'base64',
-  'character-counter',
-  'code-formatter',
-  'curl-builder',
-  'csv-converter',
-  'css-color-converter',
-  'diff-checker',
-  'dns-lookup',
-  'favicon-generator',
-  'geocoder',
-  'image-compressor',
-  'image-converter',
-  'image-info',
-  'ip-info',
-  'json-viewer',
-  'jwt-decoder',
-  'lorem-ipsum',
-  'markdown-preview',
-  'md5',
-  'photo-censor',
-  'qr-code',
-  'social-preview',
-  'sql-formatter',
-  'svg-placeholder',
-  'timestamp-converter',
-  'url-encoder',
-  'url-inspector',
-  'uuid-generator',
-  'vat-calculator',
-  'xml-formatter'
-] as const;
-
-type PageSlug = typeof pageSlugs[number];
+type PageSlug =
+  | 'app-icon-generator'
+  | 'base64'
+  | 'character-counter'
+  | 'code-formatter'
+  | 'curl-builder'
+  | 'csv-converter'
+  | 'css-color-converter'
+  | 'diff-checker'
+  | 'dns-lookup'
+  | 'favicon-generator'
+  | 'geocoder'
+  | 'image-compressor'
+  | 'image-converter'
+  | 'image-info'
+  | 'ip-info'
+  | 'json-viewer'
+  | 'jwt-decoder'
+  | 'lorem-ipsum'
+  | 'markdown-preview'
+  | 'md5'
+  | 'photo-censor'
+  | 'qr-code'
+  | 'social-preview'
+  | 'sql-formatter'
+  | 'svg-placeholder'
+  | 'timestamp-converter'
+  | 'url-encoder'
+  | 'url-inspector'
+  | 'uuid-generator'
+  | 'vat-calculator'
+  | 'xml-formatter';
 
 const pages: Record<PageSlug, typeof AppIconGenerator> = {
   'app-icon-generator': AppIconGenerator,
@@ -102,7 +99,39 @@ const pages: Record<PageSlug, typeof AppIconGenerator> = {
 };
 
 export function getStaticPaths() {
-  return pageSlugs.map((slug) => ({ params: { slug } }));
+  return [
+    'app-icon-generator',
+    'base64',
+    'character-counter',
+    'code-formatter',
+    'curl-builder',
+    'csv-converter',
+    'css-color-converter',
+    'diff-checker',
+    'dns-lookup',
+    'favicon-generator',
+    'geocoder',
+    'image-compressor',
+    'image-converter',
+    'image-info',
+    'ip-info',
+    'json-viewer',
+    'jwt-decoder',
+    'lorem-ipsum',
+    'markdown-preview',
+    'md5',
+    'photo-censor',
+    'qr-code',
+    'social-preview',
+    'sql-formatter',
+    'svg-placeholder',
+    'timestamp-converter',
+    'url-encoder',
+    'url-inspector',
+    'uuid-generator',
+    'vat-calculator',
+    'xml-formatter'
+  ].map((slug) => ({ params: { slug } }));
 }
 
 const slug = Astro.params.slug as PageSlug;
