@@ -1,0 +1,385 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Calculadora de IVA';
+const description = 'Calcula el IVA de un precio con o sin IVA, desglosando base imponible, cuota de IVA y total.';
+---
+
+<Layout title={title} description={description} path="/vat-calculator/" translated={false}>
+  <section class="vat-page">
+    <div class="eyebrow">100% local</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Introduce un precio con IVA o sin IVA y el porcentaje aplicado para obtener el desglose completo: base imponible, cuota de IVA y total final.
+    </p>
+
+    <section class="tool-card" aria-labelledby="calculatorTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="calculatorTitle">Datos del cálculo</h2>
+          <p>Admite coma o punto decimal. Puedes usar presets habituales o escribir cualquier porcentaje.</p>
+        </div>
+      </div>
+
+      <div class="controls-grid">
+        <div class="field">
+          <label for="modeSelect">El precio introducido es</label>
+          <select id="modeSelect">
+            <option value="without-vat">Precio sin IVA</option>
+            <option value="with-vat">Precio con IVA incluido</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="priceInput">Precio</label>
+          <input id="priceInput" type="text" inputmode="decimal" value="100" placeholder="Ej. 100,00" />
+        </div>
+
+        <div class="field">
+          <label for="vatInput">IVA (%)</label>
+          <input id="vatInput" type="text" inputmode="decimal" value="21" placeholder="Ej. 21" />
+        </div>
+      </div>
+
+      <div class="preset-row" aria-label="Tipos de IVA habituales">
+        <button type="button" data-vat="0">0%</button>
+        <button type="button" data-vat="4">4%</button>
+        <button type="button" data-vat="10">10%</button>
+        <button type="button" data-vat="21" class="active">21%</button>
+      </div>
+
+      <div class="toolbar" aria-label="Acciones de IVA">
+        <button class="primary" id="calculateBtn" type="button">Calcular</button>
+        <button id="copyBtn" type="button">Copiar desglose</button>
+        <button id="clearBtn" type="button">Limpiar</button>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">Listo para calcular IVA.</p>
+    </section>
+
+    <section class="results-section" aria-labelledby="resultsTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="resultsTitle">Resultado</h2>
+          <p id="summaryText">Introduce un precio para ver el desglose.</p>
+        </div>
+      </div>
+
+      <div class="results-grid" id="resultsGrid"></div>
+    </section>
+
+    <section class="tool-card extra-section" aria-labelledby="quickExamplesTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="quickExamplesTitle">Cálculos rápidos</h2>
+          <p>Comparativa del mismo precio con los tipos de IVA habituales.</p>
+        </div>
+      </div>
+      <div class="quick-grid" id="quickGrid"></div>
+    </section>
+  </section>
+
+  <style>
+    .vat-page { padding: 4rem 0; }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h2 { margin: 0 0 .35rem; font-size: 1.35rem; }
+
+    .section-heading p,
+    .status {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(180px, 260px) minmax(160px, 220px);
+      gap: 1rem;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      margin-bottom: .55rem;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: white;
+      padding: 1rem;
+      font: inherit;
+    }
+
+    .preset-row,
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: white;
+      padding: .9rem 1rem;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .15s ease, border-color .15s ease, background-color .15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(56,189,248,.45);
+    }
+
+    button.primary,
+    .preset-row button.active {
+      background: var(--primary);
+      color: #020617;
+      border-color: transparent;
+    }
+
+    .status { margin-top: 1rem; }
+    .status.success { color: #86efac; }
+    .status.error { color: #fca5a5; }
+
+    .results-section,
+    .extra-section {
+      margin-top: 1.5rem;
+    }
+
+    .results-section {
+      padding: 1.5rem;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+
+    .results-grid,
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+    }
+
+    .result-card,
+    .quick-card {
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(2, 6, 23, .55);
+      padding: 1rem;
+    }
+
+    .result-card span,
+    .quick-card span {
+      display: block;
+      color: var(--muted);
+      margin-bottom: .5rem;
+      font-size: .9rem;
+      line-height: 1.35;
+    }
+
+    .result-card strong,
+    .quick-card strong {
+      display: block;
+      color: white;
+      font-size: 1.55rem;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .quick-card small {
+      display: block;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-top: .6rem;
+    }
+
+    @media (max-width: 820px) {
+      .controls-grid { grid-template-columns: 1fr; }
+      .section-heading { flex-direction: column; }
+    }
+
+    @media (max-width: 560px) {
+      .vat-page { padding: 2.5rem 0; }
+      button { width: 100%; }
+      .result-card strong,
+      .quick-card strong { font-size: 1.35rem; }
+    }
+  </style>
+
+  <script>
+    const modeSelect = document.getElementById('modeSelect') as HTMLSelectElement;
+    const priceInput = document.getElementById('priceInput') as HTMLInputElement;
+    const vatInput = document.getElementById('vatInput') as HTMLInputElement;
+    const calculateBtn = document.getElementById('calculateBtn') as HTMLButtonElement;
+    const copyBtn = document.getElementById('copyBtn') as HTMLButtonElement;
+    const clearBtn = document.getElementById('clearBtn') as HTMLButtonElement;
+    const status = document.getElementById('status') as HTMLParagraphElement;
+    const summaryText = document.getElementById('summaryText') as HTMLParagraphElement;
+    const resultsGrid = document.getElementById('resultsGrid') as HTMLDivElement;
+    const quickGrid = document.getElementById('quickGrid') as HTMLDivElement;
+    const presetButtons = Array.from(document.querySelectorAll('[data-vat]')) as HTMLButtonElement[];
+
+    let lastResult = '';
+
+    const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => {
+      status.textContent = message;
+      status.classList.toggle('success', type === 'success');
+      status.classList.toggle('error', type === 'error');
+    };
+
+    const parseNumber = (value: string) => {
+      const normalized = value.trim().replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
+      const number = Number(normalized);
+      return Number.isFinite(number) ? number : NaN;
+    };
+
+    const formatMoney = (value: number) => new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+
+    const formatPercent = (value: number) => `${Number(value.toFixed(4)).toString().replace('.', ',')}%`;
+
+    const calculateVat = (price: number, vatRate: number, mode: string) => {
+      const rate = vatRate / 100;
+      const base = mode === 'with-vat' ? price / (1 + rate) : price;
+      const vat = base * rate;
+      const total = base + vat;
+      return { base, vat, total, rate };
+    };
+
+    const createResultCard = (label: string, value: string) => {
+      const card = document.createElement('div');
+      card.className = 'result-card';
+      const span = document.createElement('span');
+      span.textContent = label;
+      const strong = document.createElement('strong');
+      strong.textContent = value;
+      card.append(span, strong);
+      return card;
+    };
+
+    const renderQuickExamples = (price: number, mode: string) => {
+      const rates = [0, 4, 10, 21];
+      quickGrid.replaceChildren(...rates.map((rate) => {
+        const result = calculateVat(price, rate, mode);
+        const card = document.createElement('div');
+        card.className = 'quick-card';
+        const label = document.createElement('span');
+        label.textContent = `IVA ${rate}%`;
+        const total = document.createElement('strong');
+        total.textContent = formatMoney(result.total);
+        const detail = document.createElement('small');
+        detail.textContent = `Base: ${formatMoney(result.base)} · IVA: ${formatMoney(result.vat)}`;
+        card.append(label, total, detail);
+        return card;
+      }));
+    };
+
+    const updatePresetState = (vatRate: number) => {
+      presetButtons.forEach((button) => {
+        button.classList.toggle('active', Number(button.dataset.vat) === vatRate);
+      });
+    };
+
+    const calculate = () => {
+      const price = parseNumber(priceInput.value);
+      const vatRate = parseNumber(vatInput.value);
+
+      if (!Number.isFinite(price) || price < 0) {
+        setStatus('Introduce un precio válido igual o mayor que 0.', 'error');
+        return;
+      }
+
+      if (!Number.isFinite(vatRate) || vatRate < 0) {
+        setStatus('Introduce un porcentaje de IVA válido igual o mayor que 0.', 'error');
+        return;
+      }
+
+      const result = calculateVat(price, vatRate, modeSelect.value);
+      const modeLabel = modeSelect.value === 'with-vat' ? 'precio con IVA incluido' : 'precio sin IVA';
+
+      resultsGrid.replaceChildren(
+        createResultCard('Base imponible', formatMoney(result.base)),
+        createResultCard('IVA', formatMoney(result.vat)),
+        createResultCard('Total con IVA', formatMoney(result.total)),
+        createResultCard('Tipo aplicado', formatPercent(vatRate))
+      );
+
+      summaryText.textContent = `A partir de ${formatMoney(price)} como ${modeLabel}, con IVA ${formatPercent(vatRate)}.`;
+      lastResult = [
+        'Cálculo de IVA',
+        `Precio introducido: ${formatMoney(price)} (${modeLabel})`,
+        `IVA aplicado: ${formatPercent(vatRate)}`,
+        `Base imponible: ${formatMoney(result.base)}`,
+        `Cuota de IVA: ${formatMoney(result.vat)}`,
+        `Total con IVA: ${formatMoney(result.total)}`
+      ].join('\n');
+
+      renderQuickExamples(price, modeSelect.value);
+      updatePresetState(vatRate);
+      setStatus('IVA calculado correctamente.', 'success');
+    };
+
+    calculateBtn.addEventListener('click', calculate);
+    [modeSelect, priceInput, vatInput].forEach((element) => {
+      element.addEventListener('input', calculate);
+      element.addEventListener('change', calculate);
+      element.addEventListener('keydown', (event) => {
+        if ((event as KeyboardEvent).key === 'Enter') calculate();
+      });
+    });
+
+    presetButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        vatInput.value = button.dataset.vat || '21';
+        calculate();
+      });
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      if (!lastResult) calculate();
+      try {
+        await navigator.clipboard.writeText(lastResult);
+        setStatus('Desglose copiado.', 'success');
+      } catch {
+        setStatus('No se pudo copiar el desglose.', 'error');
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      priceInput.value = '';
+      vatInput.value = '21';
+      modeSelect.value = 'without-vat';
+      resultsGrid.replaceChildren();
+      quickGrid.replaceChildren();
+      summaryText.textContent = 'Introduce un precio para ver el desglose.';
+      lastResult = '';
+      updatePresetState(21);
+      setStatus('Campos limpiados.', 'success');
+      priceInput.focus();
+    });
+
+    calculate();
+  </script>
+</Layout>
