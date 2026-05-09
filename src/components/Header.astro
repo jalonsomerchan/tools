@@ -8,16 +8,30 @@ const currentPath = pathWithoutLocale.startsWith('/') ? pathWithoutLocale : `/${
 const enPath = getLocalizedPath(currentPath, 'en');
 const esPath = getLocalizedPath(currentPath, 'es');
 const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light or dark mode';
+const menuLabel = lang === 'es' ? 'Abrir menú de navegación' : 'Open navigation menu';
 ---
 
-<header class="site-header">
+<header class="site-header" data-site-header>
   <div class="page-shell header-inner">
     <a href={getLocalizedPath('/', lang)} class="brand" aria-label="Alon Tools">
       <span class="brand-mark" aria-hidden="true">AT</span>
       <strong>Alon Tools</strong>
     </a>
 
-    <div class="header-right">
+    <button
+      class="menu-toggle"
+      type="button"
+      data-menu-toggle
+      aria-label={menuLabel}
+      aria-controls="site-menu"
+      aria-expanded="false"
+    >
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
+
+    <div class="header-right" id="site-menu" data-site-menu>
       <nav aria-label={lang === 'es' ? 'Navegación principal' : 'Main navigation'}>
         <a href={getLocalizedPath('/', lang)}>{t('nav.home')}</a>
         <a href="/json-viewer/">JSON</a>
@@ -28,6 +42,7 @@ const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light
       <div class="header-actions">
         <button class="theme-toggle" type="button" data-theme-toggle aria-label={themeLabel} title={themeLabel}>
           <span class="theme-toggle-icon" aria-hidden="true">☀️</span>
+          <span class="theme-toggle-text">{lang === 'es' ? 'Tema' : 'Theme'}</span>
         </button>
 
         <div class="language-switcher" aria-label={lang === 'es' ? 'Selector de idioma' : 'Language selector'}>
@@ -41,28 +56,57 @@ const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light
 
 <script is:inline>
   (() => {
-    const button = document.querySelector('[data-theme-toggle]');
-    if (!button) return;
+    const header = document.querySelector('[data-site-header]');
+    const menuButton = document.querySelector('[data-menu-toggle]');
+    const menu = document.querySelector('[data-site-menu]');
+    const themeButton = document.querySelector('[data-theme-toggle]');
+
+    const closeMenu = () => {
+      if (!header || !menuButton) return;
+      header.classList.remove('is-menu-open');
+      menuButton.setAttribute('aria-expanded', 'false');
+    };
+
+    if (header && menuButton && menu) {
+      menuButton.addEventListener('click', () => {
+        const isOpen = header.classList.toggle('is-menu-open');
+        menuButton.setAttribute('aria-expanded', String(isOpen));
+      });
+
+      menu.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', closeMenu);
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeMenu();
+      });
+
+      window.matchMedia('(min-width: 761px)').addEventListener('change', (event) => {
+        if (event.matches) closeMenu();
+      });
+    }
+
+    if (!themeButton) return;
 
     const storageKey = 'alon-tools-theme';
-    const icon = button.querySelector('.theme-toggle-icon');
+    const icon = themeButton.querySelector('.theme-toggle-icon');
 
-    const render = () => {
+    const renderTheme = () => {
       const theme = document.documentElement.dataset.theme || 'light';
-      button.setAttribute('aria-pressed', String(theme === 'dark'));
+      themeButton.setAttribute('aria-pressed', String(theme === 'dark'));
       if (icon) icon.textContent = theme === 'dark' ? '🌙' : '☀️';
     };
 
-    button.addEventListener('click', () => {
+    themeButton.addEventListener('click', () => {
       const current = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.dataset.theme = next;
       localStorage.setItem(storageKey, next);
       localStorage.setItem('theme', next);
-      render();
+      renderTheme();
     });
 
-    render();
+    renderTheme();
   })();
 </script>
 
@@ -124,6 +168,42 @@ const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light
 
   .brand strong {
     font-size: clamp(1.15rem, 1.6vw, 1.45rem);
+  }
+
+  .menu-toggle {
+    display: none;
+    width: 2.85rem;
+    height: 2.85rem;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: .28rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .menu-toggle span {
+    width: 1.25rem;
+    height: 2px;
+    border-radius: var(--radius-full);
+    background: currentColor;
+    transition: transform var(--transition-base), opacity var(--transition-base);
+  }
+
+  .is-menu-open .menu-toggle span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .is-menu-open .menu-toggle span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .is-menu-open .menu-toggle span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
   }
 
   .header-right,
@@ -188,7 +268,7 @@ const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light
   }
 
   .theme-toggle {
-    width: 2.55rem;
+    min-width: 2.55rem;
     height: 2.55rem;
     display: inline-grid;
     place-items: center;
@@ -209,55 +289,155 @@ const themeLabel = lang === 'es' ? 'Cambiar modo claro u oscuro' : 'Toggle light
     font-size: 1rem;
   }
 
-  @media (max-width: 1240px) {
+  .theme-toggle-text {
+    display: none;
+  }
+
+  @media (max-width: 1100px) {
     .header-inner {
-      grid-template-columns: 1fr auto;
+      grid-template-columns: auto 1fr auto;
     }
 
     .header-right {
-      grid-column: 1 / -1;
-      justify-content: space-between;
-      overflow-x: auto;
-      padding-bottom: .65rem;
+      gap: .65rem;
+    }
+
+    nav {
+      gap: .2rem;
+    }
+
+    nav a {
+      padding-inline: .55rem;
+      font-size: .9rem;
     }
   }
 
   @media (max-width: 760px) {
-    .site-header {
-      position: sticky;
-    }
-
     .site-header::before {
       inset: 0 calc(var(--page-gutter) * -1);
     }
 
     .header-inner {
-      grid-template-columns: 1fr;
-      align-items: start;
-      padding: var(--space-4) 0 0;
+      min-height: 4.25rem;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: var(--space-3);
+      padding-block: .55rem;
+      position: relative;
+    }
+
+    .brand {
+      min-width: 0;
+    }
+
+    .brand strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-mark {
+      width: 2.35rem;
+      height: 2.35rem;
+    }
+
+    .menu-toggle {
+      display: inline-flex;
     }
 
     .header-right {
-      width: 100%;
-      align-items: flex-start;
+      position: absolute;
+      top: calc(100% + .45rem);
+      left: 0;
+      right: 0;
+      z-index: var(--z-dropdown);
+      display: grid;
+      grid-template-columns: 1fr;
       gap: var(--space-3);
+      padding: var(--space-3);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      background: color-mix(in srgb, var(--color-surface) 98%, transparent);
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-.4rem) scale(.98);
+      transform-origin: top center;
+      transition: opacity var(--transition-base), transform var(--transition-base);
+    }
+
+    .is-menu-open .header-right {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
     }
 
     nav {
-      justify-content: flex-start;
-      overflow-x: auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: .35rem;
       width: 100%;
     }
 
     nav a {
-      min-height: 2.45rem;
-      padding-inline: .7rem;
-      font-size: .875rem;
+      min-height: 2.9rem;
+      justify-content: flex-start;
+      padding-inline: var(--space-4);
+      border-radius: var(--radius-md);
+      font-size: .96rem;
+      background: var(--color-surface-soft);
     }
 
     .header-actions {
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-3);
       width: 100%;
+      align-items: stretch;
+    }
+
+    .theme-toggle {
+      width: 100%;
+      min-height: 2.9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-soft);
+      border-radius: var(--radius-md);
+      font-weight: 850;
+    }
+
+    .theme-toggle-text {
+      display: inline;
+    }
+
+    .language-switcher {
+      align-self: stretch;
+      padding: .25rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface-soft);
+    }
+
+    .language-switcher a {
+      min-height: 2.35rem;
+      padding-inline: .75rem;
+      border-radius: calc(var(--radius-md) - .25rem);
+    }
+  }
+
+  @media (max-width: 380px) {
+    .brand strong {
+      font-size: 1.05rem;
+    }
+
+    .header-actions {
+      grid-template-columns: 1fr;
+    }
+
+    .language-switcher {
+      justify-content: center;
     }
   }
 </style>
