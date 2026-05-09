@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ToolMessage from '../components/ToolMessage.astro';
 
 const title = 'Inspector de URLs';
 ---
@@ -16,9 +17,11 @@ const title = 'Inspector de URLs';
 
     <section class="tool-card">
       <div class="toolbar">
-        <input id="urlInput" type="text" placeholder="https://example.com/path?query=test#fragment" />
+        <input id="urlInput" type="text" aria-describedby="urlMessage" placeholder="https://example.com/path?query=test#fragment" />
         <button class="primary" id="analyzeBtn">Analizar URL</button>
       </div>
+
+      <ToolMessage id="urlMessage" type="error" />
 
       <div class="results" id="results" hidden>
         <div class="info-grid">
@@ -74,6 +77,10 @@ const title = 'Inspector de URLs';
       color: white;
       padding: 1rem;
       font-size: 1rem;
+    }
+
+    input[aria-invalid='true'] {
+      border-color: rgba(248, 113, 113, .8);
     }
 
     button {
@@ -141,13 +148,32 @@ const title = 'Inspector de URLs';
     window.addEventListener('DOMContentLoaded', () => {
       const input = document.getElementById('urlInput');
       const results = document.getElementById('results');
+      const message = document.getElementById('urlMessage');
 
       const set = (id, value) => {
         document.getElementById(id).textContent = value || '-';
       };
 
+      const showError = (text) => {
+        message.textContent = text;
+        message.hidden = false;
+        input.setAttribute('aria-invalid', 'true');
+      };
+
+      const clearError = () => {
+        message.textContent = '';
+        message.hidden = true;
+        input.removeAttribute('aria-invalid');
+      };
+
       document.getElementById('analyzeBtn').onclick = () => {
         try {
+          clearError();
+
+          if (!input.value.trim()) {
+            throw new Error('empty');
+          }
+
           const url = new URL(input.value.trim());
 
           results.hidden = false;
@@ -169,10 +195,19 @@ const title = 'Inspector de URLs';
           document.getElementById('curlCode').textContent = `curl -X GET '${url.href}'`;
 
           document.getElementById('fetchCode').textContent = `fetch('${url.href}')\n  .then(response => response.text())\n  .then(data => console.log(data));`;
-        } catch {
-          alert('URL inválida');
+        } catch (error) {
+          results.hidden = true;
+
+          if (error instanceof Error && error.message === 'empty') {
+            showError('El campo URL está vacío. Introduce una URL completa, por ejemplo https://example.com.');
+            return;
+          }
+
+          showError('URL inválida. Introduce una URL completa con protocolo, por ejemplo https://example.com/path?query=test.');
         }
       };
+
+      input.addEventListener('input', clearError);
     });
   </script>
 </Layout>
