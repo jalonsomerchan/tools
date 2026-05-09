@@ -1,0 +1,99 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'UUID & random key generator';
+const description = 'Generate UUID v4 values and random development keys locally in your browser using the Web Crypto API.';
+---
+
+<Layout title={title} description={description} path="/uuid-generator/" translated={false}>
+  <section class="uuid-page">
+    <div class="eyebrow">100% local</div>
+    <h1>{title}</h1>
+    <p class="hero-text">Generate UUID v4 values and configurable random strings for development. Everything is created locally with the Web Crypto API: no backend, no uploads and no network calls.</p>
+
+    <section class="tool-card uuid-tool" aria-labelledby="uuidToolTitle">
+      <div class="tool-header">
+        <div>
+          <h2 id="uuidToolTitle">Generator</h2>
+          <p>Use UUIDs for identifiers or random strings for tokens, test data and temporary keys.</p>
+        </div>
+      </div>
+
+      <div class="privacy-note" role="note">Privacy: all values are generated on your device with <code>crypto.randomUUID()</code> and <code>crypto.getRandomValues()</code>. Nothing is sent anywhere.</div>
+
+      <div class="options-grid" aria-label="Generator options">
+        <label for="modeSelect">Type<select id="modeSelect"><option value="uuid">UUID v4</option><option value="string">Random string</option></select></label>
+        <label for="amountInput">Amount<input id="amountInput" type="number" min="1" max="1000" step="1" value="5" /></label>
+        <label for="lengthInput" id="lengthLabel">String length<input id="lengthInput" type="number" min="1" max="4096" step="1" value="32" /></label>
+      </div>
+
+      <fieldset class="charset-options" id="charsetOptions">
+        <legend>Characters for random strings</legend>
+        <label><input id="lowercaseInput" type="checkbox" checked /> Lowercase</label>
+        <label><input id="uppercaseInput" type="checkbox" checked /> Uppercase</label>
+        <label><input id="numbersInput" type="checkbox" checked /> Numbers</label>
+        <label><input id="symbolsInput" type="checkbox" /> Symbols</label>
+      </fieldset>
+
+      <div class="toolbar" aria-label="Generator actions">
+        <button class="primary" id="generateBtn" type="button">Generate</button>
+        <button id="copyBtn" type="button">Copy results</button>
+        <button id="downloadBtn" type="button">Download .txt</button>
+        <button id="clearBtn" type="button">Clear</button>
+      </div>
+
+      <label class="editor-label" for="output">Results</label>
+      <textarea id="output" readonly spellcheck="false" placeholder="Generated UUIDs or random strings will appear here..."></textarea>
+
+      <div class="stats-grid" aria-label="Generation statistics">
+        <output class="stat-card" id="countStat">Values: 0</output>
+        <output class="stat-card" id="lengthStat">Length: 0</output>
+        <output class="stat-card" id="sizeStat">Size: 0 B</output>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">Ready.</p>
+    </section>
+  </section>
+
+  <style>
+    .uuid-page{padding:clamp(2rem,6vw,4rem) 0}.uuid-tool{display:grid;gap:var(--space-4)}.tool-header{display:flex;justify-content:space-between;gap:var(--space-4);align-items:flex-start}.tool-header h2{margin:0 0 var(--space-2);font-size:clamp(1.25rem,2vw,1.6rem)}.tool-header p,.status,.privacy-note{margin:0;color:var(--color-text-muted,var(--muted));line-height:1.7}.privacy-note{padding:1rem;border:1px solid var(--color-border,var(--border));border-radius:var(--radius-xl,18px);background:color-mix(in srgb,var(--color-surface,#020617) 92%,transparent)}.privacy-note code{font:600 .95em ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}.options-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3)}.options-grid label{display:grid;gap:.45rem;color:var(--color-text-muted,var(--muted));font-weight:800}input,select,button{border-radius:var(--radius-lg,14px);border:1px solid var(--color-border,var(--border));background:var(--color-surface,#020617);color:var(--color-text,#fff);padding:.85rem 1rem;font:inherit}button{font-weight:800;cursor:pointer}button.primary{background:var(--color-primary,var(--primary));color:#020617;border-color:transparent}.charset-options{display:flex;flex-wrap:wrap;gap:.75rem 1rem;border:1px solid var(--color-border,var(--border));border-radius:var(--radius-xl,18px);padding:1rem}.charset-options legend{padding:0 .35rem;font-weight:900;color:var(--color-text)}.charset-options label{display:flex;align-items:center;gap:.45rem;color:var(--color-text-muted,var(--muted));font-weight:800}.charset-options input{width:auto;accent-color:var(--color-primary,var(--primary))}.toolbar{display:flex;gap:var(--space-2);flex-wrap:wrap}.editor-label{color:var(--color-text-muted,var(--muted));font-weight:800}textarea{width:100%;min-height:340px;border-radius:var(--radius-xl,18px);border:1px solid var(--color-border,var(--border));background:#020617;color:#e5e7eb;padding:1rem;font:500 .95rem/1.65 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;resize:vertical;white-space:pre;overflow:auto}.stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3)}.stat-card{border:1px solid var(--color-border,var(--border));border-radius:var(--radius-lg,14px);background:color-mix(in srgb,var(--color-surface,#020617) 92%,transparent);color:var(--color-text-muted,var(--muted));padding:.85rem 1rem;font-weight:800}.status.success{color:#86efac}.status.error{color:#fca5a5}@media(max-width:860px){.options-grid,.stats-grid{grid-template-columns:1fr}button,input,select{width:100%}.charset-options{display:grid;grid-template-columns:1fr 1fr}.toolbar{display:grid;grid-template-columns:1fr}}@media(max-width:520px){.charset-options{grid-template-columns:1fr}}
+  </style>
+
+  <script>
+    const modeSelect = document.getElementById('modeSelect') as HTMLSelectElement;
+    const amountInput = document.getElementById('amountInput') as HTMLInputElement;
+    const lengthInput = document.getElementById('lengthInput') as HTMLInputElement;
+    const lengthLabel = document.getElementById('lengthLabel') as HTMLLabelElement;
+    const charsetOptions = document.getElementById('charsetOptions') as HTMLFieldSetElement;
+    const lowercaseInput = document.getElementById('lowercaseInput') as HTMLInputElement;
+    const uppercaseInput = document.getElementById('uppercaseInput') as HTMLInputElement;
+    const numbersInput = document.getElementById('numbersInput') as HTMLInputElement;
+    const symbolsInput = document.getElementById('symbolsInput') as HTMLInputElement;
+    const generateBtn = document.getElementById('generateBtn') as HTMLButtonElement;
+    const copyBtn = document.getElementById('copyBtn') as HTMLButtonElement;
+    const downloadBtn = document.getElementById('downloadBtn') as HTMLButtonElement;
+    const clearBtn = document.getElementById('clearBtn') as HTMLButtonElement;
+    const output = document.getElementById('output') as HTMLTextAreaElement;
+    const status = document.getElementById('status') as HTMLParagraphElement;
+    const countStat = document.getElementById('countStat') as HTMLOutputElement;
+    const lengthStat = document.getElementById('lengthStat') as HTMLOutputElement;
+    const sizeStat = document.getElementById('sizeStat') as HTMLOutputElement;
+    const LOWERCASE = 'abcdefghijklmnopqrstuvwxyz', UPPERCASE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', NUMBERS = '0123456789', SYMBOLS = '!@#$%^&*()-_=+[]{};:,.?/|~';
+    const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+    const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => { status.textContent = message; status.classList.toggle('success', type === 'success'); status.classList.toggle('error', type === 'error'); };
+    const byteSize = (value: string) => new Blob([value]).size;
+    const formatBytes = (bytes: number) => bytes < 1024 ? `${bytes} B` : bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+    const normalizeNumberInputs = () => { amountInput.value = String(clamp(Math.round(Number(amountInput.value) || 1), 1, 1000)); lengthInput.value = String(clamp(Math.round(Number(lengthInput.value) || 1), 1, 4096)); };
+    const updateVisibility = () => { const isString = modeSelect.value === 'string'; lengthLabel.hidden = !isString; charsetOptions.hidden = !isString; };
+    const updateStats = () => { const values = output.value.trim() ? output.value.trim().split('\n').length : 0; countStat.textContent = `Values: ${values}`; lengthStat.textContent = `Length: ${modeSelect.value === 'string' ? lengthInput.value : '36'}`; sizeStat.textContent = `Size: ${formatBytes(byteSize(output.value))}`; };
+    const getCharset = () => `${lowercaseInput.checked ? LOWERCASE : ''}${uppercaseInput.checked ? UPPERCASE : ''}${numbersInput.checked ? NUMBERS : ''}${symbolsInput.checked ? SYMBOLS : ''}`;
+    const randomString = (length: number, charset: string) => { const bytes = new Uint32Array(length); crypto.getRandomValues(bytes); let value = ''; for (let index = 0; index < length; index += 1) value += charset[bytes[index] % charset.length]; return value; };
+    const generate = async () => { await new Promise((resolve) => window.requestAnimationFrame(resolve)); normalizeNumberInputs(); const amount = Number(amountInput.value); const values: string[] = []; try { if (modeSelect.value === 'uuid') { for (let index = 0; index < amount; index += 1) values.push(crypto.randomUUID()); output.value = values.join('\n'); setStatus(`${amount} UUID${amount === 1 ? '' : 's'} generated locally.`, 'success'); } else { const length = Number(lengthInput.value); const charset = getCharset(); if (!charset) throw new Error('Select at least one character group.'); if (amount * length > 250000) throw new Error('The requested output is too large. Lower the amount or string length.'); for (let index = 0; index < amount; index += 1) values.push(randomString(length, charset)); output.value = values.join('\n'); setStatus(`${amount} random string${amount === 1 ? '' : 's'} generated locally.`, 'success'); } } catch (error) { setStatus(error instanceof Error ? error.message : 'Could not generate values.', 'error'); } updateStats(); };
+    generateBtn.addEventListener('click', generate);
+    copyBtn.addEventListener('click', async () => { if (!output.value) return setStatus('There is no result to copy yet.', 'error'); try { await navigator.clipboard.writeText(output.value); setStatus('Results copied to clipboard.', 'success'); } catch { output.focus(); output.select(); setStatus('Could not use the clipboard API. Results are selected so you can copy them manually.', 'error'); } });
+    downloadBtn.addEventListener('click', () => { if (!output.value) return setStatus('There is no result to download.', 'error'); const blob = new Blob([output.value], { type: 'text/plain;charset=utf-8' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = modeSelect.value === 'uuid' ? 'uuids.txt' : 'random-strings.txt'; document.body.append(link); link.click(); link.remove(); URL.revokeObjectURL(url); setStatus('TXT file downloaded.', 'success'); });
+    clearBtn.addEventListener('click', () => { output.value = ''; setStatus('Results cleared.'); updateStats(); });
+    [modeSelect, amountInput, lengthInput, lowercaseInput, uppercaseInput, numbersInput, symbolsInput].forEach((element) => { element.addEventListener('change', () => { normalizeNumberInputs(); updateVisibility(); updateStats(); }); });
+    updateVisibility(); updateStats();
+  </script>
+</Layout>
