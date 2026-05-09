@@ -2,729 +2,129 @@
 import Layout from '../layouts/Layout.astro';
 
 const title = 'Generador de iconos para apps';
-const description = 'Crea iconos para apps desde texto, iconos Lucide e imágenes, recorta, ajusta bordes y descarga PNG o ZIP.';
+const description = 'Crea iconos para apps con editor visual sobre canvas, capas de imagen, texto e iconos Lucide y exportación local a PNG o ZIP.';
 ---
 
 <Layout title={title} description={description} path="/app-icon-generator/" translated={false}>
   <section class="app-icon-page">
     <div class="eyebrow">100% local</div>
-
     <h1>{title}</h1>
+    <p class="hero-text">Diseña iconos para apps editando directamente sobre el canvas: añade imágenes, textos e iconos, transforma cada capa con asas visuales y exporta todos los tamaños desde tu navegador.</p>
 
-    <p class="hero-text">
-      Diseña iconos para apps con fondo, imagen recortable, iconos open source, textos múltiples, bordes, radio y tamaños exportables. Todo se genera en tu navegador.
-    </p>
-
-    <section class="tool-card">
-      <div class="toolbar top-actions">
-        <label class="file-button">
-          Insertar imagen
-          <input id="imageInput" type="file" accept="image/*" hidden />
-        </label>
-        <button id="removeImageBtn" type="button">Quitar imagen</button>
-        <button id="addTextBtn" type="button">Añadir texto</button>
-        <button id="resetBtn" type="button">Reiniciar</button>
-        <button class="primary" id="downloadBtn" type="button">Descargar</button>
+    <section class="tool-card app-editor" aria-labelledby="appIconEditorTitle">
+      <div class="editor-head">
+        <div>
+          <h2 id="appIconEditorTitle">Editor visual</h2>
+          <p>Selecciona una capa y arrástrala. Usa las esquinas para escalar y el asa superior para rotar.</p>
+        </div>
+        <output id="exportInfo">4 tamaños seleccionados</output>
       </div>
 
-      <div class="layout-grid">
-        <aside class="settings-panel" aria-label="Opciones del icono">
-          <div class="panel-section">
-            <h2>Fondo y forma</h2>
+      <div class="mobile-toolbar" aria-label="Acciones principales">
+        <label class="file-button compact" aria-label="Insertar imagen">Imagen<input id="imageInput" type="file" accept="image/*" hidden /></label>
+        <button id="addTextBtn" type="button" aria-label="Añadir texto">Texto</button>
+        <button id="addIconBtn" type="button" aria-label="Añadir icono Lucide">Icono</button>
+        <button id="duplicateLayerBtn" type="button" aria-label="Duplicar capa seleccionada">Duplicar</button>
+        <button id="deleteLayerBtn" type="button" aria-label="Borrar capa seleccionada">Borrar</button>
+        <button id="resetBtn" type="button" aria-label="Reiniciar editor">Reset</button>
+        <button class="primary" id="downloadBtn" type="button" aria-label="Exportar iconos">Exportar</button>
+      </div>
 
-            <label>
-              Color de fondo
-              <input id="backgroundColor" type="color" value="#38bdf8" />
-            </label>
-
-            <label>
-              Radio del borde
-              <input id="cornerRadius" type="range" min="0" max="50" value="22" />
-            </label>
-
-            <label>
-              Borde
-              <input id="borderWidth" type="range" min="0" max="80" value="0" />
-            </label>
-
-            <label>
-              Color del borde
-              <input id="borderColor" type="color" value="#020617" />
-            </label>
-
-            <label>
-              Sombra interior suave
-              <input id="innerShadow" type="range" min="0" max="60" value="12" />
-            </label>
-          </div>
-
-          <div class="panel-section">
-            <h2>Icono Lucide</h2>
-
-            <label>
-              Icono
-              <select id="lucideIcon">
-                <option value="none">Sin icono</option>
-                <option value="Rocket">Rocket</option>
-                <option value="Star">Star</option>
-                <option value="Heart">Heart</option>
-                <option value="Camera">Camera</option>
-                <option value="Image">Image</option>
-                <option value="Music">Music</option>
-                <option value="Video">Video</option>
-                <option value="MessageCircle">MessageCircle</option>
-                <option value="ShoppingBag">ShoppingBag</option>
-                <option value="MapPin">MapPin</option>
-                <option value="Calendar">Calendar</option>
-                <option value="Gamepad2">Gamepad2</option>
-                <option value="Trophy">Trophy</option>
-                <option value="Zap">Zap</option>
-                <option value="Shield">Shield</option>
-                <option value="Lock">Lock</option>
-                <option value="Cloud">Cloud</option>
-                <option value="Globe">Globe</option>
-                <option value="Code2">Code2</option>
-                <option value="Wrench">Wrench</option>
-                <option value="PenTool">PenTool</option>
-                <option value="Sparkles">Sparkles</option>
-              </select>
-            </label>
-
-            <label>
-              Color del icono
-              <input id="iconColor" type="color" value="#020617" />
-            </label>
-
-            <label>
-              Tamaño del icono
-              <input id="iconSize" type="range" min="40" max="420" value="180" />
-            </label>
-
-            <label>
-              Grosor del trazo
-              <input id="iconStroke" type="range" min="1" max="8" step="0.5" value="3" />
-            </label>
-
-            <label>
-              Posición X
-              <input id="iconX" type="range" min="0" max="100" value="50" />
-            </label>
-
-            <label>
-              Posición Y
-              <input id="iconY" type="range" min="0" max="100" value="42" />
-            </label>
-
-            <label>
-              Rotación
-              <input id="iconRotation" type="range" min="-180" max="180" value="0" />
-            </label>
-
-            <label>
-              Sombra
-              <input id="iconShadow" type="range" min="0" max="40" value="0" />
-            </label>
-
-            <p class="hint">Iconos de Lucide, biblioteca open source con licencia ISC.</p>
-          </div>
-
-          <div class="panel-section">
-            <h2>Imagen</h2>
-
-            <label>
-              Zoom de imagen
-              <input id="imageScale" type="range" min="20" max="300" value="100" />
-            </label>
-
-            <div class="nudge-grid">
-              <button id="moveImageUp" type="button">↑</button>
-              <button id="moveImageLeft" type="button">←</button>
-              <button id="moveImageDown" type="button">↓</button>
-              <button id="moveImageRight" type="button">→</button>
-            </div>
-
-            <p class="hint">También puedes arrastrar la imagen directamente sobre la previsualización.</p>
-          </div>
-
-          <div class="panel-section">
-            <h2>Exportación</h2>
-
-            <div class="sizes-grid" id="sizesGrid">
-              <label><input type="checkbox" value="64" />64</label>
-              <label><input type="checkbox" value="128" />128</label>
-              <label><input type="checkbox" value="180" checked />180</label>
-              <label><input type="checkbox" value="192" checked />192</label>
-              <label><input type="checkbox" value="256" />256</label>
-              <label><input type="checkbox" value="512" checked />512</label>
-              <label><input type="checkbox" value="1024" checked />1024</label>
-            </div>
-
-            <label>
-              Tamaño personalizado
-              <input id="customSize" type="number" min="16" max="4096" step="1" placeholder="Ej. 1200" />
-            </label>
-
-            <button id="addCustomSizeBtn" type="button">Añadir tamaño</button>
-          </div>
-        </aside>
-
-        <main class="preview-panel">
-          <div class="preview-header">
-            <div>
-              <h2>Previsualización</h2>
-              <p>Arrastra la imagen para recolocarla. El icono y los textos se ajustan desde los controles.</p>
-            </div>
-            <output id="exportInfo">4 tamaños seleccionados</output>
-          </div>
-
-          <div class="preview-wrap">
-            <canvas id="previewCanvas" width="512" height="512"></canvas>
-          </div>
-
-          <div class="text-panel">
-            <div class="text-panel-header">
-              <h2>Textos</h2>
-              <p id="selectedTextInfo">Selecciona un texto para editarlo.</p>
-            </div>
-
-            <div id="textsList" class="texts-list"></div>
-
-            <div class="text-editor" id="textEditor">
-              <label>
-                Texto
-                <input id="textValue" type="text" maxlength="40" />
-              </label>
-
-              <label>
-                Color
-                <input id="textColor" type="color" value="#020617" />
-              </label>
-
-              <label>
-                Tamaño
-                <input id="textSize" type="range" min="16" max="220" value="96" />
-              </label>
-
-              <label>
-                Peso
-                <select id="textWeight">
-                  <option value="500">Medio</option>
-                  <option value="700">Negrita</option>
-                  <option value="900" selected>Extra bold</option>
-                </select>
-              </label>
-
-              <label>
-                Posición X
-                <input id="textX" type="range" min="0" max="100" value="50" />
-              </label>
-
-              <label>
-                Posición Y
-                <input id="textY" type="range" min="0" max="100" value="53" />
-              </label>
-
-              <label>
-                Rotación
-                <input id="textRotation" type="range" min="-45" max="45" value="0" />
-              </label>
-
-              <label>
-                Sombra
-                <input id="textShadow" type="range" min="0" max="40" value="0" />
-              </label>
-
-              <button id="deleteTextBtn" type="button">Eliminar texto seleccionado</button>
-            </div>
-          </div>
+      <div class="editor-grid">
+        <main class="canvas-panel" aria-label="Área de edición del icono">
+          <div class="canvas-shell"><canvas id="previewCanvas" width="512" height="512" aria-label="Editor visual del icono de app" role="img"></canvas></div>
+          <p class="canvas-help">Toca una capa para seleccionarla. Arrastra dentro para mover, en las esquinas para escalar y en el punto superior para rotar.</p>
         </main>
-      </div>
 
-      <p class="status" id="status" role="status" aria-live="polite">Listo para generar iconos.</p>
+        <aside class="side-panel" aria-label="Panel de capas y propiedades">
+          <details class="panel-section" open>
+            <summary>Capas</summary>
+            <div id="layersList" class="layers-list" aria-label="Lista de capas"></div>
+            <div class="layer-actions" aria-label="Acciones de capa">
+              <button id="bringForwardBtn" type="button">Delante</button><button id="sendBackwardBtn" type="button">Detrás</button><button id="centerLayerBtn" type="button">Centrar</button><button id="fitLayerBtn" type="button">Ajustar</button>
+            </div>
+          </details>
+
+          <details class="panel-section" open>
+            <summary>Propiedades</summary>
+            <div id="emptyContext" class="empty-context">Selecciona una capa para editar sus opciones.</div>
+            <div id="commonContext" class="context-grid" hidden>
+              <label>Nombre<input id="layerName" type="text" maxlength="32" /></label>
+              <label>Opacidad<input id="layerOpacity" type="range" min="0" max="1" step="0.05" /></label>
+              <label>Sombra<input id="layerShadow" type="range" min="0" max="60" step="1" /></label>
+            </div>
+            <div id="textContext" class="context-grid" hidden>
+              <label>Texto<input id="textContent" type="text" maxlength="48" /></label>
+              <label>Color<input id="textColor" type="color" /></label>
+              <label>Peso<select id="textWeight"><option value="500">Medio</option><option value="700">Negrita</option><option value="900">Extra bold</option></select></label>
+            </div>
+            <div id="iconContext" class="context-grid" hidden>
+              <label>Icono<select id="iconName"><option value="Rocket">Rocket</option><option value="Star">Star</option><option value="Heart">Heart</option><option value="Camera">Camera</option><option value="Image">Image</option><option value="Music">Music</option><option value="Video">Video</option><option value="MessageCircle">MessageCircle</option><option value="ShoppingBag">ShoppingBag</option><option value="MapPin">MapPin</option><option value="Calendar">Calendar</option><option value="Gamepad2">Gamepad2</option><option value="Trophy">Trophy</option><option value="Zap">Zap</option><option value="Shield">Shield</option><option value="Lock">Lock</option><option value="Cloud">Cloud</option><option value="Globe">Globe</option><option value="Code2">Code2</option><option value="Wrench">Wrench</option><option value="PenTool">PenTool</option><option value="Sparkles">Sparkles</option></select></label>
+              <label>Color<input id="iconColor" type="color" /></label>
+              <label>Grosor de trazo<input id="iconStroke" type="range" min="1" max="8" step="0.5" /></label>
+            </div>
+          </details>
+
+          <details class="panel-section">
+            <summary>Fondo y forma</summary>
+            <div class="context-grid">
+              <label>Color de fondo<input id="backgroundColor" type="color" value="#38bdf8" /></label>
+              <label>Radio del borde<input id="cornerRadius" type="range" min="0" max="50" value="22" /></label>
+              <label>Borde<input id="borderWidth" type="range" min="0" max="80" value="0" /></label>
+              <label>Color del borde<input id="borderColor" type="color" value="#020617" /></label>
+              <label>Sombra interior suave<input id="innerShadow" type="range" min="0" max="60" value="12" /></label>
+            </div>
+          </details>
+
+          <details class="panel-section">
+            <summary>Exportación</summary>
+            <div class="sizes-grid" id="sizesGrid"><label><input type="checkbox" value="64" />64</label><label><input type="checkbox" value="128" />128</label><label><input type="checkbox" value="180" checked />180</label><label><input type="checkbox" value="192" checked />192</label><label><input type="checkbox" value="256" />256</label><label><input type="checkbox" value="512" checked />512</label><label><input type="checkbox" value="1024" checked />1024</label></div>
+            <div class="custom-size-row"><label>Tamaño personalizado<input id="customSize" type="number" min="16" max="4096" step="1" placeholder="Ej. 1200" /></label><button id="addCustomSizeBtn" type="button">Añadir</button></div>
+          </details>
+        </aside>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite">Listo para crear iconos.</p>
     </section>
   </section>
 
   <style>
-    .app-icon-page { padding: 4rem 0; }
-    .toolbar { display: flex; gap: .8rem; flex-wrap: wrap; align-items: center; }
-    .top-actions { margin-bottom: 1.5rem; }
-    button, input, select, .file-button { border-radius: 14px; border: 1px solid var(--border); background: #020617; color: white; padding: .9rem 1rem; cursor: pointer; font: inherit; }
-    button.primary, .file-button { background: var(--primary); color: black; border: none; font-weight: 800; }
-    .layout-grid { display: grid; grid-template-columns: minmax(260px, 360px) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
-    .settings-panel, .preview-panel, .text-panel { border-radius: 24px; border: 1px solid var(--border); background: rgba(2,6,23,.45); padding: 1.25rem; }
-    .panel-section + .panel-section { margin-top: 1.5rem; }
-    h2 { margin: 0 0 1rem; font-size: 1.15rem; }
-    label { display: flex; flex-direction: column; gap: .45rem; color: var(--muted); font-size: .92rem; margin-bottom: .9rem; }
-    input[type='color'] { min-height: 48px; padding: .3rem; }
-    .hint, .preview-header p, .text-panel-header p, .status { color: var(--muted); line-height: 1.7; }
-    .nudge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; max-width: 190px; }
-    .nudge-grid button:nth-child(1) { grid-column: 2; }
-    .nudge-grid button:nth-child(2) { grid-column: 1; }
-    .nudge-grid button:nth-child(3) { grid-column: 2; }
-    .nudge-grid button:nth-child(4) { grid-column: 3; grid-row: 2; }
-    .sizes-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem; margin-bottom: 1rem; }
-    .sizes-grid label { margin: 0; flex-direction: row; align-items: center; border: 1px solid var(--border); border-radius: 12px; padding: .75rem; background: #020617; }
-    .sizes-grid input { width: auto; accent-color: var(--primary); }
-    .preview-header { display: flex; justify-content: space-between; gap: 1rem; align-items: start; margin-bottom: 1rem; }
-    .preview-header h2, .text-panel-header h2 { margin-bottom: .35rem; }
-    #exportInfo { border-radius: 999px; border: 1px solid var(--border); padding: .45rem .8rem; color: var(--primary); white-space: nowrap; }
-    .preview-wrap { display: grid; place-items: center; border-radius: 24px; border: 1px dashed rgba(148,163,184,.3); background: linear-gradient(45deg, rgba(148,163,184,.08) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.08) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.08) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.08) 75%); background-size: 24px 24px; padding: 1rem; overflow: auto; }
-    #previewCanvas { width: min(512px, 100%); height: auto; border-radius: 24px; box-shadow: 0 24px 70px rgba(0,0,0,.35); touch-action: none; cursor: grab; }
-    #previewCanvas:active { cursor: grabbing; }
-    .text-panel { margin-top: 1rem; }
-    .texts-list { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-    .text-chip { border-color: var(--border); padding: .65rem .8rem; }
-    .text-chip.active { background: var(--primary); color: #020617; border-color: transparent; }
-    .text-editor { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-    .text-editor label { margin-bottom: 0; }
-    #deleteTextBtn { grid-column: span 2; }
-    .status { margin: 1rem 0 0; }
-    .status.success { color: #86efac; }
-    .status.error { color: #fca5a5; }
-    @media (max-width: 980px) { .layout-grid { grid-template-columns: 1fr; } .preview-header { flex-direction: column; } }
-    @media (max-width: 640px) { button, .file-button { width: 100%; } .text-editor { grid-template-columns: 1fr; } #deleteTextBtn { grid-column: auto; } .sizes-grid { grid-template-columns: 1fr; } }
+    .app-icon-page{padding:clamp(2rem,6vw,4rem) 0;overflow-x:hidden}.app-editor{display:grid;gap:1rem}.editor-head{display:flex;justify-content:space-between;align-items:start;gap:1rem}.editor-head h2{margin:0 0 .35rem;font-size:clamp(1.25rem,2vw,1.65rem)}.editor-head p,.canvas-help,.status,.empty-context{color:var(--muted);line-height:1.65;margin:0}#exportInfo{border-radius:999px;border:1px solid var(--border);color:var(--primary);padding:.45rem .75rem;white-space:nowrap}button,input,select,.file-button{border-radius:14px;border:1px solid var(--border);background:#020617;color:white;padding:.78rem .9rem;cursor:pointer;font:inherit;min-width:0}input,select{width:100%;cursor:auto}input[type=range],input[type=checkbox],input[type=color]{cursor:pointer}input[type=color]{min-height:46px;padding:.25rem}button.primary,.file-button{background:var(--primary);color:#020617;border-color:transparent;font-weight:800}button:disabled{opacity:.45;cursor:not-allowed}.mobile-toolbar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.55rem;position:sticky;top:.5rem;z-index:5;padding:.55rem;border:1px solid var(--border);border-radius:20px;background:rgba(2,6,23,.86);backdrop-filter:blur(14px)}.mobile-toolbar>*{text-align:center;padding-inline:.55rem}.editor-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,380px);gap:1rem;align-items:start}.canvas-panel,.side-panel,.panel-section{border-radius:24px;border:1px solid var(--border);background:rgba(2,6,23,.45)}.canvas-panel{padding:clamp(.75rem,2vw,1.25rem);display:grid;gap:.85rem;min-width:0}.canvas-shell{display:grid;place-items:center;border-radius:22px;border:1px dashed rgba(148,163,184,.32);background:linear-gradient(45deg,rgba(148,163,184,.08) 25%,transparent 25%),linear-gradient(-45deg,rgba(148,163,184,.08) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,rgba(148,163,184,.08) 75%),linear-gradient(-45deg,transparent 75%,rgba(148,163,184,.08) 75%);background-position:0 0,0 12px,12px -12px,-12px 0;background-size:24px 24px;padding:clamp(.5rem,2vw,1rem);overflow:hidden}#previewCanvas{width:min(512px,100%);height:auto;max-height:min(68vh,512px);aspect-ratio:1;border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.35);touch-action:none;cursor:default;user-select:none}.side-panel{display:grid;gap:.75rem;padding:.75rem;min-width:0}.panel-section{padding:.85rem}.panel-section summary{cursor:pointer;font-weight:900}.panel-section summary+*{margin-top:.9rem}.layers-list{display:grid;gap:.45rem}.layer-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:.45rem;width:100%;text-align:left;border-radius:14px;border:1px solid var(--border);background:rgba(15,23,42,.78);color:white;padding:.55rem}.layer-row.is-active{border-color:var(--primary);box-shadow:0 0 0 2px color-mix(in srgb,var(--primary),transparent 70%)}.layer-row strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.layer-row small{color:var(--muted)}.layer-icon{width:2rem;height:2rem;display:grid;place-items:center;border-radius:10px;background:rgba(148,163,184,.14)}.mini-action{padding:.45rem .55rem;border-radius:10px}.layer-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;margin-top:.75rem}.context-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}.context-grid label,.custom-size-row label{display:grid;gap:.4rem;color:var(--muted);font-size:.9rem;margin:0}.context-grid label:first-child{grid-column:1/-1}.sizes-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45rem}.sizes-grid label{display:flex;align-items:center;gap:.45rem;margin:0;padding:.65rem;border:1px solid var(--border);border-radius:12px;background:rgba(15,23,42,.78);color:var(--muted)}.sizes-grid input{width:auto;accent-color:var(--primary)}.custom-size-row{display:grid;grid-template-columns:1fr auto;gap:.55rem;margin-top:.75rem;align-items:end}.status{min-height:1.6rem}.status.success{color:#86efac}.status.error{color:#fca5a5}@media (max-width:980px){.editor-head{flex-direction:column}.editor-grid{grid-template-columns:1fr}.side-panel{grid-row:2}.mobile-toolbar{grid-template-columns:repeat(4,minmax(0,1fr))}}@media (max-width:640px){.tool-card{padding-inline:.75rem}.mobile-toolbar{grid-template-columns:repeat(3,minmax(0,1fr));gap:.45rem;top:.25rem}.mobile-toolbar>*{font-size:.86rem;padding:.65rem .35rem}.canvas-panel,.side-panel{border-radius:18px}.canvas-shell{padding:.35rem}#previewCanvas{max-height:58vh;border-radius:18px}.context-grid,.layer-actions,.custom-size-row{grid-template-columns:1fr}.sizes-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
 
   <script>
     import JSZip from 'jszip';
     import { icons } from 'lucide';
-
-    const canvas = document.getElementById('previewCanvas') as HTMLCanvasElement;
-    const imageInput = document.getElementById('imageInput') as HTMLInputElement;
-    const removeImageBtn = document.getElementById('removeImageBtn') as HTMLButtonElement;
-    const addTextBtn = document.getElementById('addTextBtn') as HTMLButtonElement;
-    const resetBtn = document.getElementById('resetBtn') as HTMLButtonElement;
-    const downloadBtn = document.getElementById('downloadBtn') as HTMLButtonElement;
-    const status = document.getElementById('status') as HTMLParagraphElement;
-    const exportInfo = document.getElementById('exportInfo') as HTMLOutputElement;
-    const sizesGrid = document.getElementById('sizesGrid') as HTMLDivElement;
-    const customSize = document.getElementById('customSize') as HTMLInputElement;
-    const addCustomSizeBtn = document.getElementById('addCustomSizeBtn') as HTMLButtonElement;
-    const textsList = document.getElementById('textsList') as HTMLDivElement;
-    const selectedTextInfo = document.getElementById('selectedTextInfo') as HTMLParagraphElement;
-
-    const backgroundColor = document.getElementById('backgroundColor') as HTMLInputElement;
-    const cornerRadius = document.getElementById('cornerRadius') as HTMLInputElement;
-    const borderWidth = document.getElementById('borderWidth') as HTMLInputElement;
-    const borderColor = document.getElementById('borderColor') as HTMLInputElement;
-    const innerShadow = document.getElementById('innerShadow') as HTMLInputElement;
-    const imageScale = document.getElementById('imageScale') as HTMLInputElement;
-
-    const lucideIcon = document.getElementById('lucideIcon') as HTMLSelectElement;
-    const iconColor = document.getElementById('iconColor') as HTMLInputElement;
-    const iconSize = document.getElementById('iconSize') as HTMLInputElement;
-    const iconStroke = document.getElementById('iconStroke') as HTMLInputElement;
-    const iconX = document.getElementById('iconX') as HTMLInputElement;
-    const iconY = document.getElementById('iconY') as HTMLInputElement;
-    const iconRotation = document.getElementById('iconRotation') as HTMLInputElement;
-    const iconShadow = document.getElementById('iconShadow') as HTMLInputElement;
-
-    const textValue = document.getElementById('textValue') as HTMLInputElement;
-    const textColor = document.getElementById('textColor') as HTMLInputElement;
-    const textSize = document.getElementById('textSize') as HTMLInputElement;
-    const textWeight = document.getElementById('textWeight') as HTMLSelectElement;
-    const textX = document.getElementById('textX') as HTMLInputElement;
-    const textY = document.getElementById('textY') as HTMLInputElement;
-    const textRotation = document.getElementById('textRotation') as HTMLInputElement;
-    const textShadow = document.getElementById('textShadow') as HTMLInputElement;
-    const deleteTextBtn = document.getElementById('deleteTextBtn') as HTMLButtonElement;
-
-    let uploadedImage: HTMLImageElement | null = null;
-    let imageOffset = { x: 0, y: 0 };
-    let draggingImage = false;
-    let lastPointer = { x: 0, y: 0 };
-    let selectedTextId = 1;
-    let renderToken = 0;
-    let texts = [{ id: 1, value: 'APP', color: '#020617', size: 96, weight: '900', x: 50, y: 53, rotation: 0, shadow: 0 }];
-
-    const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => {
-      status.textContent = message;
-      status.classList.toggle('success', type === 'success');
-      status.classList.toggle('error', type === 'error');
-    };
-
-    const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-    const roundedRect = (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) => {
-      const safeRadius = Math.min(radius, width / 2, height / 2);
-      context.beginPath();
-      context.moveTo(x + safeRadius, y);
-      context.arcTo(x + width, y, x + width, y + height, safeRadius);
-      context.arcTo(x + width, y + height, x, y + height, safeRadius);
-      context.arcTo(x, y + height, x, y, safeRadius);
-      context.arcTo(x, y, x + width, y, safeRadius);
-      context.closePath();
-    };
-
-    const loadSvgImage = (svg: string) => new Promise<HTMLImageElement>((resolve, reject) => {
-      const image = new Image();
-      const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-      image.onload = () => resolve(image);
-      image.onerror = () => reject(new Error('icon-load-error'));
-      image.src = url;
-    });
-
-    const getLucideSvg = (size: number) => {
-      if (lucideIcon.value === 'none') return null;
-      const icon = (icons as Record<string, { toSvg?: (attrs?: Record<string, string | number>) => string }>)[lucideIcon.value];
-      if (!icon?.toSvg) return null;
-      return icon.toSvg({
-        width: size,
-        height: size,
-        color: iconColor.value,
-        strokeWidth: Number(iconStroke.value),
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round'
-      });
-    };
-
-    const selectedText = () => texts.find((item) => item.id === selectedTextId) || texts[0];
-
-    const syncTextEditor = () => {
-      const item = selectedText();
-      if (!item) return;
-      textValue.value = item.value;
-      textColor.value = item.color;
-      textSize.value = String(item.size);
-      textWeight.value = item.weight;
-      textX.value = String(item.x);
-      textY.value = String(item.y);
-      textRotation.value = String(item.rotation);
-      textShadow.value = String(item.shadow);
-      selectedTextInfo.textContent = `Editando: ${item.value || 'texto vacío'}`;
-    };
-
-    const renderTextList = () => {
-      textsList.replaceChildren(...texts.map((item) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = `text-chip${item.id === selectedTextId ? ' active' : ''}`;
-        button.textContent = item.value || 'Texto';
-        button.addEventListener('click', () => {
-          selectedTextId = item.id;
-          renderTextList();
-          syncTextEditor();
-        });
-        return button;
-      }));
-    };
-
-    const getSelectedSizes = () => Array.from(sizesGrid.querySelectorAll('input[type="checkbox"]'))
-      .filter((input) => (input as HTMLInputElement).checked)
-      .map((input) => Number((input as HTMLInputElement).value))
-      .filter((size) => Number.isFinite(size) && size > 0)
-      .sort((a, b) => a - b);
-
-    const updateExportInfo = () => {
-      const count = getSelectedSizes().length;
-      exportInfo.textContent = `${count} tamaño${count === 1 ? '' : 's'} seleccionado${count === 1 ? '' : 's'}`;
-    };
-
-    const drawIcon = async (targetCanvas: HTMLCanvasElement, size: number) => {
-      targetCanvas.width = size;
-      targetCanvas.height = size;
-      const context = targetCanvas.getContext('2d') as CanvasRenderingContext2D;
-      const scale = size / 512;
-      const radius = size * (Number(cornerRadius.value) / 100);
-      const border = Number(borderWidth.value) * scale;
-
-      context.clearRect(0, 0, size, size);
-      context.save();
-      roundedRect(context, 0, 0, size, size, radius);
-      context.clip();
-      context.fillStyle = backgroundColor.value;
-      context.fillRect(0, 0, size, size);
-
-      if (uploadedImage) {
-        const userScale = Number(imageScale.value) / 100;
-        const coverScale = Math.max(size / uploadedImage.width, size / uploadedImage.height) * userScale;
-        const imageWidth = uploadedImage.width * coverScale;
-        const imageHeight = uploadedImage.height * coverScale;
-        const imageX = (size - imageWidth) / 2 + imageOffset.x * scale;
-        const imageY = (size - imageHeight) / 2 + imageOffset.y * scale;
-        context.drawImage(uploadedImage, imageX, imageY, imageWidth, imageHeight);
-      }
-
-      const shadowAmount = Number(innerShadow.value) * scale;
-      if (shadowAmount > 0) {
-        const gradient = context.createRadialGradient(size / 2, size / 2, size * .18, size / 2, size / 2, size * .72);
-        gradient.addColorStop(0, 'rgba(255,255,255,0)');
-        gradient.addColorStop(1, `rgba(0,0,0,${Math.min(.38, shadowAmount / 140)})`);
-        context.fillStyle = gradient;
-        context.fillRect(0, 0, size, size);
-      }
-
-      const svg = getLucideSvg(Number(iconSize.value) * scale);
-      if (svg) {
-        const iconImage = await loadSvgImage(svg);
-        const finalIconSize = Number(iconSize.value) * scale;
-        context.save();
-        context.translate(size * (Number(iconX.value) / 100), size * (Number(iconY.value) / 100));
-        context.rotate((Number(iconRotation.value) * Math.PI) / 180);
-        const shadow = Number(iconShadow.value) * scale;
-        if (shadow > 0) {
-          context.shadowColor = 'rgba(0,0,0,.45)';
-          context.shadowBlur = shadow;
-          context.shadowOffsetY = shadow * .25;
-        }
-        context.drawImage(iconImage, -finalIconSize / 2, -finalIconSize / 2, finalIconSize, finalIconSize);
-        context.restore();
-      }
-
-      texts.forEach((item) => {
-        if (!item.value) return;
-        context.save();
-        context.translate(size * (item.x / 100), size * (item.y / 100));
-        context.rotate((item.rotation * Math.PI) / 180);
-        context.textAlign = 'center';
-        context.textBaseline = 'middle';
-        context.font = `${item.weight} ${item.size * scale}px Inter, system-ui, sans-serif`;
-        if (item.shadow > 0) {
-          context.shadowColor = 'rgba(0,0,0,.45)';
-          context.shadowBlur = item.shadow * scale;
-          context.shadowOffsetY = item.shadow * scale * .25;
-        }
-        context.fillStyle = item.color;
-        context.fillText(item.value, 0, 0);
-        context.restore();
-      });
-
-      if (border > 0) {
-        context.restore();
-        context.save();
-        roundedRect(context, border / 2, border / 2, size - border, size - border, Math.max(0, radius - border / 2));
-        context.lineWidth = border;
-        context.strokeStyle = borderColor.value;
-        context.stroke();
-      }
-      context.restore();
-    };
-
-    const render = async () => {
-      const token = ++renderToken;
-      await drawIcon(canvas, 512);
-      if (token === renderToken) updateExportInfo();
-    };
-
-    const canvasToBlob = (sourceCanvas: HTMLCanvasElement) => new Promise<Blob>((resolve, reject) => {
-      sourceCanvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('blob-error')), 'image/png');
-    });
-
-    const downloadBlob = (blob: Blob, filename: string) => {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.append(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-    };
-
-    const download = async () => {
-      const sizes = getSelectedSizes();
-      if (!sizes.length) {
-        setStatus('Selecciona al menos un tamaño para exportar.', 'error');
-        return;
-      }
-
-      try {
-        if (sizes.length === 1) {
-          const exportCanvas = document.createElement('canvas');
-          await drawIcon(exportCanvas, sizes[0]);
-          downloadBlob(await canvasToBlob(exportCanvas), `app-icon-${sizes[0]}.png`);
-          setStatus('Icono descargado.', 'success');
-          return;
-        }
-
-        const zip = new JSZip();
-        for (const size of sizes) {
-          const exportCanvas = document.createElement('canvas');
-          await drawIcon(exportCanvas, size);
-          zip.file(`app-icon-${size}.png`, await canvasToBlob(exportCanvas));
-        }
-
-        const manifest = { icons: sizes.map((size) => ({ src: `/icons/app-icon-${size}.png`, sizes: `${size}x${size}`, type: 'image/png' })) };
-        zip.file('manifest-icons.json', JSON.stringify(manifest, null, 2));
-        downloadBlob(await zip.generateAsync({ type: 'blob' }), 'app-icons.zip');
-        setStatus('ZIP de iconos descargado.', 'success');
-      } catch {
-        setStatus('No se pudo exportar el icono.', 'error');
-      }
-    };
-
-    const updateSelectedText = () => {
-      const item = selectedText();
-      if (!item) return;
-      item.value = textValue.value;
-      item.color = textColor.value;
-      item.size = Number(textSize.value);
-      item.weight = textWeight.value;
-      item.x = Number(textX.value);
-      item.y = Number(textY.value);
-      item.rotation = Number(textRotation.value);
-      item.shadow = Number(textShadow.value);
-      renderTextList();
-      render();
-    };
-
-    imageInput.addEventListener('change', () => {
-      const file = imageInput.files?.[0];
-      if (!file) return;
-      if (!file.type.startsWith('image/')) {
-        setStatus('El archivo no parece una imagen.', 'error');
-        return;
-      }
-      const image = new Image();
-      const url = URL.createObjectURL(file);
-      image.onload = () => {
-        URL.revokeObjectURL(url);
-        uploadedImage = image;
-        imageOffset = { x: 0, y: 0 };
-        render();
-        setStatus('Imagen insertada. Arrástrala sobre el icono para recolocarla.', 'success');
-      };
-      image.onerror = () => {
-        URL.revokeObjectURL(url);
-        setStatus('No se pudo cargar la imagen.', 'error');
-      };
-      image.src = url;
-    });
-
-    removeImageBtn.addEventListener('click', () => {
-      uploadedImage = null;
-      imageInput.value = '';
-      render();
-      setStatus('Imagen eliminada.', 'success');
-    });
-
-    addTextBtn.addEventListener('click', () => {
-      const nextId = Math.max(0, ...texts.map((item) => item.id)) + 1;
-      texts.push({ id: nextId, value: `Texto ${nextId}`, color: '#ffffff', size: 64, weight: '900', x: 50, y: 70, rotation: 0, shadow: 10 });
-      selectedTextId = nextId;
-      renderTextList();
-      syncTextEditor();
-      render();
-    });
-
-    deleteTextBtn.addEventListener('click', () => {
-      if (texts.length <= 1) {
-        setStatus('Debe quedar al menos un texto.', 'error');
-        return;
-      }
-      texts = texts.filter((item) => item.id !== selectedTextId);
-      selectedTextId = texts[0].id;
-      renderTextList();
-      syncTextEditor();
-      render();
-    });
-
-    addCustomSizeBtn.addEventListener('click', () => {
-      const size = clamp(Number(customSize.value), 16, 4096);
-      if (!Number.isFinite(size)) {
-        setStatus('Introduce un tamaño válido.', 'error');
-        return;
-      }
-      const label = document.createElement('label');
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.value = String(Math.round(size));
-      checkbox.checked = true;
-      checkbox.addEventListener('change', updateExportInfo);
-      label.append(checkbox, document.createTextNode(String(Math.round(size))));
-      sizesGrid.append(label);
-      customSize.value = '';
-      updateExportInfo();
-    });
-
-    resetBtn.addEventListener('click', () => {
-      uploadedImage = null;
-      imageInput.value = '';
-      imageOffset = { x: 0, y: 0 };
-      backgroundColor.value = '#38bdf8';
-      cornerRadius.value = '22';
-      borderWidth.value = '0';
-      borderColor.value = '#020617';
-      innerShadow.value = '12';
-      imageScale.value = '100';
-      lucideIcon.value = 'none';
-      iconColor.value = '#020617';
-      iconSize.value = '180';
-      iconStroke.value = '3';
-      iconX.value = '50';
-      iconY.value = '42';
-      iconRotation.value = '0';
-      iconShadow.value = '0';
-      texts = [{ id: 1, value: 'APP', color: '#020617', size: 96, weight: '900', x: 50, y: 53, rotation: 0, shadow: 0 }];
-      selectedTextId = 1;
-      renderTextList();
-      syncTextEditor();
-      render();
-      setStatus('Icono reiniciado.', 'success');
-    });
-
-    downloadBtn.addEventListener('click', download);
-
-    [backgroundColor, cornerRadius, borderWidth, borderColor, innerShadow, imageScale, lucideIcon, iconColor, iconSize, iconStroke, iconX, iconY, iconRotation, iconShadow].forEach((element) => {
-      element.addEventListener('input', render);
-      element.addEventListener('change', render);
-    });
-
-    [textValue, textColor, textSize, textWeight, textX, textY, textRotation, textShadow].forEach((element) => {
-      element.addEventListener('input', updateSelectedText);
-      element.addEventListener('change', updateSelectedText);
-    });
-
-    sizesGrid.querySelectorAll('input[type="checkbox"]').forEach((input) => {
-      input.addEventListener('change', updateExportInfo);
-    });
-
-    const nudgeImage = (x: number, y: number) => {
-      imageOffset.x += x;
-      imageOffset.y += y;
-      render();
-    };
-
-    document.getElementById('moveImageUp')?.addEventListener('click', () => nudgeImage(0, -12));
-    document.getElementById('moveImageDown')?.addEventListener('click', () => nudgeImage(0, 12));
-    document.getElementById('moveImageLeft')?.addEventListener('click', () => nudgeImage(-12, 0));
-    document.getElementById('moveImageRight')?.addEventListener('click', () => nudgeImage(12, 0));
-
-    const pointFromEvent = (event: MouseEvent | TouchEvent) => {
-      const touch = 'touches' in event ? event.touches[0] : null;
-      return { x: touch ? touch.clientX : (event as MouseEvent).clientX, y: touch ? touch.clientY : (event as MouseEvent).clientY };
-    };
-
-    const startDrag = (event: MouseEvent | TouchEvent) => {
-      if (!uploadedImage) return;
-      event.preventDefault();
-      draggingImage = true;
-      lastPointer = pointFromEvent(event);
-    };
-
-    const moveDrag = (event: MouseEvent | TouchEvent) => {
-      if (!draggingImage) return;
-      event.preventDefault();
-      const point = pointFromEvent(event);
-      const rect = canvas.getBoundingClientRect();
-      const scale = 512 / rect.width;
-      imageOffset.x += (point.x - lastPointer.x) * scale;
-      imageOffset.y += (point.y - lastPointer.y) * scale;
-      lastPointer = point;
-      render();
-    };
-
-    const endDrag = () => { draggingImage = false; };
-
-    canvas.addEventListener('mousedown', startDrag);
-    canvas.addEventListener('touchstart', startDrag, { passive: false });
-    window.addEventListener('mousemove', moveDrag);
-    window.addEventListener('touchmove', moveDrag, { passive: false });
-    window.addEventListener('mouseup', endDrag);
-    window.addEventListener('touchend', endDrag);
-
-    renderTextList();
-    syncTextEditor();
-    render();
+    type BaseLayer={id:number;type:'image'|'text'|'icon';name:string;x:number;y:number;w:number;h:number;scale:number;rotation:number;opacity:number;shadow:number};
+    type ImageLayer=BaseLayer&{type:'image';src:string};type TextLayer=BaseLayer&{type:'text';text:string;color:string;weight:string;fontSize:number};type IconLayer=BaseLayer&{type:'icon';iconName:string;color:string;stroke:number};type Layer=ImageLayer|TextLayer|IconLayer;type Point={x:number;y:number};type DragMode='none'|'move'|'scale'|'rotate';type HandleName='nw'|'ne'|'se'|'sw'|'rotate';
+    const BASE=512,HANDLE=13,ROTATE_OFFSET=46,$=<T extends HTMLElement>(id:string)=>document.getElementById(id) as T;
+    const canvas=$<HTMLCanvasElement>('previewCanvas'),ctx=canvas.getContext('2d') as CanvasRenderingContext2D,imageInput=$<HTMLInputElement>('imageInput'),addTextBtn=$<HTMLButtonElement>('addTextBtn'),addIconBtn=$<HTMLButtonElement>('addIconBtn'),duplicateLayerBtn=$<HTMLButtonElement>('duplicateLayerBtn'),deleteLayerBtn=$<HTMLButtonElement>('deleteLayerBtn'),resetBtn=$<HTMLButtonElement>('resetBtn'),downloadBtn=$<HTMLButtonElement>('downloadBtn'),bringForwardBtn=$<HTMLButtonElement>('bringForwardBtn'),sendBackwardBtn=$<HTMLButtonElement>('sendBackwardBtn'),centerLayerBtn=$<HTMLButtonElement>('centerLayerBtn'),fitLayerBtn=$<HTMLButtonElement>('fitLayerBtn'),layersList=$<HTMLDivElement>('layersList'),status=$<HTMLParagraphElement>('status'),exportInfo=$<HTMLOutputElement>('exportInfo'),sizesGrid=$<HTMLDivElement>('sizesGrid'),customSize=$<HTMLInputElement>('customSize'),addCustomSizeBtn=$<HTMLButtonElement>('addCustomSizeBtn'),backgroundColor=$<HTMLInputElement>('backgroundColor'),cornerRadius=$<HTMLInputElement>('cornerRadius'),borderWidth=$<HTMLInputElement>('borderWidth'),borderColor=$<HTMLInputElement>('borderColor'),innerShadow=$<HTMLInputElement>('innerShadow'),emptyContext=$<HTMLDivElement>('emptyContext'),commonContext=$<HTMLDivElement>('commonContext'),textContext=$<HTMLDivElement>('textContext'),iconContext=$<HTMLDivElement>('iconContext'),layerName=$<HTMLInputElement>('layerName'),layerOpacity=$<HTMLInputElement>('layerOpacity'),layerShadow=$<HTMLInputElement>('layerShadow'),textContent=$<HTMLInputElement>('textContent'),textColor=$<HTMLInputElement>('textColor'),textWeight=$<HTMLSelectElement>('textWeight'),iconName=$<HTMLSelectElement>('iconName'),iconColor=$<HTMLInputElement>('iconColor'),iconStroke=$<HTMLInputElement>('iconStroke');
+    const imageCache=new Map<string,HTMLImageElement>(),iconCache=new Map<string,HTMLImageElement>();let objectUrls:string[]=[],layers:Layer[]=[],selectedId:number|null=null,nextId=1,renderToken=0;let drag:{mode:DragMode;handle?:HandleName;pointerId?:number;start:Point;startLayer?:Layer;startDistance?:number;startAngle?:number}={mode:'none',start:{x:0,y:0}};
+    const clamp=(v:number,min:number,max:number)=>Math.min(max,Math.max(min,v)),rad=(d:number)=>d*Math.PI/180,deg=(r:number)=>r*180/Math.PI,selected=()=>layers.find(l=>l.id===selectedId)||null,clone=<T extends Layer>(l:T):T=>({...l} as T),setStatus=(m:string,t:'default'|'success'|'error'='default')=>{status.textContent=m;status.classList.toggle('success',t==='success');status.classList.toggle('error',t==='error')};
+    function roundedRect(c:CanvasRenderingContext2D,x:number,y:number,w:number,h:number,r:number){r=Math.min(r,w/2,h/2);c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+    const point=(e:PointerEvent):Point=>{const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*(BASE/r.width),y:(e.clientY-r.top)*(BASE/r.height)}};
+    const toLocal=(l:Layer,p:Point):Point=>{const c=Math.cos(-rad(l.rotation)),s=Math.sin(-rad(l.rotation)),dx=p.x-l.x,dy=p.y-l.y;return{x:(dx*c-dy*s)/l.scale,y:(dx*s+dy*c)/l.scale}};
+    const fromLocal=(l:Layer,p:Point):Point=>{const c=Math.cos(rad(l.rotation)),s=Math.sin(rad(l.rotation)),x=p.x*l.scale,y=p.y*l.scale;return{x:l.x+x*c-y*s,y:l.y+x*s+y*c}};
+    const corners=(l:Layer)=>[fromLocal(l,{x:-l.w/2,y:-l.h/2}),fromLocal(l,{x:l.w/2,y:-l.h/2}),fromLocal(l,{x:l.w/2,y:l.h/2}),fromLocal(l,{x:-l.w/2,y:l.h/2})];
+    const handles=(l:Layer):Record<HandleName,Point>=>{const [nw,ne,se,sw]=corners(l);return{nw,ne,se,sw,rotate:fromLocal(l,{x:0,y:-l.h/2-ROTATE_OFFSET/Math.max(l.scale,.01)})}};
+    const loadImage=(src:string)=>imageCache.get(src)?Promise.resolve(imageCache.get(src) as HTMLImageElement):new Promise<HTMLImageElement>((res,rej)=>{const i=new Image();i.onload=()=>{imageCache.set(src,i);res(i)};i.onerror=()=>rej(new Error('image'));i.src=src});
+    const getIcon=(l:IconLayer)=>{const key=`${l.iconName}-${l.color}-${l.stroke}`,cached=iconCache.get(key);if(cached)return Promise.resolve(cached);const icon=(icons as Record<string,{toSvg?:(a?:Record<string,string|number>)=>string}>)[l.iconName];if(!icon?.toSvg)return Promise.reject(new Error('icon'));const svg=icon.toSvg({width:512,height:512,color:l.color,strokeWidth:l.stroke,'stroke-linecap':'round','stroke-linejoin':'round'}),img=new Image(),url=`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;return new Promise<HTMLImageElement>((res,rej)=>{img.onload=()=>{iconCache.set(key,img);res(img)};img.onerror=()=>rej(new Error('icon'));img.src=url})};
+    async function drawLayer(c:CanvasRenderingContext2D,l:Layer,s:number){c.save();c.translate(l.x*s,l.y*s);c.rotate(rad(l.rotation));c.scale(l.scale*s,l.scale*s);c.globalAlpha=l.opacity;if(l.shadow>0){c.shadowColor='rgba(0,0,0,.42)';c.shadowBlur=l.shadow*s;c.shadowOffsetY=l.shadow*s*.22}if(l.type==='image'){const img=await loadImage(l.src);c.drawImage(img,-l.w/2,-l.h/2,l.w,l.h)}if(l.type==='text'){c.fillStyle=l.color;c.textAlign='center';c.textBaseline='middle';c.font=`${l.weight} ${l.fontSize}px Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif`;c.fillText(l.text,0,0,l.w)}if(l.type==='icon'){const img=await getIcon(l);c.drawImage(img,-l.w/2,-l.h/2,l.w,l.h)}c.restore()}
+    function drawSelection(c:CanvasRenderingContext2D,l:Layer){const cs=corners(l),hs=handles(l),top=fromLocal(l,{x:0,y:-l.h/2});c.save();c.lineWidth=2;c.strokeStyle='#67e8f9';c.fillStyle='#020617';c.beginPath();c.moveTo(cs[0].x,cs[0].y);cs.slice(1).forEach(p=>c.lineTo(p.x,p.y));c.closePath();c.stroke();c.beginPath();c.moveTo(top.x,top.y);c.lineTo(hs.rotate.x,hs.rotate.y);c.stroke();(['nw','ne','se','sw'] as HandleName[]).forEach(n=>{const p=hs[n];c.beginPath();c.rect(p.x-HANDLE/2,p.y-HANDLE/2,HANDLE,HANDLE);c.fill();c.stroke()});c.beginPath();c.arc(hs.rotate.x,hs.rotate.y,HANDLE/2,0,Math.PI*2);c.fill();c.stroke();c.restore()}
+    async function renderIcon(target:HTMLCanvasElement,size:number,selectBox=false){target.width=size;target.height=size;const c=target.getContext('2d') as CanvasRenderingContext2D,s=size/BASE,r=size*(Number(cornerRadius.value)/100),b=Number(borderWidth.value)*s;c.clearRect(0,0,size,size);c.save();roundedRect(c,0,0,size,size,r);c.clip();c.fillStyle=backgroundColor.value;c.fillRect(0,0,size,size);for(const l of layers)await drawLayer(c,l,s);const sh=Number(innerShadow.value)*s;if(sh>0){const g=c.createRadialGradient(size/2,size/2,size*.18,size/2,size/2,size*.72);g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(1,`rgba(0,0,0,${Math.min(.38,sh/140)})`);c.fillStyle=g;c.fillRect(0,0,size,size)}c.restore();if(b>0){c.save();roundedRect(c,b/2,b/2,size-b,size-b,Math.max(0,r-b/2));c.lineWidth=b;c.strokeStyle=borderColor.value;c.stroke();c.restore()}if(selectBox&&selected())drawSelection(c,selected() as Layer)}
+    async function render(){const t=++renderToken;try{await renderIcon(canvas,BASE,true);if(t===renderToken)updateUi()}catch{setStatus('No se pudo renderizar alguna capa.','error')}}
+    const hitHandle=(p:Point,l:Layer):HandleName|null=>{const hs=handles(l);for(const n of ['rotate','nw','ne','se','sw'] as HandleName[])if(Math.hypot(p.x-hs[n].x,p.y-hs[n].y)<=HANDLE)return n;return null};
+    const hitLayer=(p:Point):Layer|null=>{for(let i=layers.length-1;i>=0;i--){const l=layers[i],q=toLocal(l,p);if(Math.abs(q.x)<=l.w/2&&Math.abs(q.y)<=l.h/2)return l}return null};
+    function textW(t:string,fs:number,w:string){ctx.save();ctx.font=`${w} ${fs}px Inter, system-ui, sans-serif`;const width=Math.max(90,ctx.measureText(t||'Texto').width+28);ctx.restore();return Math.min(460,width)}
+    function add(l:Layer){layers.push(l);selectedId=l.id;setStatus(`${l.name} añadida.`,'success');render()}function addText(){const id=nextId++,text='APP';add({id,type:'text',name:`Texto ${id}`,x:256,y:300,w:textW(text,96,'900'),h:116,scale:1,rotation:0,opacity:1,shadow:0,text,color:'#020617',weight:'900',fontSize:96})}function addIcon(){const id=nextId++;add({id,type:'icon',name:`Icono ${id}`,x:256,y:228,w:180,h:180,scale:1,rotation:0,opacity:1,shadow:0,iconName:'Rocket',color:'#020617',stroke:3})}
+    function patch(p:Partial<Layer>){const l=selected();if(!l)return;Object.assign(l,p);if(l.type==='text')l.w=textW(l.text,l.fontSize,l.weight);render()}function duplicate(){const l=selected();if(!l)return setStatus('Selecciona una capa para duplicarla.','error');const c=clone(l);c.id=nextId++;c.name=`${l.name} copia`;c.x=clamp(l.x+24,0,BASE);c.y=clamp(l.y+24,0,BASE);layers.push(c);selectedId=c.id;setStatus('Capa duplicada.','success');render()}function remove(){if(selectedId===null)return setStatus('Selecciona una capa para borrarla.','error');const i=layers.findIndex(l=>l.id===selectedId);layers=layers.filter(l=>l.id!==selectedId);selectedId=layers[Math.min(i,layers.length-1)]?.id||null;setStatus('Capa eliminada.','success');render()}function order(where:'front'|'back'){const i=layers.findIndex(l=>l.id===selectedId);if(i<0)return setStatus('Selecciona una capa para reordenarla.','error');const [l]=layers.splice(i,1);layers.splice(where==='front'?layers.length:0,0,l);render()}function fit(){const l=selected();if(!l)return setStatus('Selecciona una capa para ajustarla.','error');if(l.type==='text')l.scale=Math.min(1.8,(BASE*.84)/Math.max(l.w,l.h));else{l.w=BASE*.92;l.h=BASE*.92;l.scale=1}l.x=256;l.y=256;render()}
+    function renderList(){const rows=[...layers].reverse().map(l=>{const row=document.createElement('div');row.className=`layer-row${l.id===selectedId?' is-active':''}`;row.setAttribute('role','button');row.setAttribute('tabindex','0');row.setAttribute('aria-label',`Seleccionar capa ${l.name}`);row.innerHTML=`<span class="layer-icon" aria-hidden="true">${l.type==='image'?'🖼️':l.type==='text'?'T':'◇'}</span><span><strong></strong><small>${l.type}</small></span>`;(row.querySelector('strong') as HTMLElement).textContent=l.name;const dup=document.createElement('button');dup.type='button';dup.className='mini-action';dup.textContent='⧉';dup.setAttribute('aria-label',`Duplicar ${l.name}`);dup.onclick=e=>{e.stopPropagation();selectedId=l.id;duplicate()};const del=document.createElement('button');del.type='button';del.className='mini-action';del.textContent='×';del.setAttribute('aria-label',`Borrar ${l.name}`);del.onclick=e=>{e.stopPropagation();selectedId=l.id;remove()};row.append(dup,del);row.onclick=()=>{selectedId=l.id;render()};row.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectedId=l.id;render()}};return row});layersList.replaceChildren(...rows);if(!rows.length)layersList.textContent='No hay capas todavía.'}
+    function syncPanel(){const l=selected(),on=!!l;emptyContext.hidden=on;commonContext.hidden=!on;textContext.hidden=l?.type!=='text';iconContext.hidden=l?.type!=='icon';if(!l)return;layerName.value=l.name;layerOpacity.value=String(l.opacity);layerShadow.value=String(l.shadow);if(l.type==='text'){textContent.value=l.text;textColor.value=l.color;textWeight.value=l.weight}if(l.type==='icon'){iconName.value=l.iconName;iconColor.value=l.color;iconStroke.value=String(l.stroke)}}
+    const sizes=()=>Array.from(sizesGrid.querySelectorAll('input[type="checkbox"]')).filter(i=>(i as HTMLInputElement).checked).map(i=>Number((i as HTMLInputElement).value)).filter(s=>Number.isFinite(s)&&s>=16&&s<=4096).sort((a,b)=>a-b);function updateInfo(){const n=sizes().length;exportInfo.textContent=`${n} tamaño${n===1?'':'s'} seleccionado${n===1?'':'s'}`}function updateUi(){renderList();syncPanel();updateInfo();const on=selectedId!==null;[duplicateLayerBtn,deleteLayerBtn,bringForwardBtn,sendBackwardBtn,centerLayerBtn,fitLayerBtn].forEach(b=>b.disabled=!on)}
+    const blob=(c:HTMLCanvasElement)=>new Promise<Blob>((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error('blob')),'image/png')),save=(b:Blob,n:string)=>{const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=n;document.body.append(a);a.click();a.remove();URL.revokeObjectURL(u)};async function download(){const ss=sizes();if(!ss.length)return setStatus('Selecciona al menos un tamaño para exportar.','error');try{if(ss.length===1){const c=document.createElement('canvas');await renderIcon(c,ss[0],false);save(await blob(c),`app-icon-${ss[0]}.png`);return setStatus('PNG descargado.','success')}const zip=new JSZip();for(const s of ss){const c=document.createElement('canvas');await renderIcon(c,s,false);zip.file(`app-icon-${s}.png`,await blob(c))}zip.file('manifest-icons.json',JSON.stringify({icons:ss.map(s=>({src:`/icons/app-icon-${s}.png`,sizes:`${s}x${s}`,type:'image/png'}))},null,2));save(await zip.generateAsync({type:'blob'}),'app-icons.zip');setStatus('ZIP descargado con manifest-icons.json.','success')}catch{setStatus('No se pudo exportar el icono.','error')}}
+    function reset(){objectUrls.forEach(URL.revokeObjectURL);objectUrls=[];imageCache.clear();iconCache.clear();layers=[];selectedId=null;nextId=1;backgroundColor.value='#38bdf8';cornerRadius.value='22';borderWidth.value='0';borderColor.value='#020617';innerShadow.value='12';addText();setStatus('Editor reiniciado.','success')}
+    imageInput.onchange=()=>{const f=imageInput.files?.[0];if(!f)return;if(!f.type.startsWith('image/'))return setStatus('El archivo seleccionado no parece una imagen.','error');const src=URL.createObjectURL(f);objectUrls.push(src);const img=new Image();img.onload=()=>{imageCache.set(src,img);const cover=Math.max(BASE/img.width,BASE/img.height),id=nextId++;add({id,type:'image',name:f.name.slice(0,28)||`Imagen ${id}`,src,x:256,y:256,w:img.width*cover,h:img.height*cover,scale:1,rotation:0,opacity:1,shadow:0});imageInput.value=''};img.onerror=()=>setStatus('No se pudo cargar la imagen.','error');img.src=src};
+    canvas.onpointerdown=e=>{const p=point(e),cur=selected(),h=cur?hitHandle(p,cur):null;if(h){drag={mode:h==='rotate'?'rotate':'scale',handle:h,pointerId:e.pointerId,start:p,startLayer:clone(cur as Layer),startDistance:Math.hypot(p.x-cur!.x,p.y-cur!.y),startAngle:Math.atan2(p.y-cur!.y,p.x-cur!.x)}}else{const hit=hitLayer(p);selectedId=hit?.id||null;drag=hit?{mode:'move',pointerId:e.pointerId,start:p,startLayer:clone(hit)}:{mode:'none',start:p}}canvas.setPointerCapture(e.pointerId);render()};
+    canvas.onpointermove=e=>{const l=selected();if(!l||drag.mode==='none'||drag.pointerId!==e.pointerId||!drag.startLayer)return;const p=point(e);if(drag.mode==='move'){l.x=drag.startLayer.x+p.x-drag.start.x;l.y=drag.startLayer.y+p.y-drag.start.y}if(drag.mode==='scale'){const d0=drag.startDistance||1,d=Math.hypot(p.x-drag.startLayer.x,p.y-drag.startLayer.y);l.scale=clamp(drag.startLayer.scale*d/d0,.08,6)}if(drag.mode==='rotate'){const a0=drag.startAngle||0,a=Math.atan2(p.y-drag.startLayer.y,p.x-drag.startLayer.x);l.rotation=drag.startLayer.rotation+deg(a-a0)}render()};const end=(e:PointerEvent)=>{if(drag.pointerId===e.pointerId)drag={mode:'none',start:{x:0,y:0}}};canvas.onpointerup=end;canvas.onpointercancel=end;
+    addTextBtn.onclick=addText;addIconBtn.onclick=addIcon;duplicateLayerBtn.onclick=duplicate;deleteLayerBtn.onclick=remove;bringForwardBtn.onclick=()=>order('front');sendBackwardBtn.onclick=()=>order('back');centerLayerBtn.onclick=()=>patch({x:256,y:256} as Partial<Layer>);fitLayerBtn.onclick=fit;resetBtn.onclick=reset;downloadBtn.onclick=download;layerName.oninput=()=>patch({name:layerName.value||'Capa'} as Partial<Layer>);layerOpacity.oninput=()=>patch({opacity:Number(layerOpacity.value)} as Partial<Layer>);layerShadow.oninput=()=>patch({shadow:Number(layerShadow.value)} as Partial<Layer>);textContent.oninput=()=>{const l=selected();if(l?.type==='text'){l.text=textContent.value;render()}};textColor.oninput=()=>{const l=selected();if(l?.type==='text'){l.color=textColor.value;render()}};textWeight.onchange=()=>{const l=selected();if(l?.type==='text'){l.weight=textWeight.value;l.w=textW(l.text,l.fontSize,l.weight);render()}};iconName.onchange=()=>{const l=selected();if(l?.type==='icon'){l.iconName=iconName.value;render()}};iconColor.oninput=()=>{const l=selected();if(l?.type==='icon'){l.color=iconColor.value;render()}};iconStroke.oninput=()=>{const l=selected();if(l?.type==='icon'){l.stroke=Number(iconStroke.value);render()}};[backgroundColor,cornerRadius,borderWidth,borderColor,innerShadow].forEach(i=>i.addEventListener('input',render));sizesGrid.onchange=updateInfo;addCustomSizeBtn.onclick=()=>{const parsed=Number(customSize.value);if(!Number.isFinite(parsed))return setStatus('Introduce un tamaño válido.','error');const size=Math.round(clamp(parsed,16,4096)),label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.value=String(size);box.checked=true;label.append(box,document.createTextNode(String(size)));sizesGrid.append(label);customSize.value='';updateInfo()};addText();
   </script>
 </Layout>
