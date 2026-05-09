@@ -1,0 +1,76 @@
+---
+import AppIconGenerator from '../app-icon-generator.astro';
+import Base64 from '../base64.astro';
+import CharacterCounter from '../character-counter.astro';
+import CodeFormatter from '../code-formatter.astro';
+import CurlBuilder from '../curl-builder.astro';
+import CsvConverter from '../csv-converter.astro';
+import CssColorConverter from '../css-color-converter.astro';
+import DiffChecker from '../diff-checker.astro';
+import DnsLookup from '../dns-lookup.astro';
+import FaviconGenerator from '../favicon-generator.astro';
+import Geocoder from '../geocoder.astro';
+import ImageCompressor from '../image-compressor.astro';
+import ImageConverter from '../image-converter.astro';
+import ImageInfo from '../image-info.astro';
+import IpInfo from '../ip-info.astro';
+import JsonViewer from '../json-viewer.astro';
+import JwtDecoder from '../jwt-decoder.astro';
+import LoremIpsum from '../lorem-ipsum.astro';
+import MarkdownPreview from '../markdown-preview.astro';
+import Md5 from '../md5.astro';
+import PhotoCensor from '../photo-censor.astro';
+import QrCode from '../qr-code.astro';
+import SocialPreview from '../social-preview.astro';
+import SqlFormatter from '../sql-formatter.astro';
+import SvgPlaceholder from '../svg-placeholder.astro';
+import TimestampConverter from '../timestamp-converter.astro';
+import UrlEncoder from '../url-encoder.astro';
+import UrlInspector from '../url-inspector.astro';
+import VatCalculator from '../vat-calculator.astro';
+import XmlFormatter from '../xml-formatter.astro';
+
+const pages = {
+  'app-icon-generator': AppIconGenerator,
+  'base64': Base64,
+  'character-counter': CharacterCounter,
+  'code-formatter': CodeFormatter,
+  'curl-builder': CurlBuilder,
+  'csv-converter': CsvConverter,
+  'css-color-converter': CssColorConverter,
+  'diff-checker': DiffChecker,
+  'dns-lookup': DnsLookup,
+  'favicon-generator': FaviconGenerator,
+  'geocoder': Geocoder,
+  'image-compressor': ImageCompressor,
+  'image-converter': ImageConverter,
+  'image-info': ImageInfo,
+  'ip-info': IpInfo,
+  'json-viewer': JsonViewer,
+  'jwt-decoder': JwtDecoder,
+  'lorem-ipsum': LoremIpsum,
+  'markdown-preview': MarkdownPreview,
+  'md5': Md5,
+  'photo-censor': PhotoCensor,
+  'qr-code': QrCode,
+  'social-preview': SocialPreview,
+  'sql-formatter': SqlFormatter,
+  'svg-placeholder': SvgPlaceholder,
+  'timestamp-converter': TimestampConverter,
+  'url-encoder': UrlEncoder,
+  'url-inspector': UrlInspector,
+  'vat-calculator': VatCalculator,
+  'xml-formatter': XmlFormatter
+} as const;
+
+type PageSlug = keyof typeof pages;
+
+export function getStaticPaths() {
+  return Object.keys(pages).map((slug) => ({ params: { slug } }));
+}
+
+const slug = Astro.params.slug as PageSlug;
+const Page = pages[slug];
+---
+
+<Page />
