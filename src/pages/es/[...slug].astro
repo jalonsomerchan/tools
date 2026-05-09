@@ -98,6 +98,40 @@ const pages: Record<PageSlug, typeof AppIconGenerator> = {
   'xml-formatter': XmlFormatter
 };
 
+const translatedTitles: Record<PageSlug, string> = {
+  'app-icon-generator': 'Generador de iconos para apps',
+  base64: 'Codificador y decodificador Base64',
+  'character-counter': 'Contador de caracteres',
+  'code-formatter': 'Formateador HTML, CSS y JavaScript',
+  'curl-builder': 'Generador de cURL',
+  'csv-converter': 'Parser y conversor CSV',
+  'css-color-converter': 'Convertidor de colores CSS',
+  'diff-checker': 'Comparador de textos',
+  'dns-lookup': 'Consulta DNS',
+  'favicon-generator': 'Generador de favicon',
+  geocoder: 'Coordenadas de direcciones',
+  'image-compressor': 'Compresor de imágenes',
+  'image-converter': 'Conversor de imágenes',
+  'image-info': 'Información de imágenes',
+  'ip-info': 'Información de IP',
+  'json-viewer': 'Visor y formateador JSON',
+  'jwt-decoder': 'Decodificador JWT',
+  'lorem-ipsum': 'Generador de Lorem Ipsum',
+  'markdown-preview': 'Editor Markdown con vista previa',
+  md5: 'Generador MD5',
+  'photo-censor': 'Censurador de fotos',
+  'qr-code': 'Generador y lector QR',
+  'social-preview': 'Vista previa social de URLs',
+  'sql-formatter': 'Formateador SQL',
+  'svg-placeholder': 'Generador de placeholders SVG',
+  'timestamp-converter': 'Conversor de timestamps y zonas horarias',
+  'url-encoder': 'Codificador y decodificador de URL',
+  'url-inspector': 'Inspector de URLs',
+  'uuid-generator': 'Generador de UUID y claves aleatorias',
+  'vat-calculator': 'Calculadora de IVA',
+  'xml-formatter': 'Formateador y validador XML'
+};
+
 export function getStaticPaths() {
   return [
     'app-icon-generator',
@@ -136,6 +170,183 @@ export function getStaticPaths() {
 
 const slug = Astro.params.slug as PageSlug;
 const Page = pages[slug];
+const translatedTitle = translatedTitles[slug];
 ---
 
 <Page />
+
+<script is:inline define:vars={{ translatedTitle }}>
+  (() => {
+    const dictionary = {
+      'App icon generator': 'Generador de iconos para apps',
+      'HTML/CSS/JS formatter': 'Formateador HTML/CSS/JS',
+      'UUID & random key generator': 'Generador de UUID y claves aleatorias',
+      'SQL formatter': 'Formateador SQL',
+      'XML formatter & validator': 'Formateador y validador XML',
+      'CSS color converter': 'Convertidor de colores CSS',
+      'Timestamp & timezone converter': 'Conversor de timestamps y zonas horarias',
+      'Base64 encoder & decoder': 'Codificador y decodificador Base64',
+      'CSV parser & converter': 'Parser y conversor CSV',
+      'JSON viewer & formatter': 'Visor y formateador JSON',
+      'MD5 generator': 'Generador MD5',
+      'JWT decoder': 'Decodificador JWT',
+      'URL encoder & decoder': 'Codificador y decodificador de URL',
+      'URL inspector': 'Inspector de URLs',
+      'cURL builder': 'Generador de cURL',
+      'Diff checker': 'Comparador de textos',
+      'SVG placeholder generator': 'Generador de placeholders SVG',
+      'QR code generator & reader': 'Generador y lector QR',
+      'Image compressor': 'Compresor de imágenes',
+      'Image converter': 'Conversor de imágenes',
+      'Image information': 'Información de imágenes',
+      'Favicon generator': 'Generador de favicon',
+      'Photo censor': 'Censurador de fotos',
+      'DNS lookup': 'Consulta DNS',
+      'IP information': 'Información de IP',
+      'Address coordinates': 'Coordenadas de direcciones',
+      'Social URL preview': 'Vista previa social de URLs',
+      'Character counter': 'Contador de caracteres',
+      'Lorem Ipsum generator': 'Generador de Lorem Ipsum',
+      'Markdown writer & preview': 'Editor Markdown con vista previa',
+      'VAT calculator': 'Calculadora de IVA',
+      '100% local': '100% local',
+      'Privacy First': 'Privacy First',
+      'Local only': 'Solo local',
+      'No backend': 'Sin backend',
+      'No uploads': 'Sin subidas',
+      'Visual editor': 'Editor visual',
+      'SQL workspace': 'Área de trabajo SQL',
+      'XML workspace': 'Área de trabajo XML',
+      'Generator': 'Generador',
+      'Layers': 'Capas',
+      'Layer properties': 'Propiedades de la capa',
+      'Properties': 'Propiedades',
+      'Background and shape': 'Fondo y forma',
+      'Export settings': 'Exportación',
+      'Export': 'Exportar',
+      'Add image': 'Añadir imagen',
+      'Add text': 'Añadir texto',
+      'Add icon': 'Añadir icono',
+      'Upload a photo or logo': 'Sube una foto o logo',
+      'Title, initials or brand': 'Título, iniciales o marca',
+      'Local Lucide icons': 'Iconos Lucide locales',
+      'Duplicate': 'Duplicar',
+      'Delete': 'Borrar',
+      'Reset': 'Reiniciar',
+      'Bring forward': 'Traer delante',
+      'Send backward': 'Enviar detrás',
+      'Center': 'Centrar',
+      'Fit to canvas': 'Ajustar al lienzo',
+      'Type': 'Tipo',
+      'Amount': 'Cantidad',
+      'String length': 'Longitud de la cadena',
+      'Characters for random strings': 'Caracteres para cadenas aleatorias',
+      'Lowercase': 'Minúsculas',
+      'Uppercase': 'Mayúsculas',
+      'Numbers': 'Números',
+      'Symbols': 'Símbolos',
+      'Random string': 'Cadena aleatoria',
+      'Dialect': 'Dialecto',
+      'SQL standard': 'SQL estándar',
+      'Keyword case': 'Mayúsculas/minúsculas de palabras clave',
+      'UPPERCASE': 'MAYÚSCULAS',
+      'lowercase': 'minúsculas',
+      'Preserve': 'Mantener original',
+      'Indentation': 'Indentación',
+      '2 spaces': '2 espacios',
+      '4 spaces': '4 espacios',
+      'Tab': 'Tabulador',
+      'Load .xml file': 'Cargar archivo .xml',
+      'Format SQL': 'Formatear SQL',
+      'Format': 'Formatear',
+      'Minify': 'Minificar',
+      'Validate': 'Validar',
+      'Generate': 'Generar',
+      'Convert': 'Convertir',
+      'Encode': 'Codificar',
+      'Decode': 'Decodificar',
+      'Analyze': 'Analizar',
+      'Search': 'Buscar',
+      'Lookup': 'Consultar',
+      'Read': 'Leer',
+      'Compare': 'Comparar',
+      'Calculate': 'Calcular',
+      'Copy': 'Copiar',
+      'Copy result': 'Copiar resultado',
+      'Copy results': 'Copiar resultados',
+      'Download': 'Descargar',
+      'Download XML': 'Descargar XML',
+      'Download .sql': 'Descargar .sql',
+      'Download .txt': 'Descargar .txt',
+      'Clear': 'Limpiar',
+      'Input': 'Entrada',
+      'Output': 'Salida',
+      'Input SQL': 'SQL de entrada',
+      'Input XML': 'XML de entrada',
+      'Result': 'Resultado',
+      'Results': 'Resultados',
+      'Preview': 'Vista previa',
+      'Characters': 'Caracteres',
+      'Words': 'Palabras',
+      'Sentences': 'Frases',
+      'Lines: 0': 'Líneas: 0',
+      'Characters: 0': 'Caracteres: 0',
+      'Size: 0 B': 'Tamaño: 0 B',
+      'Values: 0': 'Valores: 0',
+      'Length: 0': 'Longitud: 0',
+      'Original: 0 B': 'Original: 0 B',
+      'Result: 0 B': 'Resultado: 0 B',
+      'Nodes: 0': 'Nodos: 0',
+      'Ready.': 'Listo.',
+      'Ready': 'Listo',
+      'Ready to create icons.': 'Listo para crear iconos.',
+      'No layers yet.': 'No hay capas todavía.',
+      'Select a layer to edit its options.': 'Selecciona una capa para editar sus opciones.',
+      'This is a formatter, not a SQL engine: it does not connect to databases, run queries or guarantee dialect-specific validity.': 'Esto es un formateador, no un motor SQL: no conecta con bases de datos, no ejecuta consultas ni garantiza la validez específica de cada dialecto.',
+      'DOMParser validates the document locally. External resources are not fetched and XML content is never executed.': 'DOMParser valida el documento localmente. No se descargan recursos externos y el contenido XML nunca se ejecuta.',
+      'Paste a query, choose formatting options and export the result. Comments and quoted strings are preserved when possible.': 'Pega una consulta, elige las opciones de formato y exporta el resultado. Los comentarios y cadenas entrecomilladas se conservan cuando es posible.',
+      'Use UUIDs for identifiers or random strings for tokens, test data and temporary keys.': 'Usa UUIDs como identificadores o cadenas aleatorias para tokens, datos de prueba y claves temporales.'
+    };
+
+    const placeholderDictionary = {
+      'Paste your SQL here...': 'Pega tu SQL aquí...',
+      'Formatted or minified SQL will appear here...': 'El SQL formateado o minificado aparecerá aquí...',
+      'Paste your XML here...': 'Pega tu XML aquí...',
+      'Formatted, minified or validated XML will appear here...': 'El XML formateado, minificado o validado aparecerá aquí...',
+      'Generated UUIDs or random strings will appear here...': 'Aquí aparecerán los UUIDs o cadenas aleatorias generadas...',
+      'Paste your code here...': 'Pega tu código aquí...',
+      'Paste your JSON here...': 'Pega tu JSON aquí...',
+      'Paste your CSV here...': 'Pega tu CSV aquí...',
+      'Text input...': 'Texto de entrada...',
+      'Result...': 'Resultado...'
+    };
+
+    const normalize = (value) => value.replace(/\s+/g, ' ').trim();
+    const translateNode = (node) => {
+      const text = normalize(node.textContent || '');
+      const translated = dictionary[text];
+      if (translated) node.textContent = translated;
+    };
+
+    const translateAll = () => {
+      if (translatedTitle) {
+        document.title = translatedTitle;
+        const h1 = document.querySelector('h1');
+        if (h1) h1.textContent = translatedTitle;
+        document.querySelector('meta[property="og:title"]')?.setAttribute('content', translatedTitle);
+        document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', translatedTitle);
+      }
+
+      document.querySelectorAll('h1,h2,h3,h4,p,button,label,legend,summary,small,span,option,output,div[role="note"],.status,.stat-card,.editor-label,.empty-context').forEach(translateNode);
+      document.querySelectorAll('[placeholder]').forEach((element) => {
+        const placeholder = element.getAttribute('placeholder');
+        if (placeholderDictionary[placeholder]) element.setAttribute('placeholder', placeholderDictionary[placeholder]);
+      });
+    };
+
+    translateAll();
+
+    const observer = new MutationObserver(() => translateAll());
+    observer.observe(document.body, { childList: true, subtree: true });
+  })();
+</script>
