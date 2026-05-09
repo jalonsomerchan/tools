@@ -1,0 +1,48 @@
+---
+interface Props {
+  id: string;
+  type?: 'status' | 'error';
+  hidden?: boolean;
+}
+
+const { id, type = 'status', hidden = true } = Astro.props;
+const role = type === 'error' ? 'alert' : 'status';
+const live = type === 'error' ? 'assertive' : 'polite';
+---
+
+<div
+  id={id}
+  class:list={['tool-message', `tool-message--${type}`]}
+  role={role}
+  aria-live={live}
+  aria-atomic="true"
+  hidden={hidden}
+>
+  <slot />
+</div>
+
+<style>
+  .tool-message {
+    margin-top: 1rem;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    padding: .9rem 1rem;
+    line-height: 1.6;
+  }
+
+  .tool-message[hidden] {
+    display: none;
+  }
+
+  .tool-message--status {
+    background: rgba(34, 197, 94, .12);
+    border-color: rgba(34, 197, 94, .28);
+    color: #bbf7d0;
+  }
+
+  .tool-message--error {
+    background: rgba(248, 113, 113, .12);
+    border-color: rgba(248, 113, 113, .32);
+    color: #fecaca;
+  }
+</style>
