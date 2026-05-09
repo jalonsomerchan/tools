@@ -1,99 +1,48 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl } from '../i18n/ui';
+import { getToolTranslations, type ToolTranslationsMap } from '../i18n/tools';
 
-const title = 'JSON viewer y formatter';
+const lang = getLangFromUrl(Astro.url);
+const t = getToolTranslations('json-viewer', lang) as ToolTranslationsMap['json-viewer']['en'];
 ---
 
-<Layout title={title}>
+<Layout title={t.title} description={t.description} lang={lang} path="/json-viewer/" translated={true}>
   <section style="padding: 4rem 0;">
-    <div class="eyebrow">Alon Tools</div>
-
-    <h1>{title}</h1>
-
-    <p class="hero-text">
-      Visualiza, valida y formatea JSON directamente desde el navegador.
-    </p>
+    <div class="eyebrow">{t.heroEyebrow}</div>
+    <h1>{t.title}</h1>
+    <p class="hero-text">{t.heroText}</p>
 
     <section class="tool-card">
       <div class="toolbar">
-        <button class="primary" id="formatBtn">Formatear</button>
-        <button id="minifyBtn">Minificar</button>
-        <button id="validateBtn">Validar</button>
-        <button id="clearBtn">Limpiar</button>
-        <button id="copyBtn">Copiar resultado</button>
+        <button class="primary" id="formatBtn">{t.actions.format}</button>
+        <button id="minifyBtn">{t.actions.minify}</button>
+        <button id="validateBtn">{t.actions.validate}</button>
+        <button id="clearBtn">{t.actions.clear}</button>
+        <button id="copyBtn">{t.actions.copy}</button>
       </div>
 
       <div class="workspace">
-        <textarea id="input" placeholder='Pega aquí tu JSON...'></textarea>
-
-        <textarea id="output" readonly placeholder='Resultado...'></textarea>
+        <textarea id="input" placeholder={t.placeholders.input}></textarea>
+        <textarea id="output" readonly placeholder={t.placeholders.output}></textarea>
       </div>
 
-      <p class="status" id="status">Listo.</p>
+      <p class="status" id="status" role="status" aria-live="polite">{t.messages.ready}</p>
     </section>
   </section>
 
   <style>
-    .toolbar {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-    }
-
-    button {
-      background: #0f172a;
-      color: white;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1rem;
-      cursor: pointer;
-    }
-
-    button.primary {
-      background: var(--primary);
-      color: black;
-    }
-
-    .workspace {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 400px;
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      background: #020617;
-      color: white;
-      padding: 1rem;
-      font-family: monospace;
-      line-height: 1.6;
-      resize: vertical;
-      tab-size: 2;
-    }
-
-    textarea[data-invalid='true'] {
-      border-color: rgba(252, 165, 165, .6);
-      box-shadow: 0 0 0 1px rgba(252, 165, 165, .15);
-    }
-
-    .status {
-      margin-top: 1rem;
-      color: var(--muted);
-      white-space: pre-wrap;
-    }
-
-    @media (max-width: 860px) {
-      .workspace {
-        grid-template-columns: 1fr;
-      }
-    }
+    .toolbar { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    button { background: #0f172a; color: white; border: 1px solid var(--border); border-radius: 14px; padding: 1rem; cursor: pointer; }
+    button.primary { background: var(--primary); color: black; }
+    .workspace { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    textarea { width: 100%; min-height: 400px; border-radius: 18px; border: 1px solid var(--border); background: #020617; color: white; padding: 1rem; font-family: monospace; line-height: 1.6; resize: vertical; tab-size: 2; }
+    textarea[data-invalid='true'] { border-color: rgba(252, 165, 165, .6); box-shadow: 0 0 0 1px rgba(252, 165, 165, .15); }
+    .status { margin-top: 1rem; color: var(--muted); white-space: pre-wrap; }
+    @media (max-width: 860px) { .workspace { grid-template-columns: 1fr; } }
   </style>
 
-  <script>
+  <script define:vars={{ copy: t }}>
     window.addEventListener('DOMContentLoaded', () => {
       const input = document.getElementById('input');
       const output = document.getElementById('output');
@@ -115,7 +64,7 @@ const title = 'JSON viewer y formatter';
       const parse = () => JSON.parse(input.value);
 
       const getJsonErrorDetails = (error) => {
-        const message = error instanceof Error ? error.message : 'JSON inválido.';
+        const message = error instanceof Error ? error.message : copy.messages.invalid;
         const positionMatch = message.match(/position\s+(\d+)/i);
         const position = positionMatch ? Number(positionMatch[1]) : null;
 
@@ -127,7 +76,7 @@ const title = 'JSON viewer y formatter';
         const line = beforeError.split('\n').length;
         const column = beforeError.length - beforeError.lastIndexOf('\n');
 
-        return `${message}\nLínea ${line}, columna ${column}.`;
+        return `${message}\n${copy.messages.lineColumn.replace('{line}', String(line)).replace('{column}', String(column))}`;
       };
 
       const formatBrokenJson = (value) => {
@@ -197,7 +146,6 @@ const title = 'JSON viewer y formatter';
             if (formatted && !formatted.endsWith(' ') && !formatted.endsWith('\n')) {
               formatted += ' ';
             }
-
             continue;
           }
 
@@ -239,9 +187,7 @@ const title = 'JSON viewer y formatter';
             continue;
           }
 
-          if (!/\s/.test(char)) {
-            minified += char;
-          }
+          if (!/\s/.test(char)) minified += char;
         }
 
         return minified;
@@ -249,13 +195,13 @@ const title = 'JSON viewer y formatter';
 
       const showBrokenJson = (error, transform = formatBrokenJson) => {
         output.value = transform(input.value);
-        setStatus(`JSON inválido, pero se muestra una vista parcial.\n${getJsonErrorDetails(error)}`, true);
+        setStatus(copy.messages.invalidPartial.replace('{details}', getJsonErrorDetails(error)), true);
       };
 
       formatBtn.onclick = () => {
         try {
           output.value = JSON.stringify(parse(), null, 2);
-          setStatus('JSON formateado correctamente.');
+          setStatus(copy.messages.formatted);
         } catch (error) {
           showBrokenJson(error);
         }
@@ -264,7 +210,7 @@ const title = 'JSON viewer y formatter';
       minifyBtn.onclick = () => {
         try {
           output.value = JSON.stringify(parse());
-          setStatus('JSON minificado correctamente.');
+          setStatus(copy.messages.minified);
         } catch (error) {
           showBrokenJson(error, minifyLooseJson);
         }
@@ -274,7 +220,7 @@ const title = 'JSON viewer y formatter';
         try {
           parse();
           output.value = JSON.stringify(parse(), null, 2);
-          setStatus('JSON válido.');
+          setStatus(copy.messages.valid);
         } catch (error) {
           showBrokenJson(error);
         }
@@ -283,28 +229,28 @@ const title = 'JSON viewer y formatter';
       clearBtn.onclick = () => {
         input.value = '';
         output.value = '';
-        setStatus('Contenido eliminado.');
+        setStatus(copy.messages.cleared);
       };
 
       copyBtn.onclick = async () => {
         try {
           await navigator.clipboard.writeText(output.value);
-          setStatus('Resultado copiado.');
+          setStatus(copy.messages.copied);
         } catch {
-          setStatus('No se pudo copiar.', true);
+          setStatus(copy.messages.copyError, true);
         }
       };
 
       input.addEventListener('input', () => {
         if (!input.value.trim()) {
           output.value = '';
-          setStatus('Listo.');
+          setStatus(copy.messages.ready);
           return;
         }
 
         try {
           output.value = JSON.stringify(parse(), null, 2);
-          setStatus('JSON válido.');
+          setStatus(copy.messages.valid);
         } catch (error) {
           showBrokenJson(error);
         }

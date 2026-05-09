@@ -1,35 +1,36 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl } from '../i18n/ui';
+import { getToolTranslations, type ToolTranslationsMap } from '../i18n/tools';
 
-const title = 'Base64 encoder y decoder';
+const lang = getLangFromUrl(Astro.url);
+const t = getToolTranslations('base64', lang) as ToolTranslationsMap['base64']['en'];
 ---
 
-<Layout title={title}>
+<Layout title={t.title} description={t.description} lang={lang} path="/base64/" translated={true}>
   <section style="padding: 4rem 0;">
-    <div class="eyebrow">Alon Tools</div>
+    <div class="eyebrow">{t.heroEyebrow}</div>
 
-    <h1>{title}</h1>
+    <h1>{t.title}</h1>
 
-    <p class="hero-text">
-      Convierte texto plano a Base64 y decodifica cadenas Base64 directamente desde el navegador.
-    </p>
+    <p class="hero-text">{t.heroText}</p>
 
     <section class="tool-card">
       <div class="toolbar">
-        <button class="primary" id="encodeBtn">Codificar</button>
-        <button id="decodeBtn">Decodificar</button>
-        <button id="swapBtn">Intercambiar</button>
-        <button id="clearBtn">Limpiar</button>
-        <button id="copyBtn">Copiar resultado</button>
+        <button class="primary" id="encodeBtn">{t.actions.encode}</button>
+        <button id="decodeBtn">{t.actions.decode}</button>
+        <button id="swapBtn">{t.actions.swap}</button>
+        <button id="clearBtn">{t.actions.clear}</button>
+        <button id="copyBtn">{t.actions.copy}</button>
       </div>
 
       <div class="workspace">
-        <textarea id="input" placeholder="Texto de entrada..."></textarea>
+        <textarea id="input" placeholder={t.placeholders.input}></textarea>
 
-        <textarea id="output" readonly placeholder="Resultado..."></textarea>
+        <textarea id="output" readonly placeholder={t.placeholders.output}></textarea>
       </div>
 
-      <p class="status" id="status">Listo para convertir.</p>
+      <p class="status" id="status" role="status" aria-live="polite">{t.messages.ready}</p>
     </section>
   </section>
 
@@ -83,7 +84,7 @@ const title = 'Base64 encoder y decoder';
     }
   </style>
 
-  <script>
+  <script define:vars={{ messages: t.messages }}>
     window.addEventListener('DOMContentLoaded', () => {
       const input = document.getElementById('input');
       const output = document.getElementById('output');
@@ -114,18 +115,18 @@ const title = 'Base64 encoder y decoder';
       document.getElementById('encodeBtn').onclick = () => {
         try {
           output.value = encode(input.value);
-          setStatus('Texto codificado correctamente.');
+          setStatus(messages.encoded);
         } catch {
-          setStatus('Error al codificar.', true);
+          setStatus(messages.encodeError, true);
         }
       };
 
       document.getElementById('decodeBtn').onclick = () => {
         try {
           output.value = decode(input.value.trim());
-          setStatus('Texto decodificado correctamente.');
+          setStatus(messages.decoded);
         } catch {
-          setStatus('Base64 inválido.', true);
+          setStatus(messages.invalid, true);
         }
       };
 
@@ -133,21 +134,21 @@ const title = 'Base64 encoder y decoder';
         const temp = input.value;
         input.value = output.value;
         output.value = temp;
-        setStatus('Contenido intercambiado.');
+        setStatus(messages.swapped);
       };
 
       document.getElementById('clearBtn').onclick = () => {
         input.value = '';
         output.value = '';
-        setStatus('Contenido eliminado.');
+        setStatus(messages.cleared);
       };
 
       document.getElementById('copyBtn').onclick = async () => {
         try {
           await navigator.clipboard.writeText(output.value);
-          setStatus('Resultado copiado.');
+          setStatus(messages.copied);
         } catch {
-          setStatus('No se pudo copiar.', true);
+          setStatus(messages.copyError, true);
         }
       };
     });

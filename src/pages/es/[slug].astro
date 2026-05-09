@@ -1,0 +1,81 @@
+---
+import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
+import { toolSlugs, type ToolSlug } from '../../i18n/tools';
+
+import AppIconGeneratorPage from '../app-icon-generator.astro';
+import Base64Page from '../base64.astro';
+import CharacterCounterPage from '../character-counter.astro';
+import CodeFormatterPage from '../code-formatter.astro';
+import CsvConverterPage from '../csv-converter.astro';
+import CurlBuilderPage from '../curl-builder.astro';
+import CssColorConverterPage from '../css-color-converter.astro';
+import DiffCheckerPage from '../diff-checker.astro';
+import DnsLookupPage from '../dns-lookup.astro';
+import FaviconGeneratorPage from '../favicon-generator.astro';
+import GeocoderPage from '../geocoder.astro';
+import ImageCompressorPage from '../image-compressor.astro';
+import ImageConverterPage from '../image-converter.astro';
+import ImageInfoPage from '../image-info.astro';
+import IpInfoPage from '../ip-info.astro';
+import JsonViewerPage from '../json-viewer.astro';
+import JwtDecoderPage from '../jwt-decoder.astro';
+import LoremIpsumPage from '../lorem-ipsum.astro';
+import MarkdownPreviewPage from '../markdown-preview.astro';
+import Md5Page from '../md5.astro';
+import PhotoCensorPage from '../photo-censor.astro';
+import QrCodePage from '../qr-code.astro';
+import SocialPreviewPage from '../social-preview.astro';
+import SqlFormatterPage from '../sql-formatter.astro';
+import SvgPlaceholderPage from '../svg-placeholder.astro';
+import TimestampConverterPage from '../timestamp-converter.astro';
+import UrlEncoderPage from '../url-encoder.astro';
+import UrlInspectorPage from '../url-inspector.astro';
+import VatCalculatorPage from '../vat-calculator.astro';
+import XmlFormatterPage from '../xml-formatter.astro';
+
+export function getStaticPaths() {
+  return toolSlugs.map((slug) => ({ params: { slug } }));
+}
+
+const pageMap: Record<ToolSlug, AstroComponentFactory> = {
+  'app-icon-generator': AppIconGeneratorPage,
+  base64: Base64Page,
+  'character-counter': CharacterCounterPage,
+  'code-formatter': CodeFormatterPage,
+  'csv-converter': CsvConverterPage,
+  'curl-builder': CurlBuilderPage,
+  'css-color-converter': CssColorConverterPage,
+  'diff-checker': DiffCheckerPage,
+  'dns-lookup': DnsLookupPage,
+  'favicon-generator': FaviconGeneratorPage,
+  geocoder: GeocoderPage,
+  'image-compressor': ImageCompressorPage,
+  'image-converter': ImageConverterPage,
+  'image-info': ImageInfoPage,
+  'ip-info': IpInfoPage,
+  'json-viewer': JsonViewerPage,
+  'jwt-decoder': JwtDecoderPage,
+  'lorem-ipsum': LoremIpsumPage,
+  'markdown-preview': MarkdownPreviewPage,
+  md5: Md5Page,
+  'photo-censor': PhotoCensorPage,
+  'qr-code': QrCodePage,
+  'social-preview': SocialPreviewPage,
+  'sql-formatter': SqlFormatterPage,
+  'svg-placeholder': SvgPlaceholderPage,
+  'timestamp-converter': TimestampConverterPage,
+  'url-encoder': UrlEncoderPage,
+  'url-inspector': UrlInspectorPage,
+  'vat-calculator': VatCalculatorPage,
+  'xml-formatter': XmlFormatterPage
+};
+
+const slug = Astro.params.slug as ToolSlug | undefined;
+const Page = slug ? pageMap[slug] : undefined;
+
+if (!Page) {
+  return Astro.redirect('/es/404');
+}
+---
+
+<Page />

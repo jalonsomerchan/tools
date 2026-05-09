@@ -1,33 +1,31 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl } from '../i18n/ui';
+import { getToolTranslations, type ToolTranslationsMap } from '../i18n/tools';
 
-const title = 'SQL formatter';
-const description = 'Format, minify, copy and download SQL queries locally in your browser. It only formats text and never runs queries.';
+const lang = getLangFromUrl(Astro.url);
+const t = getToolTranslations('sql-formatter', lang) as ToolTranslationsMap['sql-formatter']['en'];
 ---
 
-<Layout title={title} description={description} path="/sql-formatter/" translated={false}>
+<Layout title={t.title} description={t.description} lang={lang} path="/sql-formatter/" translated={true}>
   <section class="sql-page">
-    <div class="eyebrow">100% local</div>
-
-    <h1>{title}</h1>
-
-    <p class="hero-text">
-      Make SELECT, INSERT, UPDATE, DELETE and CREATE queries easier to read. This tool only formats SQL text locally; it does not validate against a real database and never executes queries.
-    </p>
+    <div class="eyebrow">{t.heroEyebrow}</div>
+    <h1>{t.title}</h1>
+    <p class="hero-text">{t.heroText}</p>
 
     <section class="tool-card sql-tool" aria-labelledby="sqlToolTitle">
       <div class="tool-header">
         <div>
-          <h2 id="sqlToolTitle">SQL workspace</h2>
-          <p>Paste a query, choose formatting options and export the result. Comments and quoted strings are preserved when possible.</p>
+          <h2 id="sqlToolTitle">{t.workspaceTitle}</h2>
+          <p>{t.workspaceText}</p>
         </div>
       </div>
 
-      <div class="options-grid" aria-label="Formatting options">
+      <div class="options-grid" aria-label={t.aria.options}>
         <label for="dialectSelect">
-          Dialect
+          {t.labels.dialect}
           <select id="dialectSelect">
-            <option value="standard">SQL standard</option>
+            <option value="standard">{t.options.standard}</option>
             <option value="mysql">MySQL</option>
             <option value="postgresql">PostgreSQL</option>
             <option value="sqlite">SQLite</option>
@@ -35,50 +33,48 @@ const description = 'Format, minify, copy and download SQL queries locally in yo
         </label>
 
         <label for="keywordCase">
-          Keyword case
+          {t.labels.keywordCase}
           <select id="keywordCase">
             <option value="upper">UPPERCASE</option>
             <option value="lower">lowercase</option>
-            <option value="preserve">Preserve</option>
+            <option value="preserve">{t.options.preserve}</option>
           </select>
         </label>
 
         <label for="indentSelect">
-          Indentation
+          {t.labels.indentation}
           <select id="indentSelect">
-            <option value="2">2 spaces</option>
-            <option value="4">4 spaces</option>
-            <option value="tab">Tab</option>
+            <option value="2">{t.options.spaces2}</option>
+            <option value="4">{t.options.spaces4}</option>
+            <option value="tab">{t.options.tab}</option>
           </select>
         </label>
       </div>
 
-      <div class="toolbar" aria-label="SQL actions">
-        <button class="primary" id="formatBtn" type="button">Format SQL</button>
-        <button id="minifyBtn" type="button">Minify</button>
-        <button id="copyBtn" type="button">Copy result</button>
-        <button id="downloadBtn" type="button">Download .sql</button>
-        <button id="clearBtn" type="button">Clear</button>
+      <div class="toolbar" aria-label={t.aria.actions}>
+        <button class="primary" id="formatBtn" type="button">{t.actions.format}</button>
+        <button id="minifyBtn" type="button">{t.actions.minify}</button>
+        <button id="copyBtn" type="button">{t.actions.copy}</button>
+        <button id="downloadBtn" type="button">{t.actions.download}</button>
+        <button id="clearBtn" type="button">{t.actions.clear}</button>
       </div>
 
-      <div class="notice" role="note">
-        This is a formatter, not a SQL engine: it does not connect to databases, run queries or guarantee dialect-specific validity.
-      </div>
+      <div class="notice" role="note">{t.notice}</div>
 
       <div class="workspace">
-        <label class="editor-label" for="inputSql">Input SQL</label>
-        <label class="editor-label" for="outputSql">Result</label>
-        <textarea id="inputSql" spellcheck="false" placeholder="Paste your SQL here..."></textarea>
-        <textarea id="outputSql" spellcheck="false" readonly placeholder="Formatted or minified SQL will appear here..."></textarea>
+        <label class="editor-label" for="inputSql">{t.labels.input}</label>
+        <label class="editor-label" for="outputSql">{t.labels.result}</label>
+        <textarea id="inputSql" spellcheck="false" placeholder={t.placeholders.input}></textarea>
+        <textarea id="outputSql" spellcheck="false" readonly placeholder={t.placeholders.output}></textarea>
       </div>
 
-      <div class="stats-grid" aria-label="SQL statistics">
-        <output class="stat-card" id="lineCount">Lines: 0</output>
-        <output class="stat-card" id="charCount">Characters: 0</output>
-        <output class="stat-card" id="sizeCount">Size: 0 B</output>
+      <div class="stats-grid" aria-label={t.aria.stats}>
+        <output class="stat-card" id="lineCount">{t.stats.lines}: 0</output>
+        <output class="stat-card" id="charCount">{t.stats.characters}: 0</output>
+        <output class="stat-card" id="sizeCount">{t.stats.size}: 0 B</output>
       </div>
 
-      <p class="status" id="status" role="status" aria-live="polite">Ready.</p>
+      <p class="status" id="status" role="status" aria-live="polite">{t.messages.ready}</p>
     </section>
   </section>
 
@@ -86,7 +82,7 @@ const description = 'Format, minify, copy and download SQL queries locally in yo
     .sql-page{padding:clamp(2rem,6vw,4rem) 0}.sql-tool{display:grid;gap:var(--space-4)}.tool-header{display:flex;justify-content:space-between;gap:var(--space-4);align-items:flex-start}.tool-header h2{margin:0 0 var(--space-2);font-size:clamp(1.25rem,2vw,1.6rem)}.tool-header p,.status,.notice{margin:0;color:var(--color-text-muted,var(--muted));line-height:1.7}.options-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3)}.options-grid label{display:grid;gap:.45rem;color:var(--color-text-muted,var(--muted));font-weight:800}.toolbar{display:flex;gap:var(--space-2);flex-wrap:wrap}button,select{border-radius:var(--radius-lg,14px);border:1px solid var(--color-border,var(--border));background:var(--color-surface,#020617);color:var(--color-text,#fff);padding:.85rem 1rem;font:inherit;font-weight:800;cursor:pointer}button.primary{background:var(--color-primary,var(--primary));color:#020617;border-color:transparent}.notice{padding:1rem;border:1px solid var(--color-border,var(--border));border-radius:var(--radius-xl,18px);background:color-mix(in srgb,var(--color-surface,#020617) 92%,transparent)}.workspace{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);align-items:start}.editor-label{color:var(--color-text-muted,var(--muted));font-weight:800}textarea{width:100%;min-height:440px;border-radius:var(--radius-xl,18px);border:1px solid var(--color-border,var(--border));background:#020617;color:#e5e7eb;padding:1rem;font:500 .95rem/1.65 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;resize:vertical;tab-size:2;white-space:pre;overflow:auto}textarea[data-invalid='true']{border-color:rgba(252,165,165,.72);box-shadow:0 0 0 2px rgba(252,165,165,.12)}.stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3)}.stat-card{border:1px solid var(--color-border,var(--border));border-radius:var(--radius-lg,14px);background:color-mix(in srgb,var(--color-surface,#020617) 92%,transparent);color:var(--color-text-muted,var(--muted));padding:.85rem 1rem;font-weight:800}.status.success{color:#86efac}.status.error{color:#fca5a5;white-space:pre-wrap}@media(max-width:860px){.options-grid,.workspace,.stats-grid{grid-template-columns:1fr}.editor-label:nth-of-type(2){grid-row:3}button,select{width:100%}}
   </style>
 
-  <script>
+  <script define:vars={{ copy: t }}>
     type Token = { type: 'word' | 'string' | 'comment' | 'operator' | 'punctuation' | 'space'; value: string };
 
     const inputSql = document.getElementById('inputSql') as HTMLTextAreaElement;
@@ -122,9 +118,9 @@ const description = 'Format, minify, copy and download SQL queries locally in yo
 
     const updateStats = () => {
       const value = outputSql.value || inputSql.value;
-      lineCount.textContent = `Lines: ${value ? value.split('\n').length : 0}`;
-      charCount.textContent = `Characters: ${value.length}`;
-      sizeCount.textContent = `Size: ${formatBytes(byteSize(value))}`;
+      lineCount.textContent = `${copy.stats.lines}: ${value ? value.split('\n').length : 0}`;
+      charCount.textContent = `${copy.stats.characters}: ${value.length}`;
+      sizeCount.textContent = `${copy.stats.size}: ${formatBytes(byteSize(value))}`;
     };
 
     const isWordChar = (char: string) => /[A-Za-z0-9_.$]/.test(char);
@@ -174,7 +170,7 @@ const description = 'Format, minify, copy and download SQL queries locally in yo
             }
             i += 1;
           }
-          if (!closed) throw new Error('Unclosed block comment.');
+          if (!closed) throw new Error(copy.messages.unclosedComment);
           tokens.push({ type: 'comment', value });
           continue;
         }
@@ -203,7 +199,7 @@ const description = 'Format, minify, copy and download SQL queries locally in yo
             }
             i += 1;
           }
-          if (!closed) throw new Error(`Unclosed quoted value starting with ${quote}.`);
+          if (!closed) throw new Error(copy.messages.unclosedQuote.replace('{quote}', quote));
           tokens.push({ type: 'string', value });
           continue;
         }
@@ -234,7 +230,7 @@ const description = 'Format, minify, copy and download SQL queries locally in yo
 
     const formatSql = (sql: string) => {
       const tokens = tokenize(sql.trim());
-      if (!tokens.length) throw new Error('Paste a SQL query first.');
+      if (!tokens.length) throw new Error(copy.messages.pasteFirst);
 
       const indent = getIndent();
       let level = 0;
@@ -308,7 +304,7 @@ const description = 'Format, minify, copy and download SQL queries locally in yo
 
     const minifySql = (sql: string) => {
       const tokens = tokenize(sql.trim());
-      if (!tokens.length) throw new Error('Paste a SQL query first.');
+      if (!tokens.length) throw new Error(copy.messages.pasteFirst);
       return tokens.map((token, index) => {
         const previous = tokens[index - 1];
         const value = token.type === 'word' ? applyCase(token.value) : token.value;
@@ -323,10 +319,14 @@ const description = 'Format, minify, copy and download SQL queries locally in yo
 
       try {
         outputSql.value = mode === 'format' ? formatSql(inputSql.value) : minifySql(inputSql.value);
-        setStatus(`${dialectSelect.options[dialectSelect.selectedIndex].text} SQL ${mode === 'format' ? 'formatted' : 'minified'}.`, 'success');
+        setStatus(
+          (mode === 'format' ? copy.messages.formatted : copy.messages.minified)
+            .replace('{dialect}', dialectSelect.options[dialectSelect.selectedIndex].text),
+          'success'
+        );
       } catch (error) {
         outputSql.value = '';
-        setStatus(error instanceof Error ? error.message : 'Could not format SQL.', 'error');
+        setStatus(error instanceof Error ? error.message : copy.messages.formatError, 'error');
       }
 
       updateStats();
@@ -337,24 +337,24 @@ const description = 'Format, minify, copy and download SQL queries locally in yo
 
     copyBtn.addEventListener('click', async () => {
       if (!outputSql.value) {
-        setStatus('There is no result to copy yet.', 'error');
+        setStatus(copy.messages.noCopy, 'error');
         return;
       }
 
       try {
         await navigator.clipboard.writeText(outputSql.value);
-        setStatus('Result copied to clipboard.', 'success');
+        setStatus(copy.messages.copied, 'success');
       } catch {
         outputSql.focus();
         outputSql.select();
-        setStatus('Could not use the clipboard API. The result is selected so you can copy it manually.', 'error');
+        setStatus(copy.messages.copyError, 'error');
       }
     });
 
     downloadBtn.addEventListener('click', () => {
       const value = outputSql.value || inputSql.value;
       if (!value.trim()) {
-        setStatus('There is no SQL to download.', 'error');
+        setStatus(copy.messages.noDownload, 'error');
         return;
       }
 
@@ -367,13 +367,13 @@ const description = 'Format, minify, copy and download SQL queries locally in yo
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      setStatus('SQL downloaded.', 'success');
+      setStatus(copy.messages.downloaded, 'success');
     });
 
     clearBtn.addEventListener('click', () => {
       inputSql.value = '';
       outputSql.value = '';
-      setStatus('Content cleared.');
+      setStatus(copy.messages.cleared);
       updateStats();
       inputSql.focus();
     });

@@ -1,55 +1,57 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl } from '../i18n/ui';
+import { getToolTranslations, type ToolTranslationsMap } from '../i18n/tools';
 
-const title = 'Generador de iconos para apps';
-const description = 'Crea iconos para apps con editor visual sobre canvas, capas de imagen, texto e iconos Lucide y exportación local a PNG o ZIP.';
+const lang = getLangFromUrl(Astro.url);
+const t = getToolTranslations('app-icon-generator', lang) as ToolTranslationsMap['app-icon-generator']['en'];
 ---
 
-<Layout title={title} description={description} path="/app-icon-generator/" translated={false}>
+<Layout title={t.title} description={t.description} lang={lang} path="/app-icon-generator/" translated={true}>
   <section class="app-icon-page">
-    <div class="eyebrow">100% local</div>
-    <h1>{title}</h1>
-    <p class="hero-text">Diseña iconos para apps editando directamente sobre el canvas: añade imágenes, textos e iconos, transforma cada capa con asas visuales y exporta todos los tamaños desde tu navegador.</p>
+    <div class="eyebrow">{t.heroEyebrow}</div>
+    <h1>{t.title}</h1>
+    <p class="hero-text">{t.heroText}</p>
 
     <section class="tool-card app-editor" aria-labelledby="appIconEditorTitle">
       <div class="editor-head">
         <div>
-          <h2 id="appIconEditorTitle">Editor visual</h2>
-          <p>Selecciona una capa y arrástrala. Usa las esquinas para escalar, el asa superior para rotar y doble clic sobre texto para editarlo.</p>
+          <h2 id="appIconEditorTitle">{t.editorTitle}</h2>
+          <p>{t.editorText}</p>
         </div>
-        <output id="exportInfo">4 tamaños seleccionados</output>
+        <output id="exportInfo">{t.exportInfo(4)}</output>
       </div>
 
-      <div class="add-toolbar" aria-label="Añadir contenido al icono">
-        <label class="add-card add-image" aria-label="Añadir imagen desde tu dispositivo">
+      <div class="add-toolbar" aria-label={t.addToolbarLabel}>
+        <label class="add-card add-image" aria-label={t.addImageLabel}>
           <span class="add-emoji" aria-hidden="true">🖼️</span>
-          <span><strong>Añadir imagen</strong><small>Sube una foto o logo</small></span>
+          <span><strong>{t.addImageTitle}</strong><small>{t.addImageText}</small></span>
           <input id="imageInput" type="file" accept="image/*" hidden />
         </label>
-        <button class="add-card" id="addTextBtn" type="button" aria-label="Añadir una capa de texto">
+        <button class="add-card" id="addTextBtn" type="button" aria-label={t.addTextLabel}>
           <span class="add-emoji" aria-hidden="true">T</span>
-          <span><strong>Añadir texto</strong><small>Título, iniciales o marca</small></span>
+          <span><strong>{t.addTextTitle}</strong><small>{t.addTextText}</small></span>
         </button>
-        <button class="add-card" id="addIconBtn" type="button" aria-label="Añadir una capa de icono Lucide">
+        <button class="add-card" id="addIconBtn" type="button" aria-label={t.addIconLabel}>
           <span class="add-emoji" aria-hidden="true">✦</span>
-          <span><strong>Añadir icono</strong><small>Iconos Lucide locales</small></span>
+          <span><strong>{t.addIconTitle}</strong><small>{t.addIconText}</small></span>
         </button>
       </div>
 
-      <div class="quick-toolbar" aria-label="Acciones rápidas">
-        <button id="duplicateLayerBtn" type="button" aria-label="Duplicar capa seleccionada">Duplicar</button>
-        <button id="deleteLayerBtn" type="button" aria-label="Borrar capa seleccionada">Borrar</button>
-        <button id="resetBtn" type="button" aria-label="Reiniciar editor">Reset</button>
-        <button class="primary" id="downloadBtn" type="button" aria-label="Exportar iconos">Exportar</button>
+      <div class="quick-toolbar" aria-label={t.quickToolbarLabel}>
+        <button id="duplicateLayerBtn" type="button" aria-label={t.actions.duplicate}>{t.actions.duplicate}</button>
+        <button id="deleteLayerBtn" type="button" aria-label={t.actions.delete}>{t.actions.delete}</button>
+        <button id="resetBtn" type="button" aria-label={t.actions.reset}>{t.actions.reset}</button>
+        <button class="primary" id="downloadBtn" type="button" aria-label={t.actions.export}>{t.actions.export}</button>
       </div>
 
       <div class="editor-grid">
-        <main class="canvas-panel" aria-label="Área de edición del icono">
-          <div class="canvas-shell"><canvas id="previewCanvas" width="512" height="512" aria-label="Editor visual del icono de app" role="img"></canvas></div>
-          <p class="canvas-help">Toca una capa para seleccionarla. Doble clic sobre texto para editar. Supr/Delete borra la capa seleccionada.</p>
+        <main class="canvas-panel" aria-label={t.canvasPanelLabel}>
+          <div class="canvas-shell"><canvas id="previewCanvas" width="512" height="512" aria-label={t.canvasLabel} role="img"></canvas></div>
+          <p class="canvas-help">{t.canvasHelp}</p>
         </main>
 
-        <aside class="side-panel" aria-label="Panel de capas y propiedades">
+        <aside class="side-panel" aria-label={t.sidePanelLabel}>
           <details class="panel-section" open>
             <summary>Capas</summary>
             <div id="layersList" class="layers-list" aria-label="Lista de capas"></div>

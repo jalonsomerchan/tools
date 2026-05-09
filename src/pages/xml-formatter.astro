@@ -1,222 +1,73 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl } from '../i18n/ui';
+import { getToolTranslations, type ToolTranslationsMap } from '../i18n/tools';
 
-const title = 'XML formatter & validator';
-const description = 'Format, validate, minify, copy and download XML locally in your browser. No uploads, no backend and no remote parsing.';
+const lang = getLangFromUrl(Astro.url);
+const t = getToolTranslations('xml-formatter', lang) as ToolTranslationsMap['xml-formatter']['en'];
 ---
 
-<Layout title={title} description={description} path="/xml-formatter/" translated={false}>
+<Layout title={t.title} description={t.description} lang={lang} path="/xml-formatter/" translated={true}>
   <section class="xml-page">
-    <div class="eyebrow">100% local</div>
-
-    <h1>{title}</h1>
-
-    <p class="hero-text">
-      Paste XML or load a local file to validate syntax, pretty print with custom indentation, minify, copy the result and download it as an XML file. Everything runs in your browser.
-    </p>
+    <div class="eyebrow">{t.heroEyebrow}</div>
+    <h1>{t.title}</h1>
+    <p class="hero-text">{t.heroText}</p>
 
     <section class="tool-card xml-tool" aria-labelledby="xmlToolTitle">
       <div class="tool-header">
         <div>
-          <h2 id="xmlToolTitle">XML workspace</h2>
-          <p>DOMParser validates the document locally. External resources are not fetched and XML content is never executed.</p>
+          <h2 id="xmlToolTitle">{t.workspaceTitle}</h2>
+          <p>{t.workspaceText}</p>
         </div>
 
         <label class="file-button">
-          Load .xml file
+          {t.loadFile}
           <input id="fileInput" type="file" accept=".xml,application/xml,text/xml" hidden />
         </label>
       </div>
 
       <div class="settings-row">
         <label for="indentSelect">
-          Indentation
+          {t.labels.indentation}
           <select id="indentSelect">
-            <option value="2">2 spaces</option>
-            <option value="4">4 spaces</option>
-            <option value="tab">Tab</option>
+            <option value="2">{t.options.spaces2}</option>
+            <option value="4">{t.options.spaces4}</option>
+            <option value="tab">{t.options.tab}</option>
           </select>
         </label>
       </div>
 
-      <div class="toolbar" aria-label="XML actions">
-        <button class="primary" id="formatBtn" type="button">Format</button>
-        <button id="minifyBtn" type="button">Minify</button>
-        <button id="validateBtn" type="button">Validate</button>
-        <button id="copyBtn" type="button">Copy result</button>
-        <button id="downloadBtn" type="button">Download XML</button>
-        <button id="clearBtn" type="button">Clear</button>
+      <div class="toolbar" aria-label={t.aria.actions}>
+        <button class="primary" id="formatBtn" type="button">{t.actions.format}</button>
+        <button id="minifyBtn" type="button">{t.actions.minify}</button>
+        <button id="validateBtn" type="button">{t.actions.validate}</button>
+        <button id="copyBtn" type="button">{t.actions.copy}</button>
+        <button id="downloadBtn" type="button">{t.actions.download}</button>
+        <button id="clearBtn" type="button">{t.actions.clear}</button>
       </div>
 
       <div class="workspace">
-        <label class="editor-label" for="inputXml">Input XML</label>
-        <label class="editor-label" for="outputXml">Result</label>
-        <textarea id="inputXml" spellcheck="false" placeholder="Paste your XML here..."></textarea>
-        <textarea id="outputXml" spellcheck="false" readonly placeholder="Formatted, minified or validated XML will appear here..."></textarea>
+        <label class="editor-label" for="inputXml">{t.labels.input}</label>
+        <label class="editor-label" for="outputXml">{t.labels.result}</label>
+        <textarea id="inputXml" spellcheck="false" placeholder={t.placeholders.input}></textarea>
+        <textarea id="outputXml" spellcheck="false" readonly placeholder={t.placeholders.output}></textarea>
       </div>
 
-      <div class="stats-grid" aria-label="XML statistics">
-        <output class="stat-card" id="originalSize">Original: 0 B</output>
-        <output class="stat-card" id="finalSize">Result: 0 B</output>
-        <output class="stat-card" id="nodeCount">Nodes: 0</output>
+      <div class="stats-grid" aria-label={t.aria.stats}>
+        <output class="stat-card" id="originalSize">{t.stats.original}: 0 B</output>
+        <output class="stat-card" id="finalSize">{t.stats.result}: 0 B</output>
+        <output class="stat-card" id="nodeCount">{t.stats.nodes}: 0</output>
       </div>
 
-      <p class="status" id="status" role="status" aria-live="polite">Ready.</p>
+      <p class="status" id="status" role="status" aria-live="polite">{t.messages.ready}</p>
     </section>
   </section>
 
   <style>
-    .xml-page {
-      padding: clamp(2rem, 6vw, 4rem) 0;
-    }
-
-    .xml-tool {
-      display: grid;
-      gap: var(--space-4);
-    }
-
-    .tool-header {
-      display: flex;
-      justify-content: space-between;
-      gap: var(--space-4);
-      align-items: flex-start;
-    }
-
-    .tool-header h2 {
-      margin: 0 0 var(--space-2);
-      font-size: clamp(1.25rem, 2vw, 1.6rem);
-    }
-
-    .tool-header p,
-    .status {
-      margin: 0;
-      color: var(--color-text-muted, var(--muted));
-      line-height: 1.7;
-    }
-
-    .file-button,
-    button,
-    select {
-      border-radius: var(--radius-lg, 14px);
-      border: 1px solid var(--color-border, var(--border));
-      background: var(--color-surface, #020617);
-      color: var(--color-text, #fff);
-      padding: .85rem 1rem;
-      font: inherit;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    button.primary,
-    .file-button {
-      background: var(--color-primary, var(--primary));
-      color: #020617;
-      border-color: transparent;
-    }
-
-    .settings-row {
-      display: flex;
-      gap: var(--space-3);
-      flex-wrap: wrap;
-      align-items: flex-end;
-    }
-
-    .settings-row label {
-      display: grid;
-      gap: .45rem;
-      color: var(--color-text-muted, var(--muted));
-      min-width: min(100%, 220px);
-    }
-
-    .toolbar {
-      display: flex;
-      gap: var(--space-2);
-      flex-wrap: wrap;
-    }
-
-    .workspace {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-3);
-      align-items: start;
-    }
-
-    .editor-label {
-      color: var(--color-text-muted, var(--muted));
-      font-weight: 800;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 440px;
-      border-radius: var(--radius-xl, 18px);
-      border: 1px solid var(--color-border, var(--border));
-      background: #020617;
-      color: #e5e7eb;
-      padding: 1rem;
-      font: 500 .95rem/1.65 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      resize: vertical;
-      tab-size: 2;
-      white-space: pre;
-      overflow: auto;
-    }
-
-    textarea[data-invalid='true'] {
-      border-color: rgba(252, 165, 165, .72);
-      box-shadow: 0 0 0 2px rgba(252, 165, 165, .12);
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: var(--space-3);
-    }
-
-    .stat-card {
-      border: 1px solid var(--color-border, var(--border));
-      border-radius: var(--radius-lg, 14px);
-      background: color-mix(in srgb, var(--color-surface, #020617) 92%, transparent);
-      color: var(--color-text-muted, var(--muted));
-      padding: .85rem 1rem;
-      font-weight: 800;
-    }
-
-    .status.success {
-      color: #86efac;
-    }
-
-    .status.error {
-      color: #fca5a5;
-      white-space: pre-wrap;
-    }
-
-    @media (max-width: 860px) {
-      .tool-header,
-      .workspace {
-        grid-template-columns: 1fr;
-      }
-
-      .tool-header {
-        flex-direction: column;
-      }
-
-      .editor-label:nth-of-type(2) {
-        grid-row: 3;
-      }
-
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
-
-      button,
-      .file-button,
-      select {
-        width: 100%;
-      }
-    }
+    .xml-page{padding:clamp(2rem,6vw,4rem) 0}.xml-tool{display:grid;gap:var(--space-4)}.tool-header{display:flex;justify-content:space-between;gap:var(--space-4);align-items:flex-start}.tool-header h2{margin:0 0 var(--space-2);font-size:clamp(1.25rem,2vw,1.6rem)}.tool-header p,.status{margin:0;color:var(--color-text-muted,var(--muted));line-height:1.7}.file-button,button,select{border-radius:var(--radius-lg,14px);border:1px solid var(--color-border,var(--border));background:var(--color-surface,#020617);color:var(--color-text,#fff);padding:.85rem 1rem;font:inherit;font-weight:800;cursor:pointer}button.primary,.file-button{background:var(--color-primary,var(--primary));color:#020617;border-color:transparent}.settings-row{display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:flex-end}.settings-row label{display:grid;gap:.45rem;color:var(--color-text-muted,var(--muted));min-width:min(100%,220px)}.toolbar{display:flex;gap:var(--space-2);flex-wrap:wrap}.workspace{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);align-items:start}.editor-label{color:var(--color-text-muted,var(--muted));font-weight:800}textarea{width:100%;min-height:440px;border-radius:var(--radius-xl,18px);border:1px solid var(--color-border,var(--border));background:#020617;color:#e5e7eb;padding:1rem;font:500 .95rem/1.65 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;resize:vertical;tab-size:2;white-space:pre;overflow:auto}textarea[data-invalid='true']{border-color:rgba(252,165,165,.72);box-shadow:0 0 0 2px rgba(252,165,165,.12)}.stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3)}.stat-card{border:1px solid var(--color-border,var(--border));border-radius:var(--radius-lg,14px);background:color-mix(in srgb,var(--color-surface,#020617) 92%,transparent);color:var(--color-text-muted,var(--muted));padding:.85rem 1rem;font-weight:800}.status.success{color:#86efac}.status.error{color:#fca5a5;white-space:pre-wrap}@media(max-width:860px){.tool-header,.workspace{grid-template-columns:1fr}.tool-header{flex-direction:column}.editor-label:nth-of-type(2){grid-row:3}.stats-grid{grid-template-columns:1fr}button,.file-button,select{width:100%}}
   </style>
 
-  <script>
+  <script define:vars={{ copy: t }}>
     const inputXml = document.getElementById('inputXml') as HTMLTextAreaElement;
     const outputXml = document.getElementById('outputXml') as HTMLTextAreaElement;
     const fileInput = document.getElementById('fileInput') as HTMLInputElement;
@@ -251,11 +102,11 @@ const description = 'Format, validate, minify, copy and download XML locally in 
     };
 
     const updateStats = (doc: XMLDocument | null = null) => {
-      originalSize.textContent = `Original: ${formatBytes(byteSize(inputXml.value))}`;
-      finalSize.textContent = `Result: ${formatBytes(byteSize(outputXml.value))}`;
+      originalSize.textContent = `${copy.stats.original}: ${formatBytes(byteSize(inputXml.value))}`;
+      finalSize.textContent = `${copy.stats.result}: ${formatBytes(byteSize(outputXml.value))}`;
 
       if (!doc) {
-        nodeCount.textContent = 'Nodes: 0';
+        nodeCount.textContent = `${copy.stats.nodes}: 0`;
         return;
       }
 
@@ -265,7 +116,7 @@ const description = 'Format, validate, minify, copy and download XML locally in 
       );
       let count = 0;
       while (walker.nextNode()) count += 1;
-      nodeCount.textContent = `Nodes: ${count}`;
+      nodeCount.textContent = `${copy.stats.nodes}: ${count}`;
     };
 
     const getIndent = () => indentSelect.value === 'tab' ? '\t' : ' '.repeat(Number(indentSelect.value));
@@ -273,12 +124,12 @@ const description = 'Format, validate, minify, copy and download XML locally in 
     const getParserError = (doc: XMLDocument) => {
       const parserError = doc.querySelector('parsererror');
       if (!parserError) return '';
-      return parserError.textContent?.trim().replace(/\s+/g, ' ') || 'Invalid XML syntax.';
+      return parserError.textContent?.trim().replace(/\s+/g, ' ') || copy.messages.invalidSyntax;
     };
 
     const parseXml = () => {
       const value = inputXml.value.trim();
-      if (!value) throw new Error('Paste XML or load a local .xml file first.');
+      if (!value) throw new Error(copy.messages.pasteFirst);
 
       const doc = parser.parseFromString(value, 'application/xml');
       const parserError = getParserError(doc);
@@ -325,23 +176,23 @@ const description = 'Format, validate, minify, copy and download XML locally in 
 
         if (mode === 'format') {
           outputXml.value = prettyPrint(serialized, getIndent());
-          setStatus('XML formatted successfully.', 'success');
+          setStatus(copy.messages.formatted, 'success');
         }
 
         if (mode === 'minify') {
           outputXml.value = minifyXml(serialized);
-          setStatus('XML minified successfully.', 'success');
+          setStatus(copy.messages.minified, 'success');
         }
 
         if (mode === 'validate') {
           outputXml.value = prettyPrint(serialized, getIndent());
-          setStatus('Valid XML.', 'success');
+          setStatus(copy.messages.valid, 'success');
         }
 
         updateStats(doc);
       } catch (error) {
         outputXml.value = '';
-        setStatus(error instanceof Error ? error.message : 'Invalid XML syntax.', 'error');
+        setStatus(error instanceof Error ? error.message : copy.messages.invalidSyntax, 'error');
         updateStats(null);
       }
     };
@@ -352,24 +203,24 @@ const description = 'Format, validate, minify, copy and download XML locally in 
 
     copyBtn.addEventListener('click', async () => {
       if (!outputXml.value) {
-        setStatus('There is no result to copy yet.', 'error');
+        setStatus(copy.messages.noCopy, 'error');
         return;
       }
 
       try {
         await navigator.clipboard.writeText(outputXml.value);
-        setStatus('Result copied to clipboard.', 'success');
+        setStatus(copy.messages.copied, 'success');
       } catch {
         outputXml.focus();
         outputXml.select();
-        setStatus('Could not use the clipboard API. The result is selected so you can copy it manually.', 'error');
+        setStatus(copy.messages.copyError, 'error');
       }
     });
 
     downloadBtn.addEventListener('click', () => {
       const value = outputXml.value || inputXml.value;
       if (!value.trim()) {
-        setStatus('There is no XML to download.', 'error');
+        setStatus(copy.messages.noDownload, 'error');
         return;
       }
 
@@ -382,13 +233,13 @@ const description = 'Format, validate, minify, copy and download XML locally in 
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      setStatus('XML downloaded.', 'success');
+      setStatus(copy.messages.downloaded, 'success');
     });
 
     clearBtn.addEventListener('click', () => {
       inputXml.value = '';
       outputXml.value = '';
-      setStatus('Content cleared.');
+      setStatus(copy.messages.cleared);
       updateStats(null);
       inputXml.focus();
     });
@@ -400,11 +251,11 @@ const description = 'Format, validate, minify, copy and download XML locally in 
       try {
         inputXml.value = await file.text();
         outputXml.value = '';
-        setStatus(`Loaded ${file.name}.`, 'success');
+        setStatus(copy.messages.loaded.replace('{name}', file.name), 'success');
         updateStats(null);
         run('format');
       } catch {
-        setStatus('Could not read the selected file.', 'error');
+        setStatus(copy.messages.readError, 'error');
       } finally {
         fileInput.value = '';
       }

@@ -1,19 +1,22 @@
 ---
+import { getLocalizedPath, useTranslations } from '../i18n/ui';
+
 const { lang = 'en' } = Astro.props;
+const t = useTranslations(lang);
 ---
 
 <footer class="site-footer">
   <div class="page-shell footer-inner">
     <div>
       <strong>Alon Tools</strong>
-      <p>{lang === 'es' ? 'Herramientas rápidas, privadas y ligeras creadas con Astro.' : 'Fast, private and lightweight tools built with Astro.'}</p>
+      <p>{t('footer.description')}</p>
     </div>
 
-    <nav aria-label={lang === 'es' ? 'Enlaces del pie' : 'Footer links'}>
-      <a href={lang === 'es' ? '/es/' : '/'}>{lang === 'es' ? 'Inicio' : 'Home'}</a>
-      <a href="/json-viewer/">JSON</a>
-      <a href="/image-compressor/">{lang === 'es' ? 'Imágenes' : 'Images'}</a>
-      <a href="/curl-builder/">cURL</a>
+    <nav aria-label={t('footer.links')}>
+      <a href={getLocalizedPath('/', lang)}>{t('nav.home')}</a>
+      <a href={getLocalizedPath('/json-viewer/', lang)}>{t('nav.json')}</a>
+      <a href={getLocalizedPath('/image-compressor/', lang)}>{t('nav.images')}</a>
+      <a href={getLocalizedPath('/curl-builder/', lang)}>{t('nav.curl')}</a>
     </nav>
   </div>
 </footer>
