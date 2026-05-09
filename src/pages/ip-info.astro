@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ToolMessage from '../components/ToolMessage.astro';
 
 const title = 'Información de IP';
 ---
@@ -21,12 +22,14 @@ const title = 'Información de IP';
 
     <section class="tool-card">
       <div class="toolbar">
-        <input id="ipInput" type="text" placeholder="8.8.8.8" />
+        <input id="ipInput" type="text" aria-describedby="ipMessage" placeholder="8.8.8.8" />
 
         <button class="primary" id="lookupBtn">
           Consultar IP
         </button>
       </div>
+
+      <ToolMessage id="ipMessage" type="error" />
 
       <div id="results" hidden>
         <div class="results-grid">
@@ -109,6 +112,10 @@ const title = 'Información de IP';
       font-size: 1rem;
     }
 
+    input[aria-invalid='true'] {
+      border-color: rgba(248, 113, 113, .8);
+    }
+
     button {
       border-radius: 14px;
       border: none;
@@ -168,20 +175,42 @@ const title = 'Información de IP';
 
   <script>
     window.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('ipInput');
+      const message = document.getElementById('ipMessage');
+
       const set = (id, value) => {
         document.getElementById(id).textContent = value || '-';
       };
 
+      const showError = (text) => {
+        message.textContent = text;
+        message.hidden = false;
+        input.setAttribute('aria-invalid', 'true');
+      };
+
+      const clearError = () => {
+        message.textContent = '';
+        message.hidden = true;
+        input.removeAttribute('aria-invalid');
+      };
+
       document.getElementById('lookupBtn').onclick = async () => {
-        const ip = document.getElementById('ipInput').value.trim();
+        const ip = input.value.trim();
+        clearError();
 
         if (!ip) {
-          alert('Introduce una IP');
+          document.getElementById('results').hidden = true;
+          showError('El campo IP está vacío. Introduce una IPv4 o IPv6, por ejemplo 8.8.8.8.');
           return;
         }
 
         try {
           const response = await fetch(`https://ip.guide/${encodeURIComponent(ip)}`);
+
+          if (!response.ok) {
+            throw new Error('request-failed');
+          }
+
           const data = await response.json();
 
           document.getElementById('results').hidden = false;
@@ -199,9 +228,12 @@ const title = 'Información de IP';
 
           document.getElementById('jsonOutput').textContent = JSON.stringify(data, null, 2);
         } catch (error) {
-          alert('No se pudo consultar la IP');
+          document.getElementById('results').hidden = true;
+          showError('No se pudo consultar esa IP. Comprueba que el campo contiene una IPv4 o IPv6 válida e inténtalo de nuevo.');
         }
       };
+
+      input.addEventListener('input', clearError);
     });
   </script>
 </Layout>
