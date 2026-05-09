@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ToolMessage from '../components/ToolMessage.astro';
 
 const title = 'JWT decoder';
 ---
@@ -25,7 +26,8 @@ const title = 'JWT decoder';
         <button id="exampleBtn">Cargar ejemplo</button>
       </div>
 
-      <textarea id="jwtInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
+      <textarea id="jwtInput" aria-describedby="jwtMessage" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
+      <ToolMessage id="jwtMessage" type="error" />
 
       <div class="results-grid" id="results" hidden>
         <div class="result-panel">
@@ -112,6 +114,10 @@ const title = 'JWT decoder';
       line-height: 1.7;
     }
 
+    textarea[aria-invalid='true'] {
+      border-color: rgba(248, 113, 113, .8);
+    }
+
     .results-grid {
       margin-top: 1.5rem;
       display: grid;
@@ -162,6 +168,21 @@ const title = 'JWT decoder';
 
   <script>
     window.addEventListener('DOMContentLoaded', () => {
+      const jwtInput = document.getElementById('jwtInput');
+      const message = document.getElementById('jwtMessage');
+
+      const showError = (text) => {
+        message.textContent = text;
+        message.hidden = false;
+        jwtInput.setAttribute('aria-invalid', 'true');
+      };
+
+      const clearError = () => {
+        message.textContent = '';
+        message.hidden = true;
+        jwtInput.removeAttribute('aria-invalid');
+      };
+
       const decodeBase64Url = (str) => {
         str = str.replace(/-/g, '+').replace(/_/g, '/');
 
@@ -184,11 +205,16 @@ const title = 'JWT decoder';
 
       document.getElementById('decodeBtn').onclick = () => {
         try {
-          const token = document.getElementById('jwtInput').value.trim();
+          clearError();
+          const token = jwtInput.value.trim();
           const parts = token.split('.');
 
+          if (!token) {
+            throw new Error('empty');
+          }
+
           if (parts.length < 2) {
-            throw new Error('JWT inválido');
+            throw new Error('format');
           }
 
           const header = JSON.parse(decodeBase64Url(parts[0]));
@@ -205,18 +231,30 @@ const title = 'JWT decoder';
           document.getElementById('expiresAt').textContent = formatDate(payload.exp);
           document.getElementById('issuer').textContent = payload.iss || '-';
         } catch (error) {
-          alert('No se pudo decodificar el JWT');
+          document.getElementById('results').hidden = true;
+          document.getElementById('metaGrid').hidden = true;
+
+          if (error instanceof Error && error.message === 'empty') {
+            showError('El campo JWT está vacío. Pega un token con formato header.payload.signature.');
+            return;
+          }
+
+          showError('No se pudo decodificar el JWT. Revisa que tenga formato header.payload.signature y que header y payload sean JSON válidos en Base64URL.');
         }
       };
 
+      jwtInput.addEventListener('input', clearError);
+
       document.getElementById('clearBtn').onclick = () => {
-        document.getElementById('jwtInput').value = '';
+        jwtInput.value = '';
+        clearError();
         document.getElementById('results').hidden = true;
         document.getElementById('metaGrid').hidden = true;
       };
 
       document.getElementById('exampleBtn').onclick = () => {
-        document.getElementById('jwtInput').value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFs b24gVG9vbHMiLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MjUxNjIzOTAyMiwiaXNzIjoiYWxvbi5vbmUifQ.signature'.replace(/ /g, '');
+        jwtInput.value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFs b24gVG9vbHMiLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MjUxNjIzOTAyMiwiaXNzIjoiYWxvbi5vbmUifQ.signature'.replace(/ /g, '');
+        clearError();
       };
     });
   </script>
