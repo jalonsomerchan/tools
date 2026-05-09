@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 
 const title = 'Mejorador de capturas de pantalla';
-const description = 'Crea imágenes profesionales a partir de capturas con fondos personalizables, marco, sombras y exportación a PNG, JPG, WebP y SVG.';
+const description = 'Crea imágenes profesionales a partir de capturas con fondos personalizables, edición visual, recorte, rotación y exportación a PNG, JPG, WebP y SVG.';
 ---
 
 <Layout title={`${title} — Alon Tools`} description={description} path="/screenshot-enhancer/">
@@ -10,7 +10,7 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
     <div class="eyebrow">100% local</div>
     <h1>{title}</h1>
     <p class="hero-text">
-      Sube una captura con drag and drop, colócala en una composición vistosa, personaliza colores y descarga el resultado en varios formatos.
+      Sube una captura, muévela con el ratón, amplíala, recórtala, rótala y colócala sobre fondos generados para descargar una imagen lista para compartir.
     </p>
   </section>
 
@@ -23,6 +23,28 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
           <strong>Arrastra una captura aquí</strong>
           <span>o pulsa para seleccionar una imagen</span>
         </div>
+      </div>
+
+      <div class="panel-section">
+        <h2>Editar captura</h2>
+        <div class="tool-actions">
+          <button class="btn btn-primary" type="button" id="selectTool">Mover</button>
+          <button class="btn btn-secondary" type="button" id="cropTool">Recortar</button>
+          <button class="btn btn-secondary" type="button" id="fitImage">Encajar</button>
+          <button class="btn btn-secondary" type="button" id="fillImage">Rellenar</button>
+          <button class="btn btn-secondary" type="button" id="centerImage">Centrar</button>
+          <button class="btn btn-secondary" type="button" id="resetImage">Reset</button>
+        </div>
+        <p class="help-text" id="editHelp">Arrastra la imagen para moverla. Usa las esquinas para redimensionar y el punto superior para rotar.</p>
+        <div class="field-grid two">
+          <label>X <input id="imageX" type="number" step="1" /></label>
+          <label>Y <input id="imageY" type="number" step="1" /></label>
+          <label>Ancho <input id="imageW" type="number" min="20" step="1" /></label>
+          <label>Alto <input id="imageH" type="number" min="20" step="1" /></label>
+        </div>
+        <label>Rotación <input id="rotation" type="range" min="-45" max="45" value="0" /></label>
+        <label>Opacidad <input id="opacity" type="range" min="10" max="100" value="100" /></label>
+        <label>Radio captura <input id="imageRadius" type="range" min="0" max="54" value="18" /></label>
       </div>
 
       <div class="panel-section">
@@ -63,10 +85,9 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
           </div>
           <label>Margen exterior <input id="padding" type="range" min="40" max="220" value="82" /></label>
           <label>Radio fondo <input id="cardRadius" type="range" min="0" max="80" value="48" /></label>
-          <label>Zoom captura <input id="imageScale" type="range" min="55" max="115" value="86" /></label>
-          <label>Radio captura <input id="imageRadius" type="range" min="0" max="42" value="18" /></label>
           <label class="check-row"><input id="browserFrame" type="checkbox" checked /> Añadir barra superior tipo navegador</label>
           <label class="check-row"><input id="shadow" type="checkbox" checked /> Sombra suave</label>
+          <label class="check-row"><input id="clipToCard" type="checkbox" checked /> Recortar al marco blanco</label>
         </div>
       </div>
 
@@ -84,7 +105,7 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
 
     <div class="preview-panel">
       <div class="canvas-wrap">
-        <canvas id="previewCanvas" width="1200" height="800" aria-label="Vista previa de la captura mejorada"></canvas>
+        <canvas id="previewCanvas" width="1200" height="800" aria-label="Vista previa editable de la captura mejorada"></canvas>
       </div>
     </div>
   </section>
@@ -95,13 +116,38 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
       imageName: 'captura',
       preset: 'soft',
       width: 1200,
-      height: 800
+      height: 800,
+      mode: 'move',
+      selected: true,
+      drag: null,
+      imageLayer: {
+        x: 220,
+        y: 250,
+        w: 760,
+        h: 360,
+        rotation: 0,
+        opacity: 1,
+        crop: { x: 0, y: 0, w: 1, h: 1 }
+      }
     };
 
     const els = {
       canvas: document.getElementById('previewCanvas'),
       dropZone: document.getElementById('dropZone'),
       fileInput: document.getElementById('fileInput'),
+      selectTool: document.getElementById('selectTool'),
+      cropTool: document.getElementById('cropTool'),
+      fitImage: document.getElementById('fitImage'),
+      fillImage: document.getElementById('fillImage'),
+      centerImage: document.getElementById('centerImage'),
+      resetImage: document.getElementById('resetImage'),
+      editHelp: document.getElementById('editHelp'),
+      imageX: document.getElementById('imageX'),
+      imageY: document.getElementById('imageY'),
+      imageW: document.getElementById('imageW'),
+      imageH: document.getElementById('imageH'),
+      rotation: document.getElementById('rotation'),
+      opacity: document.getElementById('opacity'),
       presetGrid: document.getElementById('presetGrid'),
       colorA: document.getElementById('colorA'),
       colorB: document.getElementById('colorB'),
@@ -113,17 +159,20 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
       canvasHeight: document.getElementById('canvasHeight'),
       padding: document.getElementById('padding'),
       cardRadius: document.getElementById('cardRadius'),
-      imageScale: document.getElementById('imageScale'),
       imageRadius: document.getElementById('imageRadius'),
       browserFrame: document.getElementById('browserFrame'),
       shadow: document.getElementById('shadow'),
+      clipToCard: document.getElementById('clipToCard'),
       status: document.getElementById('status')
     };
 
     const ctx = els.canvas.getContext('2d');
+    const HANDLE = 14;
 
     const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-    const escapeXml = (value) => String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\'': '&apos;', '"': '&quot;' }[char]));
+    const radians = (degrees) => degrees * Math.PI / 180;
+    const degrees = (rad) => rad * 180 / Math.PI;
+    const escapeXml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[char]));
 
     function roundRectPath(context, x, y, width, height, radius) {
       const r = clamp(radius, 0, Math.min(width, height) / 2);
@@ -146,6 +195,61 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
       els.canvas.height = state.height * dpr;
       els.canvas.style.aspectRatio = `${state.width} / ${state.height}`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function getPointer(event) {
+      const rect = els.canvas.getBoundingClientRect();
+      return {
+        x: (event.clientX - rect.left) * (state.width / rect.width),
+        y: (event.clientY - rect.top) * (state.height / rect.height)
+      };
+    }
+
+    function screenToLocal(point) {
+      const layer = state.imageLayer;
+      const cx = layer.x + layer.w / 2;
+      const cy = layer.y + layer.h / 2;
+      const angle = -radians(layer.rotation);
+      const dx = point.x - cx;
+      const dy = point.y - cy;
+      return {
+        x: dx * Math.cos(angle) - dy * Math.sin(angle) + layer.w / 2,
+        y: dx * Math.sin(angle) + dy * Math.cos(angle) + layer.h / 2
+      };
+    }
+
+    function localToScreen(local) {
+      const layer = state.imageLayer;
+      const cx = layer.x + layer.w / 2;
+      const cy = layer.y + layer.h / 2;
+      const angle = radians(layer.rotation);
+      const dx = local.x - layer.w / 2;
+      const dy = local.y - layer.h / 2;
+      return {
+        x: cx + dx * Math.cos(angle) - dy * Math.sin(angle),
+        y: cy + dx * Math.sin(angle) + dy * Math.cos(angle)
+      };
+    }
+
+    function getLayout() {
+      const padding = Number(els.padding.value);
+      const frameH = els.browserFrame.checked ? Math.max(46, Math.round(state.height * 0.09)) : 0;
+      const card = {
+        x: padding,
+        y: padding,
+        w: state.width - padding * 2,
+        h: state.height - padding * 2,
+        r: Number(els.cardRadius.value),
+        frameH
+      };
+      const innerPad = Math.max(28, Math.round(Math.min(card.w, card.h) * 0.05));
+      const imageBox = {
+        x: card.x + innerPad,
+        y: card.y + innerPad + frameH,
+        w: card.w - innerPad * 2,
+        h: card.h - innerPad * 2 - frameH
+      };
+      return { card, imageBox };
     }
 
     function drawBackground(context, width, height) {
@@ -208,46 +312,6 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
       }
     }
 
-    function drawPlaceholder(context, box) {
-      context.save();
-      roundRectPath(context, box.x, box.y, box.w, box.h, Number(els.imageRadius.value));
-      context.fillStyle = 'rgba(15,23,42,.05)';
-      context.fill();
-      context.strokeStyle = 'rgba(15,23,42,.12)';
-      context.setLineDash([16, 14]);
-      context.lineWidth = 3;
-      context.stroke();
-      context.fillStyle = '#334155';
-      context.font = '800 32px system-ui, sans-serif';
-      context.textAlign = 'center';
-      context.fillText('Arrastra una captura', box.x + box.w / 2, box.y + box.h / 2 - 8);
-      context.font = '500 20px system-ui, sans-serif';
-      context.fillStyle = '#64748b';
-      context.fillText('La imagen se colocará en el centro', box.x + box.w / 2, box.y + box.h / 2 + 28);
-      context.restore();
-    }
-
-    function getLayout() {
-      const padding = Number(els.padding.value);
-      const frameH = els.browserFrame.checked ? Math.max(46, Math.round(state.height * 0.09)) : 0;
-      const card = {
-        x: padding,
-        y: padding,
-        w: state.width - padding * 2,
-        h: state.height - padding * 2,
-        r: Number(els.cardRadius.value),
-        frameH
-      };
-      const innerPad = Math.max(28, Math.round(Math.min(card.w, card.h) * 0.05));
-      const imageBox = {
-        x: card.x + innerPad,
-        y: card.y + innerPad + frameH,
-        w: card.w - innerPad * 2,
-        h: card.h - innerPad * 2 - frameH
-      };
-      return { card, imageBox };
-    }
-
     function drawCard(context, card) {
       context.save();
       if (els.shadow.checked) {
@@ -280,35 +344,293 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
       context.restore();
     }
 
-    function drawImage(context, box) {
-      if (!state.image) {
-        drawPlaceholder(context, box);
-        return;
-      }
-      const scale = Number(els.imageScale.value) / 100;
-      const fit = Math.min(box.w / state.image.width, box.h / state.image.height) * scale;
-      const w = state.image.width * fit;
-      const h = state.image.height * fit;
-      const x = box.x + (box.w - w) / 2;
-      const y = box.y + (box.h - h) / 2;
+    function drawPlaceholder(context, box) {
       context.save();
+      roundRectPath(context, box.x, box.y, box.w, box.h, Number(els.imageRadius.value));
+      context.fillStyle = 'rgba(15,23,42,.05)';
+      context.fill();
+      context.strokeStyle = 'rgba(15,23,42,.12)';
+      context.setLineDash([16, 14]);
+      context.lineWidth = 3;
+      context.stroke();
+      context.fillStyle = '#334155';
+      context.font = '800 32px system-ui, sans-serif';
+      context.textAlign = 'center';
+      context.fillText('Arrastra una captura', box.x + box.w / 2, box.y + box.h / 2 - 8);
+      context.font = '500 20px system-ui, sans-serif';
+      context.fillStyle = '#64748b';
+      context.fillText('Después podrás moverla, ampliar y recortar', box.x + box.w / 2, box.y + box.h / 2 + 28);
+      context.restore();
+    }
+
+    function drawImageLayer(context) {
+      if (!state.image) return;
+      const layer = state.imageLayer;
+      const crop = layer.crop;
+      const sx = crop.x * state.image.width;
+      const sy = crop.y * state.image.height;
+      const sw = crop.w * state.image.width;
+      const sh = crop.h * state.image.height;
+      const cx = layer.x + layer.w / 2;
+      const cy = layer.y + layer.h / 2;
+
+      context.save();
+      context.translate(cx, cy);
+      context.rotate(radians(layer.rotation));
+      context.globalAlpha = layer.opacity;
       if (els.shadow.checked) {
         context.shadowColor = 'rgba(15, 23, 42, .16)';
         context.shadowBlur = 28;
         context.shadowOffsetY = 16;
       }
-      roundRectPath(context, x, y, w, h, Number(els.imageRadius.value));
+      roundRectPath(context, -layer.w / 2, -layer.h / 2, layer.w, layer.h, Number(els.imageRadius.value));
       context.clip();
-      context.drawImage(state.image, x, y, w, h);
+      context.drawImage(state.image, sx, sy, sw, sh, -layer.w / 2, -layer.h / 2, layer.w, layer.h);
       context.restore();
     }
 
-    function render() {
+    function getHandles() {
+      const layer = state.imageLayer;
+      const points = {
+        nw: localToScreen({ x: 0, y: 0 }),
+        ne: localToScreen({ x: layer.w, y: 0 }),
+        se: localToScreen({ x: layer.w, y: layer.h }),
+        sw: localToScreen({ x: 0, y: layer.h }),
+        rotate: localToScreen({ x: layer.w / 2, y: -52 })
+      };
+      return points;
+    }
+
+    function drawSelection(context) {
+      if (!state.image || !state.selected) return;
+      const layer = state.imageLayer;
+      const handles = getHandles();
+      const corners = [handles.nw, handles.ne, handles.se, handles.sw];
+
+      context.save();
+      context.strokeStyle = state.mode === 'crop' ? '#14b8a6' : '#2563eb';
+      context.lineWidth = 2;
+      context.setLineDash([8, 6]);
+      context.beginPath();
+      context.moveTo(corners[0].x, corners[0].y);
+      corners.slice(1).forEach((point) => context.lineTo(point.x, point.y));
+      context.closePath();
+      context.stroke();
+      context.setLineDash([]);
+
+      context.beginPath();
+      context.moveTo(localToScreen({ x: layer.w / 2, y: 0 }).x, localToScreen({ x: layer.w / 2, y: 0 }).y);
+      context.lineTo(handles.rotate.x, handles.rotate.y);
+      context.stroke();
+
+      Object.entries(handles).forEach(([name, point]) => {
+        context.beginPath();
+        context.fillStyle = name === 'rotate' ? '#0f172a' : '#ffffff';
+        context.strokeStyle = '#2563eb';
+        context.lineWidth = 2;
+        context.arc(point.x, point.y, name === 'rotate' ? 8 : HANDLE / 2, 0, Math.PI * 2);
+        context.fill();
+        context.stroke();
+      });
+
+      if (state.mode === 'crop') {
+        const crop = layer.crop;
+        const x = crop.x * layer.w;
+        const y = crop.y * layer.h;
+        const w = crop.w * layer.w;
+        const h = crop.h * layer.h;
+        const a = localToScreen({ x, y });
+        const b = localToScreen({ x: x + w, y });
+        const c = localToScreen({ x: x + w, y: y + h });
+        const d = localToScreen({ x, y: y + h });
+        context.fillStyle = 'rgba(20, 184, 166, .12)';
+        context.beginPath();
+        context.moveTo(a.x, a.y);
+        [b, c, d].forEach((point) => context.lineTo(point.x, point.y));
+        context.closePath();
+        context.fill();
+        context.strokeStyle = '#14b8a6';
+        context.lineWidth = 3;
+        context.stroke();
+      }
+      context.restore();
+    }
+
+    function render(options = {}) {
       setCanvasSize();
       drawBackground(ctx, state.width, state.height);
       const { card, imageBox } = getLayout();
       drawCard(ctx, card);
-      drawImage(ctx, imageBox);
+      if (!state.image) drawPlaceholder(ctx, imageBox);
+      ctx.save();
+      if (els.clipToCard.checked) {
+        roundRectPath(ctx, card.x, card.y, card.w, card.h, card.r);
+        ctx.clip();
+      }
+      drawImageLayer(ctx);
+      ctx.restore();
+      if (!options.exporting) drawSelection(ctx);
+    }
+
+    function syncControlsFromLayer() {
+      const layer = state.imageLayer;
+      els.imageX.value = Math.round(layer.x);
+      els.imageY.value = Math.round(layer.y);
+      els.imageW.value = Math.round(layer.w);
+      els.imageH.value = Math.round(layer.h);
+      els.rotation.value = String(Math.round(layer.rotation));
+      els.opacity.value = String(Math.round(layer.opacity * 100));
+    }
+
+    function syncLayerFromControls() {
+      const layer = state.imageLayer;
+      layer.x = Number(els.imageX.value) || layer.x;
+      layer.y = Number(els.imageY.value) || layer.y;
+      layer.w = clamp(Number(els.imageW.value) || layer.w, 20, 6000);
+      layer.h = clamp(Number(els.imageH.value) || layer.h, 20, 6000);
+      layer.rotation = Number(els.rotation.value) || 0;
+      layer.opacity = clamp(Number(els.opacity.value) / 100, 0.1, 1);
+      render();
+    }
+
+    function fitImage(mode = 'contain') {
+      if (!state.image) return;
+      const { imageBox } = getLayout();
+      const fit = mode === 'cover'
+        ? Math.max(imageBox.w / state.image.width, imageBox.h / state.image.height)
+        : Math.min(imageBox.w / state.image.width, imageBox.h / state.image.height);
+      const layer = state.imageLayer;
+      layer.w = state.image.width * fit;
+      layer.h = state.image.height * fit;
+      layer.x = imageBox.x + (imageBox.w - layer.w) / 2;
+      layer.y = imageBox.y + (imageBox.h - layer.h) / 2;
+      layer.rotation = 0;
+      layer.opacity = Number(els.opacity.value) / 100;
+      layer.crop = { x: 0, y: 0, w: 1, h: 1 };
+      syncControlsFromLayer();
+      render();
+    }
+
+    function centerImage() {
+      if (!state.image) return;
+      const { imageBox } = getLayout();
+      const layer = state.imageLayer;
+      layer.x = imageBox.x + (imageBox.w - layer.w) / 2;
+      layer.y = imageBox.y + (imageBox.h - layer.h) / 2;
+      syncControlsFromLayer();
+      render();
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      els.selectTool.classList.toggle('btn-primary', mode === 'move');
+      els.selectTool.classList.toggle('btn-secondary', mode !== 'move');
+      els.cropTool.classList.toggle('btn-primary', mode === 'crop');
+      els.cropTool.classList.toggle('btn-secondary', mode !== 'crop');
+      els.editHelp.textContent = mode === 'crop'
+        ? 'Modo recorte: arrastra dentro del recuadro verde para elegir qué parte de la captura se ve. Usa las esquinas azules para cambiar el tamaño final.'
+        : 'Arrastra la imagen para moverla. Usa las esquinas para redimensionar y el punto superior para rotar.';
+      render();
+    }
+
+    function hitHandle(point) {
+      const handles = getHandles();
+      for (const [name, handle] of Object.entries(handles)) {
+        const dist = Math.hypot(point.x - handle.x, point.y - handle.y);
+        if (dist <= HANDLE) return name;
+      }
+      return null;
+    }
+
+    function hitImage(point) {
+      const local = screenToLocal(point);
+      const layer = state.imageLayer;
+      return local.x >= 0 && local.y >= 0 && local.x <= layer.w && local.y <= layer.h;
+    }
+
+    function startDrag(event) {
+      if (!state.image) return;
+      const point = getPointer(event);
+      const layer = state.imageLayer;
+      const handle = hitHandle(point);
+      const local = screenToLocal(point);
+      state.selected = hitImage(point) || Boolean(handle);
+
+      if (!state.selected) {
+        render();
+        return;
+      }
+
+      els.canvas.setPointerCapture(event.pointerId);
+      if (state.mode === 'crop' && hitImage(point) && !handle) {
+        state.drag = { type: 'cropMove', start: point, localStart: local, cropStart: { ...layer.crop } };
+      } else if (handle === 'rotate') {
+        const cx = layer.x + layer.w / 2;
+        const cy = layer.y + layer.h / 2;
+        state.drag = { type: 'rotate', cx, cy, startAngle: degrees(Math.atan2(point.y - cy, point.x - cx)), rotationStart: layer.rotation };
+      } else if (handle) {
+        state.drag = { type: 'resize', handle, start: point, layerStart: { ...layer } };
+      } else if (hitImage(point)) {
+        state.drag = { type: 'move', start: point, layerStart: { ...layer } };
+      }
+      event.preventDefault();
+    }
+
+    function dragMove(event) {
+      if (!state.drag) return;
+      const point = getPointer(event);
+      const layer = state.imageLayer;
+
+      if (state.drag.type === 'move') {
+        layer.x = state.drag.layerStart.x + point.x - state.drag.start.x;
+        layer.y = state.drag.layerStart.y + point.y - state.drag.start.y;
+      }
+
+      if (state.drag.type === 'resize') {
+        const start = state.drag.layerStart;
+        const local = screenToLocal(point);
+        const keepRatio = event.shiftKey;
+        let x = start.x;
+        let y = start.y;
+        let w = start.w;
+        let h = start.h;
+        if (state.drag.handle.includes('e')) w = clamp(local.x, 24, 6000);
+        if (state.drag.handle.includes('s')) h = clamp(local.y, 24, 6000);
+        if (state.drag.handle.includes('w')) { const right = start.x + start.w; x = start.x + local.x; w = clamp(right - x, 24, 6000); }
+        if (state.drag.handle.includes('n')) { const bottom = start.y + start.h; y = start.y + local.y; h = clamp(bottom - y, 24, 6000); }
+        if (keepRatio && state.image) {
+          const ratio = start.w / start.h;
+          if (w / h > ratio) w = h * ratio;
+          else h = w / ratio;
+        }
+        layer.x = x;
+        layer.y = y;
+        layer.w = w;
+        layer.h = h;
+      }
+
+      if (state.drag.type === 'rotate') {
+        const angle = degrees(Math.atan2(point.y - state.drag.cy, point.x - state.drag.cx));
+        layer.rotation = clamp(state.drag.rotationStart + angle - state.drag.startAngle, -180, 180);
+      }
+
+      if (state.drag.type === 'cropMove') {
+        const local = screenToLocal(point);
+        const dx = (local.x - state.drag.localStart.x) / layer.w;
+        const dy = (local.y - state.drag.localStart.y) / layer.h;
+        layer.crop.x = clamp(state.drag.cropStart.x + dx, 0, 1 - layer.crop.w);
+        layer.crop.y = clamp(state.drag.cropStart.y + dy, 0, 1 - layer.crop.h);
+      }
+
+      syncControlsFromLayer();
+      render();
+    }
+
+    function endDrag(event) {
+      if (state.drag && event.pointerId) {
+        try { els.canvas.releasePointerCapture(event.pointerId); } catch {}
+      }
+      state.drag = null;
     }
 
     function loadFile(file) {
@@ -322,8 +644,8 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
         image.onload = () => {
           state.image = image;
           state.imageName = file.name.replace(/\.[^/.]+$/, '') || 'captura';
-          els.status.textContent = `${file.name} cargada. Puedes exportarla en PNG, JPG, WebP o SVG.`;
-          render();
+          els.status.textContent = `${file.name} cargada. Ya puedes mover, ampliar, rotar y recortar la captura en el canvas.`;
+          fitImage('contain');
         };
         image.src = reader.result;
       };
@@ -339,29 +661,21 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
       URL.revokeObjectURL(url);
     }
 
-    function getSvgMarkup() {
-      const imageData = state.image?.src || '';
-      const { card, imageBox } = getLayout();
-      const scale = state.image ? Math.min(imageBox.w / state.image.width, imageBox.h / state.image.height) * (Number(els.imageScale.value) / 100) : 1;
-      const imgW = state.image ? state.image.width * scale : imageBox.w;
-      const imgH = state.image ? state.image.height * scale : imageBox.h;
-      const imgX = imageBox.x + (imageBox.w - imgW) / 2;
-      const imgY = imageBox.y + (imageBox.h - imgH) / 2;
-      const bg = `<rect width="100%" height="100%" fill="${escapeXml(els.colorC.value)}"/><circle cx="${state.width * .02}" cy="${state.height * -.04}" r="${state.width * .36}" fill="${escapeXml(els.colorA.value)}" opacity=".72"/><circle cx="${state.width * .92}" cy="${state.height * -.02}" r="${state.width * .38}" fill="${escapeXml(els.colorB.value)}" opacity=".72"/>`;
-      const frame = els.browserFrame.checked ? `<rect x="${card.x + 48}" y="${card.y + 48}" width="${card.w - 96}" height="${Math.max(62, card.frameH * .82)}" rx="26" fill="#0f172a"/><rect x="${card.x + 82}" y="${card.y + 68}" width="48" height="30" rx="10" fill="#2563eb"/><rect x="${card.x + 154}" y="${card.y + 74}" width="${Math.min(178, card.w * .22)}" height="18" rx="9" fill="#f8fafc" opacity=".95"/>` : '';
-      const image = state.image ? `<clipPath id="clipImage"><rect x="${imgX}" y="${imgY}" width="${imgW}" height="${imgH}" rx="${els.imageRadius.value}"/></clipPath><image href="${escapeXml(imageData)}" x="${imgX}" y="${imgY}" width="${imgW}" height="${imgH}" preserveAspectRatio="none" clip-path="url(#clipImage)"/>` : `<rect x="${imageBox.x}" y="${imageBox.y}" width="${imageBox.w}" height="${imageBox.h}" rx="${els.imageRadius.value}" fill="rgba(15,23,42,.05)" stroke="rgba(15,23,42,.12)" stroke-dasharray="16 14"/>`;
-      const filter = els.shadow.checked ? '<filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="22" stdDeviation="18" flood-color="#0f172a" flood-opacity=".18"/></filter>' : '';
-      return `<svg xmlns="http://www.w3.org/2000/svg" width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}"><defs>${filter}</defs>${bg}<rect x="${card.x}" y="${card.y}" width="${card.w}" height="${card.h}" rx="${card.r}" fill="${escapeXml(els.cardColor.value)}" filter="${els.shadow.checked ? 'url(#softShadow)' : ''}"/>${frame}${image}</svg>`;
-    }
-
     function download(format) {
       const filename = `${state.imageName}-mejorada-${state.width}x${state.height}.${format === 'jpeg' ? 'jpg' : format}`;
+      render({ exporting: true });
       if (format === 'svg') {
-        downloadBlob(new Blob([getSvgMarkup()], { type: 'image/svg+xml' }), filename);
+        const dataUrl = els.canvas.toDataURL('image/png');
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}"><image href="${escapeXml(dataUrl)}" width="${state.width}" height="${state.height}"/></svg>`;
+        downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), filename);
+        render();
         return;
       }
       const mime = format === 'jpeg' ? 'image/jpeg' : `image/${format}`;
-      els.canvas.toBlob((blob) => blob && downloadBlob(blob, filename), mime, 0.94);
+      els.canvas.toBlob((blob) => {
+        if (blob) downloadBlob(blob, filename);
+        render();
+      }, mime, 0.94);
     }
 
     els.dropZone.addEventListener('click', () => els.fileInput.click());
@@ -375,6 +689,11 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
       els.dropZone.classList.remove('is-dragging');
     }));
     els.dropZone.addEventListener('drop', (event) => loadFile(event.dataTransfer?.files?.[0]));
+
+    els.canvas.addEventListener('pointerdown', startDrag);
+    els.canvas.addEventListener('pointermove', dragMove);
+    els.canvas.addEventListener('pointerup', endDrag);
+    els.canvas.addEventListener('pointercancel', endDrag);
 
     els.presetGrid.addEventListener('click', (event) => {
       const button = event.target.closest('[data-preset]');
@@ -392,6 +711,7 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
         state.height = height;
         els.canvasWidth.value = width;
         els.canvasHeight.value = height;
+        if (state.image) fitImage('contain');
         render();
       }
     });
@@ -402,23 +722,46 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
       render();
     }));
 
-    document.querySelectorAll('input, select').forEach((input) => {
-      if (input.id === 'fileInput' || input.id === 'sizePreset' || input.id === 'canvasWidth' || input.id === 'canvasHeight') return;
+    [els.imageX, els.imageY, els.imageW, els.imageH, els.rotation, els.opacity].forEach((input) => input.addEventListener('input', syncLayerFromControls));
+    [els.colorA, els.colorB, els.colorC, els.cardColor, els.padding, els.cardRadius, els.imageRadius, els.browserFrame, els.shadow, els.clipToCard].forEach((input) => {
       input.addEventListener('input', render);
       input.addEventListener('change', render);
     });
+
+    els.selectTool.addEventListener('click', () => setMode('move'));
+    els.cropTool.addEventListener('click', () => setMode('crop'));
+    els.fitImage.addEventListener('click', () => fitImage('contain'));
+    els.fillImage.addEventListener('click', () => fitImage('cover'));
+    els.centerImage.addEventListener('click', centerImage);
+    els.resetImage.addEventListener('click', () => fitImage('contain'));
 
     document.querySelectorAll('[data-download]').forEach((button) => {
       button.addEventListener('click', () => download(button.dataset.download));
     });
 
+    document.addEventListener('keydown', (event) => {
+      if (!state.image || ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName || '')) return;
+      const step = event.shiftKey ? 10 : 1;
+      if (event.key === 'ArrowLeft') state.imageLayer.x -= step;
+      if (event.key === 'ArrowRight') state.imageLayer.x += step;
+      if (event.key === 'ArrowUp') state.imageLayer.y -= step;
+      if (event.key === 'ArrowDown') state.imageLayer.y += step;
+      if (event.key === '0') fitImage('contain');
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '0'].includes(event.key)) {
+        event.preventDefault();
+        syncControlsFromLayer();
+        render();
+      }
+    });
+
+    syncControlsFromLayer();
     render();
   </script>
 </Layout>
 
 <style>
   .tool-hero { padding-bottom: var(--space-8); }
-  .editor-shell { display: grid; grid-template-columns: minmax(280px, 370px) minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+  .editor-shell { display: grid; grid-template-columns: minmax(290px, 390px) minmax(0, 1fr); gap: var(--space-6); align-items: start; }
   .control-panel, .preview-panel { border: 1px solid var(--color-border); border-radius: var(--radius-2xl); background: color-mix(in srgb, var(--color-surface) 94%, transparent); box-shadow: var(--shadow-sm); }
   .control-panel { display: grid; gap: var(--space-5); padding: var(--space-5); position: sticky; top: 5.5rem; }
   .drop-zone { display: grid; grid-template-columns: auto 1fr; gap: var(--space-4); align-items: center; min-height: 7rem; padding: var(--space-4); border: 2px dashed var(--color-border-strong); border-radius: var(--radius-xl); background: var(--color-surface-soft); cursor: pointer; transition: border-color var(--transition-base), background var(--transition-base), transform var(--transition-base); }
@@ -428,6 +771,8 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
   .drop-zone span { color: var(--color-text-muted); font-size: .92rem; }
   .panel-section { display: grid; gap: var(--space-3); }
   .panel-section h2 { margin: 0; font-size: 1rem; letter-spacing: -.01em; }
+  .tool-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+  .tool-actions .btn { width: 100%; min-height: 2.65rem; padding-inline: .75rem; }
   .preset-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-2); }
   .preset { min-height: 3.1rem; padding: .25rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); cursor: pointer; }
   .preset.active { border-color: var(--color-primary); box-shadow: var(--shadow-focus); }
@@ -449,7 +794,8 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
   .download-grid .btn { width: 100%; }
   .preview-panel { min-height: 620px; padding: clamp(1rem, 2vw, 1.5rem); }
   .canvas-wrap { display: grid; min-height: 580px; place-items: center; overflow: auto; border-radius: var(--radius-xl); background: color-mix(in srgb, var(--color-bg) 72%, var(--color-surface)); }
-  #previewCanvas { width: min(100%, 980px); height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
+  #previewCanvas { width: min(100%, 980px); height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); touch-action: none; cursor: grab; }
+  #previewCanvas:active { cursor: grabbing; }
   @media (max-width: 980px) { .editor-shell { grid-template-columns: 1fr; } .control-panel { position: static; } .preview-panel, .canvas-wrap { min-height: auto; } }
-  @media (max-width: 560px) { .preset-grid { grid-template-columns: repeat(3, 1fr); } .field-grid.two, .download-grid { grid-template-columns: 1fr; } .drop-zone { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .preset-grid { grid-template-columns: repeat(3, 1fr); } .field-grid.two, .download-grid, .tool-actions { grid-template-columns: 1fr; } .drop-zone { grid-template-columns: 1fr; } }
 </style>
