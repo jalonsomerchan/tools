@@ -34,9 +34,9 @@ const menuLabel = lang === 'es' ? 'Abrir menú de navegación' : 'Open navigatio
     <div class="header-right" id="site-menu" data-site-menu>
       <nav aria-label={lang === 'es' ? 'Navegación principal' : 'Main navigation'}>
         <a href={getLocalizedPath('/', lang)}>{t('nav.home')}</a>
-        <a href="/json-viewer/">JSON</a>
-        <a href="/image-compressor/">{t('nav.images')}</a>
-        <a href="/curl-builder/">{t('nav.curl')}</a>
+        <a href={getLocalizedPath('/json-viewer/', lang)}>JSON</a>
+        <a href={getLocalizedPath('/image-compressor/', lang)}>{t('nav.images')}</a>
+        <a href={getLocalizedPath('/curl-builder/', lang)}>{t('nav.curl')}</a>
       </nav>
 
       <div class="header-actions">
