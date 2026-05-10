@@ -36,6 +36,26 @@ const extraTools = [
       ? 'Crea contraseñas y frases seguras sin guardar datos ni hacer llamadas de red.'
       : 'Create passwords and secure passphrases without storing data or making network calls.',
     search: 'password contraseña passphrase seguridad crypto'
+  },
+  {
+    category: lang === 'es' ? 'Internet y mapas' : 'Internet & maps',
+    path: '/robots-sitemap-generator/',
+    icon: 'SEO',
+    title: lang === 'es' ? 'Generador de robots.txt y sitemap' : 'Robots.txt and sitemap generator',
+    description: lang === 'es'
+      ? 'Crea robots.txt y un sitemap XML básico pegando URLs manualmente, sin rastrear ni consultar servidores.'
+      : 'Create robots.txt and a basic XML sitemap from pasted URLs, without crawling or server requests.',
+    search: 'robots sitemap xml seo crawler rastreo'
+  },
+  {
+    category: lang === 'es' ? 'Internet y mapas' : 'Internet & maps',
+    path: '/meta-tags-generator/',
+    icon: 'META',
+    title: lang === 'es' ? 'Generador de meta tags y Open Graph' : 'Meta tags and Open Graph generator',
+    description: lang === 'es'
+      ? 'Genera title, description, canonical, Open Graph y Twitter Cards con vista previa local.'
+      : 'Generate title, description, canonical, Open Graph and Twitter Cards with a local preview.',
+    search: 'meta tags open graph twitter cards seo title description canonical'
   }
 ];
 const extraCategories = [...new Set(extraTools.map((tool) => tool.category))];
