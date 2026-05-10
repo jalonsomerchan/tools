@@ -8,16 +8,84 @@ const t = getToolTranslations('json-viewer', lang) as ToolTranslationsMap['json-
 
 const ui = lang === 'es'
   ? {
-      input: 'Texto JSON', tree: 'Árbol', table: 'Tabla', output: 'Salida', stats: 'Resumen',
-      actions: { format: t.actions.format, minify: t.actions.minify, validate: t.actions.validate, clear: t.actions.clear, copy: t.actions.copy, expandAll: 'Expandir todo', collapseAll: 'Contraer todo', download: 'Descargar .json', sample: 'Ejemplo' },
-      labels: { root: 'raíz', object: 'objeto', array: 'array', props: 'props', items: 'items', value: 'valor', emptyObject: 'Objeto vacío', emptyArray: 'Array vacío', repaired: 'JSON reparado automáticamente para poder mostrar el árbol.' },
-      messages: { ...t.messages, pasteFirst: 'Pega primero un JSON.', validTree: 'JSON válido. Árbol actualizado.', repaired: 'JSON no válido. Se ha intentado cerrar automáticamente y se muestra una versión reparada.', repairFailed: 'JSON no válido. No se ha podido reparar lo suficiente para crear el árbol.', edited: 'Valor editado y JSON actualizado.', collapsedAll: 'Todos los nodos contraídos.', expandedAll: 'Todos los nodos expandidos.', noResult: 'No hay resultado para copiar.', downloaded: 'Archivo JSON descargado.', sampleLoaded: 'Ejemplo cargado.' }
+      input: 'Texto JSON',
+      tree: 'Árbol',
+      output: 'Salida',
+      stats: 'Resumen',
+      actions: {
+        format: t.actions.format,
+        minify: t.actions.minify,
+        validate: t.actions.validate,
+        clear: t.actions.clear,
+        copy: t.actions.copy,
+        expandAll: 'Expandir todo',
+        collapseAll: 'Contraer todo',
+        download: 'Descargar .json',
+        sample: 'Ejemplo'
+      },
+      labels: {
+        props: 'props',
+        items: 'items',
+        emptyObject: 'objeto vacío',
+        emptyArray: 'array vacío',
+        edit: 'Editar valor',
+        save: 'Guardar',
+        cancel: 'Cancelar'
+      },
+      messages: {
+        ...t.messages,
+        pasteFirst: 'Pega primero un JSON.',
+        validTree: 'JSON válido. Árbol actualizado.',
+        repaired: 'JSON no válido. Se ha cerrado automáticamente para poder mostrar el árbol.',
+        repairFailed: 'JSON no válido. No se ha podido reparar lo suficiente para crear el árbol.',
+        edited: 'Valor editado y JSON actualizado.',
+        editError: 'No se pudo aplicar el cambio.',
+        collapsedAll: 'Todos los nodos contraídos.',
+        expandedAll: 'Todos los nodos expandidos.',
+        noResult: 'No hay resultado para copiar.',
+        downloaded: 'Archivo JSON descargado.',
+        sampleLoaded: 'Ejemplo cargado.'
+      }
     }
   : {
-      input: 'JSON text', tree: 'Tree', table: 'Table', output: 'Output', stats: 'Summary',
-      actions: { format: t.actions.format, minify: t.actions.minify, validate: t.actions.validate, clear: t.actions.clear, copy: t.actions.copy, expandAll: 'Expand all', collapseAll: 'Collapse all', download: 'Download .json', sample: 'Sample' },
-      labels: { root: 'root', object: 'object', array: 'array', props: 'props', items: 'items', value: 'value', emptyObject: 'Empty object', emptyArray: 'Empty array', repaired: 'JSON was automatically repaired to show the tree.' },
-      messages: { ...t.messages, pasteFirst: 'Paste JSON first.', validTree: 'Valid JSON. Tree updated.', repaired: 'Invalid JSON. It was closed automatically and a repaired version is shown.', repairFailed: 'Invalid JSON. It could not be repaired enough to create the tree.', edited: 'Value edited and JSON updated.', collapsedAll: 'All nodes collapsed.', expandedAll: 'All nodes expanded.', noResult: 'There is no result to copy.', downloaded: 'JSON file downloaded.', sampleLoaded: 'Sample loaded.' }
+      input: 'JSON text',
+      tree: 'Tree',
+      output: 'Output',
+      stats: 'Summary',
+      actions: {
+        format: t.actions.format,
+        minify: t.actions.minify,
+        validate: t.actions.validate,
+        clear: t.actions.clear,
+        copy: t.actions.copy,
+        expandAll: 'Expand all',
+        collapseAll: 'Collapse all',
+        download: 'Download .json',
+        sample: 'Sample'
+      },
+      labels: {
+        props: 'props',
+        items: 'items',
+        emptyObject: 'empty object',
+        emptyArray: 'empty array',
+        edit: 'Edit value',
+        save: 'Save',
+        cancel: 'Cancel'
+      },
+      messages: {
+        ...t.messages,
+        pasteFirst: 'Paste JSON first.',
+        validTree: 'Valid JSON. Tree updated.',
+        repaired: 'Invalid JSON. It was closed automatically so the tree can be shown.',
+        repairFailed: 'Invalid JSON. It could not be repaired enough to create the tree.',
+        edited: 'Value edited and JSON updated.',
+        editError: 'Could not apply the change.',
+        collapsedAll: 'All nodes collapsed.',
+        expandedAll: 'All nodes expanded.',
+        noResult: 'There is no result to copy.',
+        downloaded: 'JSON file downloaded.',
+        sampleLoaded: 'Sample loaded.'
+      }
     };
 ---
 
@@ -48,7 +116,10 @@ const ui = lang === 'es'
 
         <section class="tree-pane" aria-label={ui.tree}>
           <div class="pane-tabs" aria-hidden="true"><span>text</span><span class="active">tree</span><span>table</span></div>
-          <div class="tree-status"><span id="treeBadge">0 items</span><button id="rootToggleBtn" type="button" aria-label={ui.actions.collapseAll}>⌄</button></div>
+          <div class="tree-status">
+            <span id="treeBadge">0 items</span>
+            <button id="rootToggleBtn" type="button" aria-label={ui.actions.collapseAll}>⌄</button>
+          </div>
           <div class="json-tree" id="tree" role="tree" aria-live="polite"></div>
         </section>
       </div>
@@ -75,11 +146,11 @@ const ui = lang === 'es'
     button { min-height: 2.35rem; background: var(--color-surface); color: var(--color-text); border: 1px solid var(--border); border-radius: 999px; padding: .55rem .85rem; cursor: pointer; font-weight: 850; box-shadow: var(--shadow-xs); }
     button:hover { border-color: color-mix(in srgb, var(--primary) 45%, var(--border)); }
     button.primary { background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color: #fff; border-color: transparent; }
-    .editor-shell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr); min-height: 680px; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; background: #1f2937; }
+    .editor-shell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(380px, 1fr); min-height: 680px; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; background: #111827; }
     .text-pane, .tree-pane { min-width: 0; display: flex; flex-direction: column; background: #111827; }
     .text-pane { border-right: 1px solid #374151; }
     .pane-tabs { display: flex; align-items: center; gap: .25rem; min-height: 2.6rem; padding: .35rem .6rem; background: color-mix(in srgb, var(--color-primary) 70%, #64748b); color: #fff; font-weight: 800; }
-    .pane-tabs span { padding: .25rem .55rem; border-radius: .35rem; opacity: .75; }
+    .pane-tabs span { padding: .25rem .55rem; border-radius: .35rem; opacity: .72; }
     .pane-tabs .active { outline: 1px solid rgba(255,255,255,.8); opacity: 1; background: rgba(255,255,255,.12); }
     textarea { width: 100%; flex: 1; min-height: 540px; border: 0; border-radius: 0; background: #111827; color: #e5e7eb; padding: 1rem; font-family: var(--font-mono); line-height: 1.55; resize: vertical; tab-size: 2; box-shadow: none !important; }
     textarea[data-invalid='true'] { outline: 2px solid rgba(252, 165, 165, .45); outline-offset: -2px; }
@@ -88,19 +159,25 @@ const ui = lang === 'es'
     .tree-status button { min-height: 1.8rem; padding: .1rem .4rem; border-radius: .4rem; background: transparent; color: #e5e7eb; box-shadow: none; font-size: 1.2rem; }
     .json-tree { flex: 1; max-height: 640px; overflow: auto; background: #111827; color: #d1d5db; padding: .75rem .75rem 2rem; font-family: var(--font-mono); font-size: .94rem; }
     .tree-empty { margin: 1rem; color: #9ca3af; font-family: var(--font-sans); }
-    .tree-node { --depth: 0; margin-left: calc(var(--depth) * 1.15rem); }
-    .node-row { display: flex; align-items: center; gap: .35rem; min-height: 1.75rem; padding: .1rem .2rem; border-radius: .35rem; white-space: nowrap; }
+    .tree-node { --depth: 0; margin-left: calc(var(--depth) * 1.12rem); }
+    .node-row { display: flex; align-items: baseline; gap: .35rem; min-height: 1.75rem; padding: .1rem .2rem; border-radius: .35rem; white-space: nowrap; }
     .node-row:hover { background: rgba(255,255,255,.06); }
-    .toggle { width: 1.35rem; min-width: 1.35rem; min-height: 1.35rem; padding: 0; border: 0; background: transparent; color: #d1d5db; box-shadow: none; border-radius: .25rem; font-size: 1rem; }
+    .toggle { width: 1.25rem; min-width: 1.25rem; min-height: 1.25rem; padding: 0; border: 0; background: transparent; color: #a3a3a3; box-shadow: none; border-radius: .25rem; font-size: 1.05rem; line-height: 1; }
     .toggle.placeholder { visibility: hidden; }
     .node-key { color: #93c5fd; font-weight: 850; }
+    .node-index { color: #a3a3a3; font-weight: 850; }
     .node-meta { color: #9ca3af; }
     .node-summary { color: #9ca3af; border-radius: .35rem; padding: .08rem .38rem; background: rgba(255,255,255,.08); }
-    .node-children { border-left: 1px dotted rgba(255,255,255,.16); margin-left: .65rem; }
-    .value-editor { display: inline-flex; align-items: center; gap: .35rem; }
-    .value-editor select, .value-editor input { width: auto !important; min-height: 1.8rem !important; padding: .25rem .45rem !important; border-radius: .35rem !important; border-color: #374151 !important; background: #020617 !important; color: #e5e7eb !important; font-family: var(--font-mono); font-size: .88rem; box-shadow: none !important; }
-    .value-editor input { min-width: min(280px, 42vw); }
-    .type-string { color: #86efac; } .type-number { color: #67e8f9; } .type-boolean { color: #fbbf24; } .type-null { color: #c4b5fd; }
+    .node-children { border-left: 1px dotted rgba(255,255,255,.16); margin-left: .6rem; }
+    .primitive-value { border-radius: .25rem; padding: .02rem .15rem; cursor: text; }
+    .primitive-value:hover { background: rgba(255,255,255,.08); }
+    .edit-value { opacity: 0; min-height: 1.35rem; width: 1.35rem; padding: 0; border: 0; border-radius: .3rem; background: transparent; color: #9ca3af; box-shadow: none; }
+    .node-row:hover .edit-value, .edit-value:focus-visible { opacity: 1; }
+    .inline-editor { display: inline-flex; align-items: center; gap: .35rem; }
+    .inline-editor select, .inline-editor input { width: auto !important; min-height: 1.75rem !important; padding: .2rem .4rem !important; border-radius: .35rem !important; border-color: #374151 !important; background: #020617 !important; color: #e5e7eb !important; font-family: var(--font-mono); font-size: .9rem; box-shadow: none !important; }
+    .inline-editor input { min-width: min(260px, 35vw); }
+    .inline-editor button { min-height: 1.75rem; padding: .2rem .45rem; border-radius: .35rem; background: #1f2937; color: #e5e7eb; box-shadow: none; }
+    .type-string { color: #d69a7c; } .type-number { color: #86efac; } .type-boolean { color: #fbbf24; } .type-null { color: #c4b5fd; }
     .output-details { margin-top: .85rem; border: 1px solid var(--border); border-radius: 16px; background: var(--color-surface); overflow: hidden; }
     .output-details summary { cursor: pointer; padding: .8rem 1rem; color: var(--color-text); font-weight: 900; }
     .output-details textarea { min-height: 220px; max-height: 360px; }
@@ -109,7 +186,7 @@ const ui = lang === 'es'
     .stats-grid dt { color: var(--muted); font-weight: 800; } .stats-grid dd { margin: 0; font-weight: 950; color: var(--color-text); }
     .status { margin: .85rem 0 0; color: var(--muted); white-space: pre-wrap; }
     @media (max-width: 980px) { .editor-shell { grid-template-columns: 1fr; min-height: auto; } .text-pane { border-right: 0; border-bottom: 1px solid #374151; } textarea { min-height: 340px; } .json-tree { max-height: 520px; } .stats-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 560px) { .json-tool { margin-inline: -.35rem; } .toolbar button { flex: 1 1 calc(50% - .55rem); padding-inline: .5rem; } .value-editor { display: grid; grid-template-columns: 1fr; width: 100%; } .value-editor select, .value-editor input { width: 100% !important; } .stats-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 560px) { .json-tool { margin-inline: -.35rem; } .toolbar button { flex: 1 1 calc(50% - .55rem); padding-inline: .5rem; } .inline-editor { display: grid; grid-template-columns: 1fr; width: 100%; } .inline-editor select, .inline-editor input, .inline-editor button { width: 100% !important; } .stats-grid { grid-template-columns: 1fr; } }
   </style>
 
   <script define:vars={{ copy: ui }}>
@@ -140,14 +217,23 @@ const ui = lang === 'es'
       let hasCurrentJson = false;
       let lastValidText = '';
 
-      const sampleJson = { name: 'La1.TV', events: [{ hi: 1778302800, hf: 1778313600, t: 'Noticias 24H', d: 'Noticias de actualidad.', g: 'NEWS' }, { hi: 1778313600, hf: 1778315400, t: 'Audiencia abierta', d: 'Espacio de servicio público.', g: 'NEWS' }], active: true, meta: { source: 'sample', quality: null } };
+      const sampleJson = [
+        { name: 'La1.TV', events: [{ hi: 1778302800, hf: 1778313600, t: 'Noticias 24H', d: 'Noticias de actualidad.', g: 'NEWS' }] },
+        { name: 'La2.TV', events: [{ hi: 1778313600, hf: 1778315400, t: 'Audiencia abierta', d: 'Espacio de servicio público.', g: 'NEWS' }] },
+        { name: '24H.TV', events: [] }
+      ];
 
-      const setStatus = (message, error = false) => { status.textContent = message; status.style.color = error ? '#fca5a5' : 'var(--muted)'; input.dataset.invalid = String(error); output.dataset.invalid = String(error); };
+      const setStatus = (message, error = false) => {
+        status.textContent = message;
+        status.style.color = error ? '#fca5a5' : 'var(--muted)';
+        input.dataset.invalid = String(error);
+        output.dataset.invalid = String(error);
+      };
+
       const getType = (value) => value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value;
       const pathToKey = (path) => path.length ? path.map(String).join('.') : '$';
       const getChildrenEntries = (value) => Array.isArray(value) ? value.map((item, index) => [index, item]) : value && typeof value === 'object' ? Object.entries(value) : [];
       const formatBytes = (bytes) => bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(1)} MB`;
-
       const parseJson = (value) => JSON.parse(value);
       const stripUnsafeTrailingTokens = (value) => value.replace(/[,{:\s]*$/u, '').replace(/,\s*([}\]])/gu, '$1');
 
@@ -180,92 +266,347 @@ const ui = lang === 'es'
       };
 
       const tryParseOrRepair = () => {
-        try { return { data: parseJson(input.value), repaired: false, text: input.value }; }
+        try { return { data: parseJson(input.value), repaired: false }; }
         catch (error) {
           const repairedText = closeLooseJson(input.value);
           if (!repairedText) throw error;
-          return { data: parseJson(repairedText), repaired: true, text: repairedText, error };
+          return { data: parseJson(repairedText), repaired: true };
         }
       };
 
       const updateStats = (data) => {
         const stats = { nodes: 0, objects: 0, arrays: 0 };
-        const walk = (value) => { stats.nodes += 1; if (Array.isArray(value)) { stats.arrays += 1; value.forEach(walk); return; } if (value && typeof value === 'object') { stats.objects += 1; Object.values(value).forEach(walk); } };
+        const walk = (value) => {
+          stats.nodes += 1;
+          if (Array.isArray(value)) { stats.arrays += 1; value.forEach(walk); return; }
+          if (value && typeof value === 'object') { stats.objects += 1; Object.values(value).forEach(walk); }
+        };
         if (hasCurrentJson) walk(data);
-        statNodes.textContent = String(stats.nodes); statObjects.textContent = String(stats.objects); statArrays.textContent = String(stats.arrays); statSize.textContent = formatBytes(new Blob([output.value || input.value || '']).size);
+        statNodes.textContent = String(stats.nodes);
+        statObjects.textContent = String(stats.objects);
+        statArrays.textContent = String(stats.arrays);
+        statSize.textContent = formatBytes(new Blob([output.value || input.value || '']).size);
         const rootCount = hasCurrentJson && (Array.isArray(data) || (data && typeof data === 'object')) ? getChildrenEntries(data).length : 0;
         treeBadge.textContent = `${rootCount} ${Array.isArray(data) ? copy.labels.items : copy.labels.props}`;
       };
 
-      const setValueAtPath = (target, path, value) => { if (!path.length) return value; const clone = structuredClone(target); let pointer = clone; for (let index = 0; index < path.length - 1; index += 1) pointer = pointer[path[index]]; pointer[path[path.length - 1]] = value; return clone; };
-      const parseEditedValue = (type, rawValue) => { if (type === 'string') return rawValue; if (type === 'number') { const parsed = Number(rawValue); if (!Number.isFinite(parsed)) throw new Error('Invalid number'); return parsed; } if (type === 'boolean') return rawValue === 'true'; return null; };
-      const createText = (text, className) => { const span = document.createElement('span'); span.textContent = text; if (className) span.className = className; return span; };
+      const createText = (text, className) => {
+        const span = document.createElement('span');
+        span.textContent = text;
+        if (className) span.className = className;
+        return span;
+      };
 
-      const syncJson = (data, message, repaired = false, sourceText = null) => {
-        currentJson = data; hasCurrentJson = true; lastValidText = JSON.stringify(data, null, 2);
-        output.value = repaired && sourceText ? sourceText : lastValidText;
-        renderTree(data); updateStats(data); setStatus(message, repaired);
+      const formatPrimitive = (value) => {
+        const type = getType(value);
+        if (type === 'string') return value;
+        if (type === 'null') return 'null';
+        return String(value);
+      };
+
+      const setValueAtPath = (target, path, value) => {
+        if (!path.length) return value;
+        const clone = structuredClone(target);
+        let pointer = clone;
+        for (let index = 0; index < path.length - 1; index += 1) pointer = pointer[path[index]];
+        pointer[path[path.length - 1]] = value;
+        return clone;
+      };
+
+      const parseEditedValue = (type, rawValue) => {
+        if (type === 'string') return rawValue;
+        if (type === 'number') {
+          const parsed = Number(rawValue);
+          if (!Number.isFinite(parsed)) throw new Error('Invalid number');
+          return parsed;
+        }
+        if (type === 'boolean') return rawValue === 'true';
+        return null;
+      };
+
+      const syncJson = (data, message, error = false) => {
+        currentJson = data;
+        hasCurrentJson = true;
+        lastValidText = JSON.stringify(data, null, 2);
+        output.value = lastValidText;
+        renderTree(data);
+        updateStats(data);
+        setStatus(message, error);
       };
 
       const applyValueEdit = (path, type, rawValue) => {
-        try { currentJson = setValueAtPath(currentJson, path, parseEditedValue(type, rawValue)); input.value = JSON.stringify(currentJson, null, 2); syncJson(currentJson, copy.messages.edited); }
-        catch { setStatus(copy.messages.editError || 'Could not edit value.', true); }
+        try {
+          currentJson = setValueAtPath(currentJson, path, parseEditedValue(type, rawValue));
+          input.value = JSON.stringify(currentJson, null, 2);
+          syncJson(currentJson, copy.messages.edited);
+        } catch {
+          setStatus(copy.messages.editError, true);
+        }
       };
 
-      const renderPrimitiveEditor = (value, path) => {
-        const editor = document.createElement('span'); editor.className = 'value-editor';
-        const type = getType(value); const select = document.createElement('select'); select.setAttribute('aria-label', 'type');
-        ['string', 'number', 'boolean', 'null'].forEach((optionType) => { const option = document.createElement('option'); option.value = optionType; option.textContent = optionType; option.selected = optionType === type; select.append(option); });
-        const field = document.createElement('input'); field.setAttribute('aria-label', copy.labels.value); field.dataset.kind = type; field.className = `type-${type}`;
-        const setFieldValue = () => { const selectedType = select.value; field.dataset.kind = selectedType; field.className = `type-${selectedType}`; field.disabled = selectedType === 'null'; if (selectedType === 'boolean') { field.setAttribute('list', 'jsonBooleanValues'); field.value = value === false ? 'false' : 'true'; } else { field.removeAttribute('list'); field.value = selectedType === 'null' ? 'null' : String(value ?? ''); } };
-        select.addEventListener('change', () => applyValueEdit(path, select.value, select.value === 'boolean' ? 'true' : field.value));
-        field.addEventListener('change', () => applyValueEdit(path, select.value, field.value));
-        field.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); field.blur(); } });
-        setFieldValue(); editor.append(select, field); return editor;
+      const startInlineEdit = (container, value, path) => {
+        const type = getType(value);
+        container.replaceChildren();
+        const editor = document.createElement('span');
+        editor.className = 'inline-editor';
+        const select = document.createElement('select');
+        ['string', 'number', 'boolean', 'null'].forEach((optionType) => {
+          const option = document.createElement('option');
+          option.value = optionType;
+          option.textContent = optionType;
+          option.selected = optionType === type;
+          select.append(option);
+        });
+        const field = document.createElement('input');
+        field.value = type === 'null' ? 'null' : String(value);
+        field.disabled = type === 'null';
+        const save = document.createElement('button');
+        save.type = 'button';
+        save.textContent = '✓';
+        save.setAttribute('aria-label', copy.labels.save);
+        const cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.textContent = '×';
+        cancel.setAttribute('aria-label', copy.labels.cancel);
+        const refresh = () => {
+          field.disabled = select.value === 'null';
+          if (select.value === 'null') field.value = 'null';
+          if (select.value === 'boolean' && !['true', 'false'].includes(field.value)) field.value = 'true';
+        };
+        select.addEventListener('change', refresh);
+        save.addEventListener('click', () => applyValueEdit(path, select.value, field.value));
+        cancel.addEventListener('click', () => renderTree(currentJson));
+        field.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') applyValueEdit(path, select.value, field.value);
+          if (event.key === 'Escape') renderTree(currentJson);
+        });
+        editor.append(select, field, save, cancel);
+        container.append(editor);
+        field.focus();
+        field.select();
+      };
+
+      const renderPrimitive = (value, path) => {
+        const wrapper = document.createElement('span');
+        const type = getType(value);
+        const valueSpan = createText(formatPrimitive(value), `primitive-value type-${type}`);
+        valueSpan.title = copy.labels.edit;
+        valueSpan.addEventListener('dblclick', () => startInlineEdit(wrapper, value, path));
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'edit-value';
+        editButton.textContent = '✎';
+        editButton.setAttribute('aria-label', copy.labels.edit);
+        editButton.addEventListener('click', () => startInlineEdit(wrapper, value, path));
+        wrapper.append(valueSpan, editButton);
+        return wrapper;
       };
 
       const renderNode = (key, value, path, depth = 0) => {
-        const type = getType(value); const isContainer = type === 'array' || type === 'object'; const pathKey = pathToKey(path); const isCollapsed = collapsedPaths.has(pathKey);
-        const node = document.createElement('div'); node.className = 'tree-node'; node.style.setProperty('--depth', String(depth)); node.setAttribute('role', 'treeitem'); node.setAttribute('aria-expanded', isContainer ? String(!isCollapsed) : 'false');
-        const row = document.createElement('div'); row.className = 'node-row';
-        const toggle = document.createElement('button'); toggle.type = 'button'; toggle.className = isContainer ? 'toggle' : 'toggle placeholder'; toggle.textContent = isCollapsed ? '›' : '⌄';
-        toggle.addEventListener('click', () => { collapsedPaths.has(pathKey) ? collapsedPaths.delete(pathKey) : collapsedPaths.add(pathKey); renderTree(currentJson); }); row.append(toggle);
-        row.append(createText(key === null ? copy.labels.root : String(key), 'node-key'));
-        if (isContainer) { const entries = getChildrenEntries(value); row.append(createText(':', 'node-meta')); row.append(createText(`${type === 'array' ? '[' : '{'} ${entries.length} ${type === 'array' ? copy.labels.items : copy.labels.props} ${type === 'array' ? ']' : '}'}`, 'node-summary')); }
-        else { row.append(createText(':', `node-meta type-${type}`)); row.append(renderPrimitiveEditor(value, path)); }
+        const type = getType(value);
+        const isContainer = type === 'array' || type === 'object';
+        const pathKey = pathToKey(path);
+        const isCollapsed = collapsedPaths.has(pathKey);
+        const node = document.createElement('div');
+        node.className = 'tree-node';
+        node.style.setProperty('--depth', String(depth));
+        node.setAttribute('role', 'treeitem');
+        node.setAttribute('aria-expanded', isContainer ? String(!isCollapsed) : 'false');
+
+        const row = document.createElement('div');
+        row.className = 'node-row';
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = isContainer ? 'toggle' : 'toggle placeholder';
+        toggle.textContent = isCollapsed ? '›' : '⌄';
+        toggle.addEventListener('click', () => {
+          collapsedPaths.has(pathKey) ? collapsedPaths.delete(pathKey) : collapsedPaths.add(pathKey);
+          renderTree(currentJson);
+        });
+        row.append(toggle);
+
+        const keyClass = typeof key === 'number' ? 'node-index' : 'node-key';
+        row.append(createText(String(key), keyClass));
+        row.append(createText(':', 'node-meta'));
+
+        if (isContainer) {
+          const entries = getChildrenEntries(value);
+          const open = type === 'array' ? '[' : '{';
+          const close = type === 'array' ? ']' : '}';
+          const label = type === 'array' ? copy.labels.items : copy.labels.props;
+          row.append(createText(`${open} `, 'node-meta'));
+          row.append(createText(`${entries.length} ${label}`, 'node-summary'));
+          row.append(createText(` ${close}`, 'node-meta'));
+        } else {
+          row.append(renderPrimitive(value, path));
+        }
+
         node.append(row);
-        if (isContainer && !isCollapsed) { const children = document.createElement('div'); children.className = 'node-children'; children.setAttribute('role', 'group'); const entries = getChildrenEntries(value); if (!entries.length) children.append(createText(type === 'array' ? copy.labels.emptyArray : copy.labels.emptyObject, 'tree-empty')); else entries.forEach(([childKey, childValue]) => children.append(renderNode(childKey, childValue, [...path, childKey], depth + 1))); node.append(children); }
+
+        if (isContainer && !isCollapsed) {
+          const children = document.createElement('div');
+          children.className = 'node-children';
+          children.setAttribute('role', 'group');
+          const entries = getChildrenEntries(value);
+          if (!entries.length) {
+            children.append(createText(type === 'array' ? copy.labels.emptyArray : copy.labels.emptyObject, 'tree-empty'));
+          } else {
+            entries.forEach(([childKey, childValue]) => children.append(renderNode(childKey, childValue, [...path, childKey], depth + 1)));
+          }
+          node.append(children);
+        }
+
         return node;
+      };
+
+      const renderRootSummary = (data) => {
+        const type = getType(data);
+        if (type !== 'array') return null;
+        const row = document.createElement('div');
+        row.className = 'node-row';
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'toggle';
+        toggle.textContent = collapsedPaths.has('$') ? '›' : '⌄';
+        toggle.addEventListener('click', () => {
+          collapsedPaths.has('$') ? collapsedPaths.delete('$') : collapsedPaths.add('$');
+          renderTree(currentJson);
+        });
+        row.append(toggle, createText('[', 'node-meta'), createText(`${data.length} ${copy.labels.items}`, 'node-summary'), createText(']', 'node-meta'));
+        return row;
       };
 
       const renderTree = (data) => {
         tree.replaceChildren();
-        if (!hasCurrentJson) { tree.append(createText(t.placeholders.output, 'tree-empty')); treeBadge.textContent = '0 items'; return; }
-        tree.append(renderNode(null, data, [], 0));
-        if (!document.getElementById('jsonBooleanValues')) { const datalist = document.createElement('datalist'); datalist.id = 'jsonBooleanValues'; datalist.append(new Option('true'), new Option('false')); document.body.append(datalist); }
+        if (!hasCurrentJson) {
+          tree.append(createText(t.placeholders.output, 'tree-empty'));
+          treeBadge.textContent = '0 items';
+          return;
+        }
+
+        const rootType = getType(data);
+        const rootCollapsed = collapsedPaths.has('$');
+        const rootSummary = renderRootSummary(data);
+        if (rootSummary) tree.append(rootSummary);
+
+        if (!rootCollapsed) {
+          const entries = rootType === 'array' || rootType === 'object' ? getChildrenEntries(data) : [[copy.labels.value || 'value', data]];
+          if (!entries.length) {
+            tree.append(createText(rootType === 'array' ? copy.labels.emptyArray : copy.labels.emptyObject, 'tree-empty'));
+          } else {
+            entries.forEach(([childKey, childValue]) => tree.append(renderNode(childKey, childValue, [childKey], rootType === 'array' ? 1 : 0)));
+          }
+        }
       };
 
-      const collectContainerPaths = (value, path = [], paths = []) => { const type = getType(value); if (type === 'array' || type === 'object') { paths.push(pathToKey(path)); getChildrenEntries(value).forEach(([childKey, childValue]) => collectContainerPaths(childValue, [...path, childKey], paths)); } return paths; };
+      const collectContainerPaths = (value, path = [], paths = []) => {
+        const type = getType(value);
+        if (type === 'array' || type === 'object') {
+          paths.push(pathToKey(path));
+          getChildrenEntries(value).forEach(([childKey, childValue]) => collectContainerPaths(childValue, [...path, childKey], paths));
+        }
+        return paths;
+      };
 
       const updateFromInput = (formatInput = false, successMessage = copy.messages.validTree) => {
-        if (!input.value.trim()) { hasCurrentJson = false; currentJson = null; output.value = ''; renderTree(null); updateStats(null); setStatus(copy.messages.ready); return; }
-        try { const result = tryParseOrRepair(); if (formatInput || result.repaired) input.value = JSON.stringify(result.data, null, 2); syncJson(result.data, result.repaired ? copy.messages.repaired : successMessage, result.repaired, result.repaired ? JSON.stringify(result.data, null, 2) : null); }
-        catch { hasCurrentJson = false; currentJson = null; output.value = closeLooseJson(input.value) || input.value; renderTree(null); updateStats(null); setStatus(copy.messages.repairFailed, true); }
+        if (!input.value.trim()) {
+          hasCurrentJson = false;
+          currentJson = null;
+          output.value = '';
+          renderTree(null);
+          updateStats(null);
+          setStatus(copy.messages.ready);
+          return;
+        }
+        try {
+          const result = tryParseOrRepair();
+          if (formatInput || result.repaired) input.value = JSON.stringify(result.data, null, 2);
+          syncJson(result.data, result.repaired ? copy.messages.repaired : successMessage, result.repaired);
+        } catch {
+          hasCurrentJson = false;
+          currentJson = null;
+          output.value = closeLooseJson(input.value) || input.value;
+          renderTree(null);
+          updateStats(null);
+          setStatus(copy.messages.repairFailed, true);
+        }
       };
 
       formatBtn.onclick = () => updateFromInput(true, copy.messages.formatted);
       validateBtn.onclick = () => updateFromInput(false, copy.messages.valid);
-      minifyBtn.onclick = () => { if (!input.value.trim()) { setStatus(copy.messages.pasteFirst, true); return; } try { const result = tryParseOrRepair(); currentJson = result.data; hasCurrentJson = true; output.value = JSON.stringify(result.data); lastValidText = JSON.stringify(result.data, null, 2); renderTree(result.data); updateStats(result.data); setStatus(result.repaired ? copy.messages.repaired : copy.messages.minified, result.repaired); } catch { output.value = closeLooseJson(input.value) || input.value; setStatus(copy.messages.repairFailed, true); } };
+      minifyBtn.onclick = () => {
+        if (!input.value.trim()) { setStatus(copy.messages.pasteFirst, true); return; }
+        try {
+          const result = tryParseOrRepair();
+          currentJson = result.data;
+          hasCurrentJson = true;
+          output.value = JSON.stringify(result.data);
+          lastValidText = JSON.stringify(result.data, null, 2);
+          renderTree(result.data);
+          updateStats(result.data);
+          setStatus(result.repaired ? copy.messages.repaired : copy.messages.minified, result.repaired);
+        } catch {
+          output.value = closeLooseJson(input.value) || input.value;
+          setStatus(copy.messages.repairFailed, true);
+        }
+      };
       expandAllBtn.onclick = () => { collapsedPaths.clear(); renderTree(currentJson); setStatus(copy.messages.expandedAll); };
-      collapseAllBtn.onclick = () => { if (!hasCurrentJson) return; collapsedPaths.clear(); collectContainerPaths(currentJson).forEach((path) => collapsedPaths.add(path)); renderTree(currentJson); setStatus(copy.messages.collapsedAll); };
-      rootToggleBtn.onclick = () => { if (!hasCurrentJson) return; collapsedPaths.has('$') ? collapsedPaths.delete('$') : collapsedPaths.add('$'); renderTree(currentJson); };
-      clearBtn.onclick = () => { input.value = ''; output.value = ''; currentJson = null; hasCurrentJson = false; lastValidText = ''; collapsedPaths.clear(); renderTree(null); updateStats(null); setStatus(copy.messages.cleared); };
-      copyBtn.onclick = async () => { const text = output.value || lastValidText; if (!text.trim()) { setStatus(copy.messages.noResult, true); return; } try { await navigator.clipboard.writeText(text); setStatus(copy.messages.copied); } catch { output.focus(); output.select(); setStatus(copy.messages.copyError, true); } };
-      downloadBtn.onclick = () => { const text = output.value || lastValidText; if (!text.trim()) { setStatus(copy.messages.noResult, true); return; } const blob = new Blob([text], { type: 'application/json' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'data.json'; link.click(); URL.revokeObjectURL(url); setStatus(copy.messages.downloaded); };
-      sampleBtn.onclick = () => { collapsedPaths.clear(); input.value = JSON.stringify(sampleJson, null, 2); syncJson(sampleJson, copy.messages.sampleLoaded); };
+      collapseAllBtn.onclick = () => {
+        if (!hasCurrentJson) return;
+        collapsedPaths.clear();
+        collectContainerPaths(currentJson).forEach((path) => collapsedPaths.add(path));
+        renderTree(currentJson);
+        setStatus(copy.messages.collapsedAll);
+      };
+      rootToggleBtn.onclick = () => {
+        if (!hasCurrentJson) return;
+        collapsedPaths.has('$') ? collapsedPaths.delete('$') : collapsedPaths.add('$');
+        renderTree(currentJson);
+      };
+      clearBtn.onclick = () => {
+        input.value = '';
+        output.value = '';
+        currentJson = null;
+        hasCurrentJson = false;
+        lastValidText = '';
+        collapsedPaths.clear();
+        renderTree(null);
+        updateStats(null);
+        setStatus(copy.messages.cleared);
+      };
+      copyBtn.onclick = async () => {
+        const text = output.value || lastValidText;
+        if (!text.trim()) { setStatus(copy.messages.noResult, true); return; }
+        try { await navigator.clipboard.writeText(text); setStatus(copy.messages.copied); }
+        catch { output.focus(); output.select(); setStatus(copy.messages.copyError, true); }
+      };
+      downloadBtn.onclick = () => {
+        const text = output.value || lastValidText;
+        if (!text.trim()) { setStatus(copy.messages.noResult, true); return; }
+        const blob = new Blob([text], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'data.json';
+        link.click();
+        URL.revokeObjectURL(url);
+        setStatus(copy.messages.downloaded);
+      };
+      sampleBtn.onclick = () => {
+        collapsedPaths.clear();
+        input.value = JSON.stringify(sampleJson, null, 2);
+        syncJson(sampleJson, copy.messages.sampleLoaded);
+      };
       input.addEventListener('input', () => updateFromInput(false));
-      input.addEventListener('keydown', (event) => { if (event.key === 'Tab') { event.preventDefault(); input.setRangeText(INDENT, input.selectionStart, input.selectionEnd, 'end'); } });
-      renderTree(null); updateStats(null);
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Tab') {
+          event.preventDefault();
+          input.setRangeText(INDENT, input.selectionStart, input.selectionEnd, 'end');
+        }
+      });
+      renderTree(null);
+      updateStats(null);
     });
   </script>
 </Layout>
