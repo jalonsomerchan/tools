@@ -6,16 +6,40 @@ import type { Lang } from '../i18n/ui';
 const { lang } = Astro.props as { lang: Lang };
 const copy = homeTranslations[lang];
 const categories = getCatalogByCategory(lang);
-const extraTool = {
-  category: lang === 'es' ? 'Imágenes' : 'Images',
-  path: '/screenshot-enhancer/',
-  icon: 'SHOT',
-  title: lang === 'es' ? 'Mejorador de capturas' : 'Screenshot enhancer',
-  description: lang === 'es'
-    ? 'Convierte capturas en imágenes profesionales con fondos, colores y exportación PNG, JPG, WebP o SVG.'
-    : 'Turn screenshots into polished images with backgrounds, colors and PNG, JPG, WebP or SVG exports.'
-};
-const totalTools = categories.reduce((total, category) => total + category.items.length, 0) + 1;
+const extraTools = [
+  {
+    category: lang === 'es' ? 'Imágenes' : 'Images',
+    path: '/screenshot-enhancer/',
+    icon: 'SHOT',
+    title: lang === 'es' ? 'Mejorador de capturas' : 'Screenshot enhancer',
+    description: lang === 'es'
+      ? 'Convierte capturas en imágenes profesionales con fondos, colores y exportación PNG, JPG, WebP o SVG.'
+      : 'Turn screenshots into polished images with backgrounds, colors and PNG, JPG, WebP or SVG exports.',
+    search: 'screenshot capture captura imagen fondos svg'
+  },
+  {
+    category: lang === 'es' ? 'Desarrollo' : 'Development',
+    path: '/uuid-generator/',
+    icon: 'UUID',
+    title: lang === 'es' ? 'Generador de UUID y claves' : 'UUID and random key generator',
+    description: lang === 'es'
+      ? 'Genera UUID v4 y cadenas aleatorias con Web Crypto, todo local en el navegador.'
+      : 'Generate UUID v4 values and random strings with Web Crypto, fully local in the browser.',
+    search: 'uuid random key clave token crypto'
+  },
+  {
+    category: lang === 'es' ? 'Desarrollo' : 'Development',
+    path: '/password-generator/',
+    icon: 'PASS',
+    title: lang === 'es' ? 'Generador de contraseñas' : 'Password and passphrase generator',
+    description: lang === 'es'
+      ? 'Crea contraseñas y frases seguras sin guardar datos ni hacer llamadas de red.'
+      : 'Create passwords and secure passphrases without storing data or making network calls.',
+    search: 'password contraseña passphrase seguridad crypto'
+  }
+];
+const extraCategories = [...new Set(extraTools.map((tool) => tool.category))];
+const totalTools = categories.reduce((total, category) => total + category.items.length, 0) + extraTools.length;
 ---
 
 <Layout title={copy.title} description={copy.description} lang={lang} path="/" translated={true}>
@@ -54,33 +78,37 @@ const totalTools = categories.reduce((total, category) => total + category.items
 
     <div class="category-filters" aria-label={copy.categoryFilters}>
       <button class="filter-button active" type="button" data-category-filter="all">{copy.filterAll}</button>
-      {categories.map((category) => (
-        <button class="filter-button" type="button" data-category-filter={category.title}>{category.title}</button>
-      ))}
+      {[...extraCategories, ...categories.map((category) => category.title)]
+        .filter((title, index, all) => all.indexOf(title) === index)
+        .map((title) => (
+          <button class="filter-button" type="button" data-category-filter={title}>{title}</button>
+        ))}
     </div>
   </section>
 
   <p class="empty-state" id="emptyState" hidden>{copy.emptyState}</p>
 
-  <section class="category-section" data-category-section={extraTool.category}>
+  <section class="category-section" data-category-section={lang === 'es' ? 'Nuevas herramientas' : 'New tools'}>
     <div class="category-header">
-      <h2>{lang === 'es' ? 'Nueva herramienta' : 'New tool'}</h2>
+      <h2>{lang === 'es' ? 'Nuevas herramientas' : 'New tools'}</h2>
     </div>
 
     <div class="directory-grid">
-      <a
-        class="tool-link-card featured-tool"
-        href={extraTool.path}
-        data-tool-card
-        data-category={extraTool.category}
-        data-search={`${extraTool.title} ${extraTool.description} screenshot capture captura imagen fondos svg ${extraTool.category}`.toLowerCase()}
-      >
-        <div class="tool-icon">{extraTool.icon}</div>
-        <div>
-          <strong>{extraTool.title}</strong>
-          <small>{extraTool.description}</small>
-        </div>
-      </a>
+      {extraTools.map((tool) => (
+        <a
+          class="tool-link-card featured-tool"
+          href={tool.path}
+          data-tool-card
+          data-category={tool.category}
+          data-search={`${tool.title} ${tool.description} ${tool.path} ${tool.icon} ${tool.search} ${tool.category}`.toLowerCase()}
+        >
+          <div class="tool-icon">{tool.icon}</div>
+          <div>
+            <strong>{tool.title}</strong>
+            <small>{tool.description}</small>
+          </div>
+        </a>
+      ))}
     </div>
   </section>
 
