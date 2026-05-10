@@ -105,21 +105,6 @@ const ui = {
     .tree-status span { display: inline-flex; border-radius: 999px; padding: .2rem .55rem; background: rgba(255,255,255,.1); color: #cbd5e1; font-size: .85rem; }
     .tree-status button { min-height: 1.8rem; padding: .1rem .4rem; border-radius: .4rem; background: transparent; color: #e5e7eb; box-shadow: none; font-size: 1.2rem; }
     .json-tree { --indent: 2.15rem; flex: 1; max-height: 640px; overflow: auto; background: #111827; color: #d1d5db; padding: .75rem .75rem 2rem; font-family: var(--font-mono); font-size: .94rem; }
-    .tree-empty { margin: 1rem; color: #9ca3af; font-family: var(--font-sans); }
-    .tree-node { --depth: 0; position: relative; }
-    .tree-node::before { content: ''; position: absolute; left: calc((var(--depth) * var(--indent)) + .62rem); top: 0; bottom: 0; border-left: 1px dotted rgba(255,255,255,.18); pointer-events: none; }
-    .tree-node[data-depth='0']::before { display: none; }
-    .node-row { display: flex; align-items: baseline; gap: .35rem; min-height: 1.75rem; width: fit-content; min-width: max-content; margin-left: calc(var(--depth) * var(--indent)); padding: .1rem .35rem .1rem .1rem; border-radius: .35rem; white-space: nowrap; }
-    .node-row:hover { background: rgba(255,255,255,.06); }
-    .toggle { width: 1.25rem; min-width: 1.25rem; min-height: 1.25rem; padding: 0; border: 0; background: transparent; color: #a3a3a3; box-shadow: none; border-radius: .25rem; font-size: 1.05rem; line-height: 1; }
-    .toggle.placeholder { visibility: hidden; }
-    .node-key { color: #93c5fd; font-weight: 850; }
-    .node-index { color: #a3a3a3; font-weight: 850; }
-    .node-meta { color: #9ca3af; }
-    .node-summary { color: #9ca3af; border-radius: .35rem; padding: .08rem .38rem; background: rgba(255,255,255,.08); }
-    .node-children { position: relative; }
-    .primitive-value { border-radius: .25rem; padding: .02rem .15rem; }
-    .type-string { color: #d69a7c; } .type-number { color: #86efac; } .type-boolean { color: #fbbf24; } .type-null { color: #c4b5fd; }
     .output-details { margin-top: .85rem; border: 1px solid var(--border); border-radius: 16px; background: var(--color-surface); overflow: hidden; }
     .output-details summary { cursor: pointer; padding: .8rem 1rem; color: var(--color-text); font-weight: 900; }
     .output-details textarea { min-height: 220px; max-height: 360px; }
@@ -129,6 +114,26 @@ const ui = {
     .status { margin: .85rem 0 0; color: var(--muted); white-space: pre-wrap; }
     @media (max-width: 980px) { .editor-shell { grid-template-columns: 1fr; min-height: auto; } .text-pane { border-right: 0; border-bottom: 1px solid #374151; } textarea { min-height: 340px; } .json-tree { max-height: 520px; } .stats-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 560px) { .json-tool { margin-inline: -.35rem; } .toolbar button { flex: 1 1 calc(50% - .55rem); padding-inline: .5rem; } .json-tree { --indent: 1.55rem; font-size: .86rem; } .stats-grid { grid-template-columns: 1fr; } }
+  </style>
+
+  <style is:global>
+    .json-tree .tree-empty { margin: 1rem; color: #9ca3af; font-family: var(--font-sans); }
+    .json-tree .tree-node { --depth: 0; position: relative; }
+    .json-tree .tree-node::before { content: ''; position: absolute; left: calc((var(--depth) * var(--indent)) + .62rem); top: 0; bottom: 0; border-left: 1px dotted rgba(255,255,255,.18); pointer-events: none; }
+    .json-tree .tree-node[data-depth='0']::before { display: none; }
+    .json-tree .node-row { display: flex; align-items: baseline; gap: .35rem; min-height: 1.75rem; width: fit-content; min-width: max-content; margin-left: calc(var(--depth) * var(--indent)); padding: .1rem .35rem .1rem .1rem; border-radius: .35rem; white-space: nowrap; }
+    .json-tree .node-row:hover { background: rgba(255,255,255,.06); }
+    .json-tree .toggle { width: 1.25rem; min-width: 1.25rem; min-height: 1.25rem; padding: 0; border: 0; background: transparent; color: #a3a3a3; box-shadow: none; border-radius: .25rem; font-size: 1.05rem; line-height: 1; }
+    .json-tree .toggle.placeholder { visibility: hidden; }
+    .json-tree .node-key { color: #93c5fd; font-weight: 850; }
+    .json-tree .node-index { color: #a3a3a3; font-weight: 850; }
+    .json-tree .node-meta { color: #9ca3af; }
+    .json-tree .node-summary { color: #9ca3af; border-radius: .35rem; padding: .08rem .38rem; background: rgba(255,255,255,.08); }
+    .json-tree .primitive-value { border-radius: .25rem; padding: .02rem .15rem; }
+    .json-tree .type-string { color: #d69a7c; }
+    .json-tree .type-number { color: #86efac; }
+    .json-tree .type-boolean { color: #fbbf24; }
+    .json-tree .type-null { color: #c4b5fd; }
   </style>
 
   <script define:vars={{ copy: ui }}>
@@ -152,30 +157,17 @@ const ui = {
       const statObjects = document.getElementById('statObjects');
       const statArrays = document.getElementById('statArrays');
       const statSize = document.getElementById('statSize');
-
       const INDENT = '  ';
       const collapsedPaths = new Set();
       let currentJson = null;
       let hasCurrentJson = false;
       let lastValidText = '';
-
-      const sampleJson = [
-        { name: 'La1.TV', events: [{ hi: 1778302800, hf: 1778313600, t: 'Noticias 24H', d: 'Noticias de actualidad.', g: 'NEWS' }] },
-        { name: 'La2.TV', events: [{ hi: 1778313600, hf: 1778315400, t: 'Audiencia abierta', d: 'Espacio de servicio público.', g: 'NEWS' }] },
-        { name: '24H.TV', events: [] }
-      ];
-
-      const setStatus = (message, error = false) => {
-        status.textContent = message;
-        status.style.color = error ? '#fca5a5' : 'var(--muted)';
-        input.dataset.invalid = String(error);
-        output.dataset.invalid = String(error);
-      };
+      const sampleJson = [{ name: 'La1.TV', events: [{ hi: 1778302800, hf: 1778313600, t: 'Noticias 24H', d: 'Noticias de actualidad.', g: 'NEWS' }] }, { name: 'La2.TV', events: [{ hi: 1778313600, hf: 1778315400, t: 'Audiencia abierta', d: 'Espacio de servicio público.', g: 'NEWS' }] }, { name: '24H.TV', events: [] }];
+      const setStatus = (message, error = false) => { status.textContent = message; status.style.color = error ? '#fca5a5' : 'var(--muted)'; input.dataset.invalid = String(error); output.dataset.invalid = String(error); };
       const getType = (value) => value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value;
       const pathToKey = (path) => path.length ? path.map(String).join('.') : '$';
       const getChildrenEntries = (value) => Array.isArray(value) ? value.map((item, index) => [index, item]) : value && typeof value === 'object' ? Object.entries(value) : [];
       const formatBytes = (bytes) => bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(1)} MB`;
-      const parseJson = (value) => JSON.parse(value);
       const stripUnsafeTrailingTokens = (value) => value.replace(/[,{:\s]*$/u, '').replace(/,\s*([}\]])/gu, '$1');
       const closeLooseJson = (raw) => {
         let text = raw.trim();
@@ -185,12 +177,7 @@ const ui = {
         let escaped = false;
         let lastToken = '';
         for (const char of text) {
-          if (inString) {
-            if (escaped) { escaped = false; continue; }
-            if (char === '\\') { escaped = true; continue; }
-            if (char === '"') inString = false;
-            continue;
-          }
+          if (inString) { if (escaped) { escaped = false; continue; } if (char === '\\') { escaped = true; continue; } if (char === '"') inString = false; continue; }
           if (char === '"') { inString = true; lastToken = char; continue; }
           if (char === '{') { stack.push('}'); lastToken = char; continue; }
           if (char === '[') { stack.push(']'); lastToken = char; continue; }
@@ -202,240 +189,47 @@ const ui = {
         if (lastToken === ':') text += 'null';
         return text + stack.reverse().join('');
       };
-      const tryParseOrRepair = () => {
-        try { return { data: parseJson(input.value), repaired: false }; }
-        catch (error) {
-          const repairedText = closeLooseJson(input.value);
-          if (!repairedText) throw error;
-          return { data: parseJson(repairedText), repaired: true };
-        }
-      };
+      const tryParseOrRepair = () => { try { return { data: JSON.parse(input.value), repaired: false }; } catch (error) { const repairedText = closeLooseJson(input.value); if (!repairedText) throw error; return { data: JSON.parse(repairedText), repaired: true }; } };
       const updateStats = (data) => {
         const stats = { nodes: 0, objects: 0, arrays: 0 };
-        const walk = (value) => {
-          stats.nodes += 1;
-          if (Array.isArray(value)) { stats.arrays += 1; value.forEach(walk); return; }
-          if (value && typeof value === 'object') { stats.objects += 1; Object.values(value).forEach(walk); }
-        };
+        const walk = (value) => { stats.nodes += 1; if (Array.isArray(value)) { stats.arrays += 1; value.forEach(walk); return; } if (value && typeof value === 'object') { stats.objects += 1; Object.values(value).forEach(walk); } };
         if (hasCurrentJson) walk(data);
-        statNodes.textContent = String(stats.nodes);
-        statObjects.textContent = String(stats.objects);
-        statArrays.textContent = String(stats.arrays);
-        statSize.textContent = formatBytes(new Blob([output.value || input.value || '']).size);
+        statNodes.textContent = String(stats.nodes); statObjects.textContent = String(stats.objects); statArrays.textContent = String(stats.arrays); statSize.textContent = formatBytes(new Blob([output.value || input.value || '']).size);
         const rootCount = hasCurrentJson && (Array.isArray(data) || (data && typeof data === 'object')) ? getChildrenEntries(data).length : 0;
         treeBadge.textContent = `${rootCount} ${Array.isArray(data) ? copy.items : copy.props}`;
       };
-      const createText = (text, className) => {
-        const span = document.createElement('span');
-        span.textContent = text;
-        if (className) span.className = className;
-        return span;
-      };
-      const formatPrimitive = (value) => {
-        const type = getType(value);
-        if (type === 'string') return value;
-        if (type === 'null') return 'null';
-        return String(value);
-      };
-      const renderPrimitive = (value) => createText(formatPrimitive(value), `primitive-value type-${getType(value)}`);
-      const renderToggle = (pathKey, isContainer, isCollapsed) => {
-        const toggle = document.createElement('button');
-        toggle.type = 'button';
-        toggle.className = isContainer ? 'toggle' : 'toggle placeholder';
-        toggle.textContent = isCollapsed ? '›' : '⌄';
-        toggle.addEventListener('click', () => {
-          collapsedPaths.has(pathKey) ? collapsedPaths.delete(pathKey) : collapsedPaths.add(pathKey);
-          renderTree(currentJson);
-        });
-        return toggle;
-      };
+      const createText = (text, className) => { const span = document.createElement('span'); span.textContent = text; if (className) span.className = className; return span; };
+      const renderPrimitive = (value) => { const type = getType(value); const text = type === 'string' ? value : type === 'null' ? 'null' : String(value); return createText(text, `primitive-value type-${type}`); };
+      const renderToggle = (pathKey, isContainer, isCollapsed) => { const toggle = document.createElement('button'); toggle.type = 'button'; toggle.className = isContainer ? 'toggle' : 'toggle placeholder'; toggle.textContent = isCollapsed ? '›' : '⌄'; toggle.addEventListener('click', () => { collapsedPaths.has(pathKey) ? collapsedPaths.delete(pathKey) : collapsedPaths.add(pathKey); renderTree(currentJson); }); return toggle; };
       const renderNode = (key, value, path, depth = 0) => {
-        const type = getType(value);
-        const isContainer = type === 'array' || type === 'object';
-        const pathKey = pathToKey(path);
-        const isCollapsed = collapsedPaths.has(pathKey);
-        const node = document.createElement('div');
-        node.className = 'tree-node';
-        node.dataset.depth = String(depth);
-        node.style.setProperty('--depth', String(depth));
-        node.setAttribute('role', 'treeitem');
-        node.setAttribute('aria-expanded', isContainer ? String(!isCollapsed) : 'false');
-        const row = document.createElement('div');
-        row.className = 'node-row';
-        row.append(renderToggle(pathKey, isContainer, isCollapsed));
-        row.append(createText(String(key), typeof key === 'number' ? 'node-index' : 'node-key'));
-        row.append(createText(':', 'node-meta'));
-        if (isContainer) {
-          const entries = getChildrenEntries(value);
-          const open = type === 'array' ? '[' : '{';
-          const close = type === 'array' ? ']' : '}';
-          const label = type === 'array' ? copy.items : copy.props;
-          row.append(createText(`${open} `, 'node-meta'), createText(`${entries.length} ${label}`, 'node-summary'), createText(` ${close}`, 'node-meta'));
-        } else {
-          row.append(renderPrimitive(value));
-        }
+        const type = getType(value); const isContainer = type === 'array' || type === 'object'; const pathKey = pathToKey(path); const isCollapsed = collapsedPaths.has(pathKey);
+        const node = document.createElement('div'); node.className = 'tree-node'; node.dataset.depth = String(depth); node.style.setProperty('--depth', String(depth)); node.setAttribute('role', 'treeitem'); node.setAttribute('aria-expanded', isContainer ? String(!isCollapsed) : 'false');
+        const row = document.createElement('div'); row.className = 'node-row'; row.append(renderToggle(pathKey, isContainer, isCollapsed)); row.append(createText(String(key), typeof key === 'number' ? 'node-index' : 'node-key')); row.append(createText(':', 'node-meta'));
+        if (isContainer) { const entries = getChildrenEntries(value); const open = type === 'array' ? '[' : '{'; const close = type === 'array' ? ']' : '}'; const label = type === 'array' ? copy.items : copy.props; row.append(createText(`${open} `, 'node-meta'), createText(`${entries.length} ${label}`, 'node-summary'), createText(` ${close}`, 'node-meta')); } else { row.append(renderPrimitive(value)); }
         node.append(row);
         if (isContainer && !isCollapsed) {
-          getChildrenEntries(value).forEach(([childKey, childValue]) => node.append(renderNode(childKey, childValue, [...path, childKey], depth + 1)));
-          if (!getChildrenEntries(value).length) {
-            const empty = document.createElement('div');
-            empty.className = 'tree-node';
-            empty.dataset.depth = String(depth + 1);
-            empty.style.setProperty('--depth', String(depth + 1));
-            const emptyRow = document.createElement('div');
-            emptyRow.className = 'node-row';
-            emptyRow.append(createText(type === 'array' ? copy.emptyArray : copy.emptyObject, 'tree-empty'));
-            empty.append(emptyRow);
-            node.append(empty);
-          }
+          const entries = getChildrenEntries(value);
+          if (entries.length) entries.forEach(([childKey, childValue]) => node.append(renderNode(childKey, childValue, [...path, childKey], depth + 1)));
+          else { const empty = document.createElement('div'); empty.className = 'tree-node'; empty.dataset.depth = String(depth + 1); empty.style.setProperty('--depth', String(depth + 1)); const emptyRow = document.createElement('div'); emptyRow.className = 'node-row'; emptyRow.append(createText(type === 'array' ? copy.emptyArray : copy.emptyObject, 'tree-empty')); empty.append(emptyRow); node.append(empty); }
         }
         return node;
       };
-      const renderRootSummary = (data) => {
-        if (!Array.isArray(data)) return null;
-        const row = document.createElement('div');
-        row.className = 'node-row root-row';
-        const toggle = document.createElement('button');
-        toggle.type = 'button';
-        toggle.className = 'toggle';
-        toggle.textContent = collapsedPaths.has('$') ? '›' : '⌄';
-        toggle.addEventListener('click', () => {
-          collapsedPaths.has('$') ? collapsedPaths.delete('$') : collapsedPaths.add('$');
-          renderTree(currentJson);
-        });
-        row.append(toggle, createText('[', 'node-meta'), createText(`${data.length} ${copy.items}`, 'node-summary'), createText(']', 'node-meta'));
-        return row;
-      };
-      const renderTree = (data) => {
-        tree.replaceChildren();
-        if (!hasCurrentJson) {
-          tree.append(createText(t.placeholders.output, 'tree-empty'));
-          treeBadge.textContent = '0 items';
-          return;
-        }
-        const rootType = getType(data);
-        const rootSummary = renderRootSummary(data);
-        if (rootSummary) tree.append(rootSummary);
-        if (collapsedPaths.has('$')) return;
-        const entries = rootType === 'array' || rootType === 'object' ? getChildrenEntries(data) : [[copy.value, data]];
-        if (!entries.length) {
-          tree.append(createText(rootType === 'array' ? copy.emptyArray : copy.emptyObject, 'tree-empty'));
-          return;
-        }
-        const startDepth = rootType === 'array' ? 1 : 0;
-        entries.forEach(([childKey, childValue]) => tree.append(renderNode(childKey, childValue, [childKey], startDepth)));
-      };
-      const collectContainerPaths = (value, path = [], paths = []) => {
-        const type = getType(value);
-        if (type === 'array' || type === 'object') {
-          paths.push(pathToKey(path));
-          getChildrenEntries(value).forEach(([childKey, childValue]) => collectContainerPaths(childValue, [...path, childKey], paths));
-        }
-        return paths;
-      };
-      const updateFromInput = (formatInput = false, successMessage = copy.messages.validTree) => {
-        if (!input.value.trim()) {
-          hasCurrentJson = false;
-          currentJson = null;
-          output.value = '';
-          renderTree(null);
-          updateStats(null);
-          setStatus(copy.messages.ready);
-          return;
-        }
-        try {
-          const result = tryParseOrRepair();
-          if (formatInput || result.repaired) input.value = JSON.stringify(result.data, null, 2);
-          currentJson = result.data;
-          hasCurrentJson = true;
-          lastValidText = JSON.stringify(result.data, null, 2);
-          output.value = lastValidText;
-          renderTree(result.data);
-          updateStats(result.data);
-          setStatus(result.repaired ? copy.messages.repaired : successMessage, result.repaired);
-        } catch {
-          hasCurrentJson = false;
-          currentJson = null;
-          output.value = closeLooseJson(input.value) || input.value;
-          renderTree(null);
-          updateStats(null);
-          setStatus(copy.messages.repairFailed, true);
-        }
-      };
-      formatBtn.onclick = () => updateFromInput(true, copy.messages.formatted);
-      validateBtn.onclick = () => updateFromInput(false, copy.messages.valid);
-      minifyBtn.onclick = () => {
-        if (!input.value.trim()) { setStatus(copy.messages.pasteFirst, true); return; }
-        try {
-          const result = tryParseOrRepair();
-          currentJson = result.data;
-          hasCurrentJson = true;
-          output.value = JSON.stringify(result.data);
-          lastValidText = JSON.stringify(result.data, null, 2);
-          renderTree(result.data);
-          updateStats(result.data);
-          setStatus(result.repaired ? copy.messages.repaired : copy.messages.minified, result.repaired);
-        } catch {
-          output.value = closeLooseJson(input.value) || input.value;
-          setStatus(copy.messages.repairFailed, true);
-        }
-      };
+      const renderRootSummary = (data) => { if (!Array.isArray(data)) return null; const row = document.createElement('div'); row.className = 'node-row root-row'; const toggle = document.createElement('button'); toggle.type = 'button'; toggle.className = 'toggle'; toggle.textContent = collapsedPaths.has('$') ? '›' : '⌄'; toggle.addEventListener('click', () => { collapsedPaths.has('$') ? collapsedPaths.delete('$') : collapsedPaths.add('$'); renderTree(currentJson); }); row.append(toggle, createText('[', 'node-meta'), createText(`${data.length} ${copy.items}`, 'node-summary'), createText(']', 'node-meta')); return row; };
+      const renderTree = (data) => { tree.replaceChildren(); if (!hasCurrentJson) { tree.append(createText(t.placeholders.output, 'tree-empty')); treeBadge.textContent = '0 items'; return; } const rootType = getType(data); const rootSummary = renderRootSummary(data); if (rootSummary) tree.append(rootSummary); if (collapsedPaths.has('$')) return; const entries = rootType === 'array' || rootType === 'object' ? getChildrenEntries(data) : [[copy.value, data]]; if (!entries.length) { tree.append(createText(rootType === 'array' ? copy.emptyArray : copy.emptyObject, 'tree-empty')); return; } const startDepth = rootType === 'array' ? 1 : 0; entries.forEach(([childKey, childValue]) => tree.append(renderNode(childKey, childValue, [childKey], startDepth))); };
+      const collectContainerPaths = (value, path = [], paths = []) => { const type = getType(value); if (type === 'array' || type === 'object') { paths.push(pathToKey(path)); getChildrenEntries(value).forEach(([childKey, childValue]) => collectContainerPaths(childValue, [...path, childKey], paths)); } return paths; };
+      const updateFromInput = (formatInput = false, successMessage = copy.messages.validTree) => { if (!input.value.trim()) { hasCurrentJson = false; currentJson = null; output.value = ''; renderTree(null); updateStats(null); setStatus(copy.messages.ready); return; } try { const result = tryParseOrRepair(); if (formatInput || result.repaired) input.value = JSON.stringify(result.data, null, 2); currentJson = result.data; hasCurrentJson = true; lastValidText = JSON.stringify(result.data, null, 2); output.value = lastValidText; renderTree(result.data); updateStats(result.data); setStatus(result.repaired ? copy.messages.repaired : successMessage, result.repaired); } catch { hasCurrentJson = false; currentJson = null; output.value = closeLooseJson(input.value) || input.value; renderTree(null); updateStats(null); setStatus(copy.messages.repairFailed, true); } };
+      formatBtn.onclick = () => updateFromInput(true, copy.messages.formatted); validateBtn.onclick = () => updateFromInput(false, copy.messages.valid);
+      minifyBtn.onclick = () => { if (!input.value.trim()) { setStatus(copy.messages.pasteFirst, true); return; } try { const result = tryParseOrRepair(); currentJson = result.data; hasCurrentJson = true; output.value = JSON.stringify(result.data); lastValidText = JSON.stringify(result.data, null, 2); renderTree(result.data); updateStats(result.data); setStatus(result.repaired ? copy.messages.repaired : copy.messages.minified, result.repaired); } catch { output.value = closeLooseJson(input.value) || input.value; setStatus(copy.messages.repairFailed, true); } };
       expandAllBtn.onclick = () => { collapsedPaths.clear(); renderTree(currentJson); setStatus(copy.messages.expandedAll); };
-      collapseAllBtn.onclick = () => {
-        if (!hasCurrentJson) return;
-        collapsedPaths.clear();
-        collectContainerPaths(currentJson).forEach((path) => collapsedPaths.add(path));
-        renderTree(currentJson);
-        setStatus(copy.messages.collapsedAll);
-      };
-      rootToggleBtn.onclick = () => {
-        if (!hasCurrentJson) return;
-        collapsedPaths.has('$') ? collapsedPaths.delete('$') : collapsedPaths.add('$');
-        renderTree(currentJson);
-      };
-      clearBtn.onclick = () => {
-        input.value = '';
-        output.value = '';
-        currentJson = null;
-        hasCurrentJson = false;
-        lastValidText = '';
-        collapsedPaths.clear();
-        renderTree(null);
-        updateStats(null);
-        setStatus(copy.messages.cleared);
-      };
-      copyBtn.onclick = async () => {
-        const text = output.value || lastValidText;
-        if (!text.trim()) { setStatus(copy.messages.noResult, true); return; }
-        try { await navigator.clipboard.writeText(text); setStatus(copy.messages.copied); }
-        catch { output.focus(); output.select(); setStatus(copy.messages.copyError, true); }
-      };
-      downloadBtn.onclick = () => {
-        const text = output.value || lastValidText;
-        if (!text.trim()) { setStatus(copy.messages.noResult, true); return; }
-        const blob = new Blob([text], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'data.json';
-        link.click();
-        URL.revokeObjectURL(url);
-        setStatus(copy.messages.downloaded);
-      };
-      sampleBtn.onclick = () => {
-        collapsedPaths.clear();
-        input.value = JSON.stringify(sampleJson, null, 2);
-        updateFromInput(false, copy.messages.sampleLoaded);
-      };
+      collapseAllBtn.onclick = () => { if (!hasCurrentJson) return; collapsedPaths.clear(); collectContainerPaths(currentJson).forEach((path) => collapsedPaths.add(path)); renderTree(currentJson); setStatus(copy.messages.collapsedAll); };
+      rootToggleBtn.onclick = () => { if (!hasCurrentJson) return; collapsedPaths.has('$') ? collapsedPaths.delete('$') : collapsedPaths.add('$'); renderTree(currentJson); };
+      clearBtn.onclick = () => { input.value = ''; output.value = ''; currentJson = null; hasCurrentJson = false; lastValidText = ''; collapsedPaths.clear(); renderTree(null); updateStats(null); setStatus(copy.messages.cleared); };
+      copyBtn.onclick = async () => { const text = output.value || lastValidText; if (!text.trim()) { setStatus(copy.messages.noResult, true); return; } try { await navigator.clipboard.writeText(text); setStatus(copy.messages.copied); } catch { output.focus(); output.select(); setStatus(copy.messages.copyError, true); } };
+      downloadBtn.onclick = () => { const text = output.value || lastValidText; if (!text.trim()) { setStatus(copy.messages.noResult, true); return; } const blob = new Blob([text], { type: 'application/json' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'data.json'; link.click(); URL.revokeObjectURL(url); setStatus(copy.messages.downloaded); };
+      sampleBtn.onclick = () => { collapsedPaths.clear(); input.value = JSON.stringify(sampleJson, null, 2); updateFromInput(false, copy.messages.sampleLoaded); };
       input.addEventListener('input', () => updateFromInput(false));
-      input.addEventListener('keydown', (event) => {
-        if (event.key === 'Tab') {
-          event.preventDefault();
-          input.setRangeText(INDENT, input.selectionStart, input.selectionEnd, 'end');
-        }
-      });
-      renderTree(null);
-      updateStats(null);
+      input.addEventListener('keydown', (event) => { if (event.key === 'Tab') { event.preventDefault(); input.setRangeText(INDENT, input.selectionStart, input.selectionEnd, 'end'); } });
+      renderTree(null); updateStats(null);
     });
   </script>
 </Layout>
