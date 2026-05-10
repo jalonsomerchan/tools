@@ -5,340 +5,196 @@ const title = 'Generador de favicon';
 ---
 
 <Layout title={title}>
-  <section style="padding: 4rem 0;">
+  <section class="favicon-page">
     <div class="eyebrow">Alon Tools</div>
-
     <h1>{title}</h1>
-
     <p class="hero-text">
-      Crea favicons a partir de una imagen o de letras personalizadas con colores, formas y vista previa inmediata.
+      Diseña favicons completos con capas de imagen, texto e iconos. Recorta, mueve, escala, rota y exporta todos los tamaños necesarios para tu web.
     </p>
 
-    <section class="tool-card">
-      <div class="mode-tabs">
-        <button class="primary" id="lettersModeBtn">Letras</button>
-        <button id="imageModeBtn">Imagen</button>
+    <section class="tool-card favicon-editor" aria-labelledby="faviconEditorTitle">
+      <div class="editor-head">
+        <div>
+          <h2 id="faviconEditorTitle">Editor visual de favicon</h2>
+          <p>Sube una imagen o crea el favicon desde cero. Todo se edita directamente sobre el lienzo.</p>
+        </div>
+        <output id="exportInfo">7 tamaños seleccionados</output>
       </div>
 
-      <div id="lettersPanel" class="settings-grid">
-        <label>
-          Letras
-          <input id="lettersInput" type="text" maxlength="4" value="A" />
-        </label>
-
-        <label>
-          Color de fondo
-          <input id="backgroundColor" type="color" value="#38bdf8" />
-        </label>
-
-        <label>
-          Color del texto
-          <input id="textColor" type="color" value="#020617" />
-        </label>
-
-        <label>
-          Forma
-          <select id="shape">
-            <option value="rounded">Redondeado</option>
-            <option value="circle">Círculo</option>
-            <option value="square">Cuadrado</option>
-          </select>
-        </label>
-      </div>
-
-      <div id="imagePanel" class="settings-grid" hidden>
-        <label class="upload-btn">
-          Subir imagen
+      <div class="add-toolbar" aria-label="Añadir contenido">
+        <label class="add-card add-image" aria-label="Subir imagen para el favicon">
+          <span class="add-emoji" aria-hidden="true">🖼️</span>
+          <span><strong>Añadir imagen</strong><small>Arrastra, recorta y encaja en el favicon</small></span>
           <input id="imageInput" type="file" accept="image/*" hidden />
         </label>
-
-        <label>
-          Fondo para transparencias
-          <input id="imageBackground" type="color" value="#ffffff" />
-        </label>
+        <button class="add-card" id="addTextBtn" type="button" aria-label="Añadir texto">
+          <span class="add-emoji" aria-hidden="true">T</span>
+          <span><strong>Añadir texto</strong><small>Mueve, escala, rota y cambia el estilo</small></span>
+        </button>
+        <button class="add-card" id="addIconBtn" type="button" aria-label="Añadir icono">
+          <span class="add-emoji" aria-hidden="true">✦</span>
+          <span><strong>Añadir icono</strong><small>Iconos Lucide personalizables</small></span>
+        </button>
       </div>
 
-      <div class="preview-area">
-        <div class="favicon-preview large">
-          <canvas id="canvas128" width="128" height="128"></canvas>
-        </div>
-
-        <div class="sizes-row">
-          <canvas id="canvas64" width="64" height="64"></canvas>
-          <canvas id="canvas32" width="32" height="32"></canvas>
-          <canvas id="canvas16" width="16" height="16"></canvas>
-        </div>
+      <div class="quick-toolbar" aria-label="Acciones rápidas">
+        <button id="duplicateLayerBtn" type="button">Duplicar</button>
+        <button id="deleteLayerBtn" type="button">Borrar</button>
+        <button id="resetBtn" type="button">Reiniciar</button>
+        <button class="primary" id="downloadPackBtn" type="button">Descargar pack</button>
       </div>
 
-      <div class="actions">
-        <button class="primary" id="generateBtn">Generar</button>
-        <button id="downloadPngBtn">Descargar PNG 512</button>
-        <button id="downloadPackBtn">Descargar pack PNG</button>
-        <button id="copyHtmlBtn">Copiar HTML</button>
+      <div class="editor-grid">
+        <main class="canvas-panel" aria-label="Vista previa del favicon">
+          <div class="canvas-shell" id="dropZone">
+            <canvas id="previewCanvas" width="512" height="512" aria-label="Editor visual del favicon" role="img"></canvas>
+          </div>
+          <p class="canvas-help">Arrastra las capas para moverlas. Usa las esquinas para escalar y el círculo superior para rotar. También puedes soltar una imagen sobre el lienzo.</p>
+          <div class="preview-strip" aria-label="Vista previa en tamaños reales">
+            <span>Vista real</span>
+            <canvas id="canvas64" width="64" height="64"></canvas>
+            <canvas id="canvas32" width="32" height="32"></canvas>
+            <canvas id="canvas16" width="16" height="16"></canvas>
+          </div>
+        </main>
+
+        <aside class="side-panel" aria-label="Opciones del favicon">
+          <details class="panel-section" open>
+            <summary>Capas</summary>
+            <div id="layersList" class="layers-list" aria-label="Lista de capas"></div>
+            <div class="layer-actions" aria-label="Acciones de capa">
+              <button id="bringForwardBtn" type="button">Traer delante</button>
+              <button id="sendBackwardBtn" type="button">Enviar detrás</button>
+              <button id="centerLayerBtn" type="button">Centrar</button>
+              <button id="fitLayerBtn" type="button">Ajustar</button>
+            </div>
+          </details>
+
+          <details class="panel-section" open>
+            <summary>Propiedades de la capa</summary>
+            <div id="emptyContext" class="empty-context">Selecciona una capa para editar sus opciones.</div>
+            <div id="commonContext" class="context-grid" hidden>
+              <label>Nombre<input id="layerName" type="text" maxlength="32" /></label>
+              <label>Opacidad<input id="layerOpacity" type="range" min="0" max="1" step="0.05" /></label>
+              <label>Sombra<input id="layerShadow" type="range" min="0" max="60" step="1" /></label>
+            </div>
+            <div id="textContext" class="context-grid" hidden>
+              <label>Texto<input id="textContent" type="text" maxlength="32" /></label>
+              <label>Color<input id="textColor" type="color" /></label>
+              <label>Peso<select id="textWeight"><option value="500">Medio</option><option value="700">Negrita</option><option value="900">Extra bold</option></select></label>
+            </div>
+            <div id="iconContext" class="context-grid" hidden>
+              <label>Icono<select id="iconName"><option value="Rocket">Rocket</option><option value="Star">Star</option><option value="Heart">Heart</option><option value="Camera">Camera</option><option value="Image">Image</option><option value="Music">Music</option><option value="Video">Video</option><option value="MessageCircle">MessageCircle</option><option value="ShoppingBag">ShoppingBag</option><option value="MapPin">MapPin</option><option value="Calendar">Calendar</option><option value="Gamepad2">Gamepad2</option><option value="Trophy">Trophy</option><option value="Zap">Zap</option><option value="Shield">Shield</option><option value="Lock">Lock</option><option value="Cloud">Cloud</option><option value="Globe">Globe</option><option value="Code2">Code2</option><option value="Wrench">Wrench</option><option value="PenTool">PenTool</option><option value="Sparkles">Sparkles</option></select></label>
+              <label>Color<input id="iconColor" type="color" /></label>
+              <label>Grosor<input id="iconStroke" type="range" min="1" max="8" step="0.5" /></label>
+            </div>
+          </details>
+
+          <details class="panel-section" open>
+            <summary>Fondo y recorte</summary>
+            <div class="context-grid">
+              <label>Color de fondo<input id="backgroundColor" type="color" value="#38bdf8" /></label>
+              <label>Forma<select id="shape"><option value="rounded">Redondeado</option><option value="circle">Círculo</option><option value="square">Cuadrado</option></select></label>
+              <label>Radio del borde<input id="cornerRadius" type="range" min="0" max="50" value="22" /></label>
+              <label>Borde<input id="borderWidth" type="range" min="0" max="80" value="0" /></label>
+              <label>Color del borde<input id="borderColor" type="color" value="#020617" /></label>
+              <label>Sombra interior<input id="innerShadow" type="range" min="0" max="60" value="10" /></label>
+            </div>
+          </details>
+
+          <details class="panel-section" open>
+            <summary>Exportación</summary>
+            <div class="sizes-grid" id="sizesGrid">
+              <label><input type="checkbox" value="16" checked />16</label>
+              <label><input type="checkbox" value="32" checked />32</label>
+              <label><input type="checkbox" value="48" checked />48</label>
+              <label><input type="checkbox" value="64" checked />64</label>
+              <label><input type="checkbox" value="180" checked />180</label>
+              <label><input type="checkbox" value="192" checked />192</label>
+              <label><input type="checkbox" value="512" checked />512</label>
+            </div>
+            <div class="custom-size-row"><label>Tamaño personalizado<input id="customSize" type="number" min="16" max="4096" step="1" placeholder="Ej. 1024" /></label><button id="addCustomSizeBtn" type="button">Añadir</button></div>
+            <div class="export-actions">
+              <button id="downloadPngBtn" type="button">PNG 512</button>
+              <button id="copyHtmlBtn" type="button">Copiar HTML</button>
+            </div>
+          </details>
+        </aside>
       </div>
 
       <div class="code-panel">
         <h2>HTML recomendado</h2>
-        <pre id="htmlCode">&lt;link rel="icon" type="image/png" href="/favicon.png" /&gt;</pre>
+        <pre id="htmlCode">&lt;link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" /&gt;</pre>
       </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">Listo para crear favicons.</p>
     </section>
   </section>
 
   <style>
-    .mode-tabs,
-    .actions {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-
-    button,
-    input,
-    select,
-    .upload-btn {
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: #020617;
-      color: white;
-      padding: 1rem;
-      cursor: pointer;
-      font: inherit;
-    }
-
-    button.primary,
-    .upload-btn {
-      background: var(--primary);
-      color: black;
-      border: none;
-      font-weight: 700;
-    }
-
-    .settings-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    label {
-      display: flex;
-      flex-direction: column;
-      gap: .45rem;
-      color: var(--muted);
-      font-size: .92rem;
-    }
-
-    .preview-area {
-      border-radius: 24px;
-      border: 1px solid var(--border);
-      background: rgba(2,6,23,.55);
-      padding: 2rem;
-      display: grid;
-      place-items: center;
-      gap: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .favicon-preview {
-      padding: 1rem;
-      border-radius: 28px;
-      background: rgba(148,163,184,.08);
-    }
-
-    canvas {
-      image-rendering: auto;
-      border-radius: 12px;
-    }
-
-    .sizes-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      background: rgba(15,23,42,.7);
-      padding: 1rem;
-      border-radius: 18px;
-    }
-
-    .code-panel {
-      border-radius: 24px;
-      border: 1px solid var(--border);
-      background: rgba(2,6,23,.55);
-      padding: 1rem;
-      margin-top: 1rem;
-    }
-
-    .code-panel h2 {
-      margin-top: 0;
-      font-size: 1.1rem;
-    }
-
-    pre {
-      white-space: pre-wrap;
-      word-break: break-word;
-      color: var(--muted);
-      line-height: 1.6;
-      font-family: ui-monospace, monospace;
-    }
+    .favicon-page{padding:clamp(2rem,6vw,4rem) 0;overflow-x:hidden}.favicon-editor{display:grid;gap:1rem}.editor-head{display:flex;justify-content:space-between;align-items:start;gap:1rem}.editor-head h2{margin:0 0 .35rem;font-size:clamp(1.25rem,2vw,1.65rem)}.editor-head p,.canvas-help,.status,.empty-context{color:var(--muted);line-height:1.65;margin:0}#exportInfo{border-radius:999px;border:1px solid var(--border);color:var(--primary);padding:.45rem .75rem;white-space:nowrap}button,input,select,.add-card{border-radius:14px;border:1px solid var(--border);background:#020617;color:white;padding:.78rem .9rem;cursor:pointer;font:inherit;min-width:0}input,select{width:100%;cursor:auto}input[type=range],input[type=checkbox],input[type=color]{cursor:pointer}input[type=color]{min-height:46px;padding:.25rem}button.primary{background:var(--primary);color:#020617;border-color:transparent;font-weight:900}button:disabled{opacity:.45;cursor:not-allowed}.add-toolbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}.add-card{display:flex;align-items:center;gap:.75rem;text-align:left;text-decoration:none;background:linear-gradient(135deg,rgba(56,189,248,.22),rgba(15,23,42,.92));border-color:color-mix(in srgb,var(--primary),transparent 45%);min-height:76px}.add-card:hover,.add-card:focus-visible{transform:translateY(-1px);box-shadow:0 16px 40px rgba(0,0,0,.25);outline:2px solid color-mix(in srgb,var(--primary),transparent 45%);outline-offset:2px}.add-card strong{display:block;font-weight:950}.add-card small{display:block;color:var(--muted);font-size:.82rem;margin-top:.15rem}.add-emoji{width:2.5rem;height:2.5rem;display:grid;place-items:center;border-radius:14px;background:rgba(255,255,255,.12);font-weight:950;font-size:1.25rem;flex:0 0 auto}.quick-toolbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.55rem;position:sticky;top:.5rem;z-index:5;padding:.55rem;border:1px solid var(--border);border-radius:20px;background:rgba(2,6,23,.86);backdrop-filter:blur(14px)}.quick-toolbar>*{text-align:center;padding-inline:.55rem}.editor-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,380px);gap:1rem;align-items:start}.canvas-panel,.side-panel,.panel-section,.code-panel{border-radius:24px;border:1px solid var(--border);background:rgba(2,6,23,.45)}.canvas-panel{padding:clamp(.75rem,2vw,1.25rem);display:grid;gap:.85rem;min-width:0}.canvas-shell{display:grid;place-items:center;border-radius:22px;border:1px dashed rgba(148,163,184,.32);background:linear-gradient(45deg,rgba(148,163,184,.08) 25%,transparent 25%),linear-gradient(-45deg,rgba(148,163,184,.08) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,rgba(148,163,184,.08) 75%),linear-gradient(-45deg,transparent 75%,rgba(148,163,184,.08) 75%);background-position:0 0,0 12px,12px -12px,-12px 0;background-size:24px 24px;padding:clamp(.5rem,2vw,1rem);overflow:hidden}.canvas-shell.is-dragover{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary),transparent 70%)}#previewCanvas{width:min(512px,100%);height:auto;max-height:min(68vh,512px);aspect-ratio:1;border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.35);touch-action:none;cursor:default;user-select:none}.preview-strip{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;border-radius:18px;border:1px solid var(--border);background:rgba(15,23,42,.72);padding:.8rem}.preview-strip span{color:var(--muted);font-size:.9rem}.preview-strip canvas{border-radius:8px;background:rgba(255,255,255,.08)}.side-panel{display:grid;gap:.75rem;padding:.75rem;min-width:0}.panel-section{padding:.85rem}.panel-section summary{cursor:pointer;font-weight:900}.panel-section summary+*{margin-top:.9rem}.layers-list{display:grid;gap:.45rem}.layer-row{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:.65rem;width:100%;text-align:left;border-radius:14px;border:1px solid var(--border);background:rgba(15,23,42,.78);color:white;padding:.65rem}.layer-row.is-active{border-color:var(--primary);box-shadow:0 0 0 2px color-mix(in srgb,var(--primary),transparent 70%)}.layer-row strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.layer-row small{color:var(--muted)}.layer-icon{width:2rem;height:2rem;display:grid;place-items:center;border-radius:10px;background:rgba(148,163,184,.14)}.layer-inline-actions{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;margin:.45rem 0 .15rem}.mini-action{padding:.45rem .55rem;border-radius:10px}.layer-actions,.export-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;margin-top:.75rem}.context-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}.context-grid label,.custom-size-row label{display:grid;gap:.4rem;color:var(--muted);font-size:.9rem;margin:0}.context-grid label:first-child{grid-column:1/-1}.sizes-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45rem}.sizes-grid label{display:flex;align-items:center;gap:.45rem;margin:0;padding:.65rem;border:1px solid var(--border);border-radius:12px;background:rgba(15,23,42,.78);color:var(--muted)}.sizes-grid input{width:auto;accent-color:var(--primary)}.custom-size-row{display:grid;grid-template-columns:1fr auto;gap:.55rem;margin-top:.75rem;align-items:end}.code-panel{padding:1rem}.code-panel h2{margin-top:0;font-size:1.1rem}pre{white-space:pre-wrap;word-break:break-word;color:var(--muted);line-height:1.6;font-family:ui-monospace,monospace}.status{min-height:1.6rem}.status.success{color:#86efac}.status.error{color:#fca5a5}@media (max-width:980px){.editor-head{flex-direction:column}.editor-grid{grid-template-columns:1fr}.side-panel{grid-row:2}.add-toolbar{grid-template-columns:1fr}.quick-toolbar{grid-template-columns:repeat(4,minmax(0,1fr))}}@media (max-width:640px){.tool-card{padding-inline:.75rem}.quick-toolbar{grid-template-columns:repeat(2,minmax(0,1fr));gap:.45rem;top:.25rem}.quick-toolbar>*{font-size:.86rem;padding:.65rem .35rem}.add-card{min-height:66px;padding:.65rem}.add-emoji{width:2.15rem;height:2.15rem}.canvas-panel,.side-panel{border-radius:18px}.canvas-shell{padding:.35rem}#previewCanvas{max-height:58vh;border-radius:18px}.context-grid,.layer-actions,.export-actions,.custom-size-row{grid-template-columns:1fr}.sizes-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
 
+  <script is:inline src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
   <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const canvases = [
-        document.getElementById('canvas128'),
-        document.getElementById('canvas64'),
-        document.getElementById('canvas32'),
-        document.getElementById('canvas16')
-      ];
+    import JSZip from 'jszip';
 
-      const lettersPanel = document.getElementById('lettersPanel');
-      const imagePanel = document.getElementById('imagePanel');
-      const lettersModeBtn = document.getElementById('lettersModeBtn');
-      const imageModeBtn = document.getElementById('imageModeBtn');
-      const imageInput = document.getElementById('imageInput');
+    type BaseLayer={id:number;type:'image'|'text'|'icon';name:string;x:number;y:number;w:number;h:number;scale:number;rotation:number;opacity:number;shadow:number};
+    type ImageLayer=BaseLayer&{type:'image';src:string};type TextLayer=BaseLayer&{type:'text';text:string;color:string;weight:string;fontSize:number};type IconLayer=BaseLayer&{type:'icon';iconName:string;color:string;stroke:number};type Layer=ImageLayer|TextLayer|IconLayer;type Point={x:number;y:number};type DragMode='none'|'move'|'scale'|'rotate';type HandleName='nw'|'ne'|'se'|'sw'|'rotate';type IconNode=[string,Record<string,string|number>][];type LucideGlobal={icons?:Record<string,IconNode|{iconNode?:IconNode}>;createElement?:(icon:unknown,attrs?:Record<string,string|number>)=>SVGSVGElement;[key:string]:unknown};
 
-      let mode = 'letters';
-      let uploadedImage = null;
+    const BASE=512,HANDLE=18,ROTATE_OFFSET=52,$=<T extends HTMLElement>(id:string)=>document.getElementById(id) as T;
+    const canvas=$<HTMLCanvasElement>('previewCanvas'),ctx=canvas.getContext('2d') as CanvasRenderingContext2D,dropZone=$<HTMLDivElement>('dropZone'),imageInput=$<HTMLInputElement>('imageInput'),addTextBtn=$<HTMLButtonElement>('addTextBtn'),addIconBtn=$<HTMLButtonElement>('addIconBtn'),duplicateLayerBtn=$<HTMLButtonElement>('duplicateLayerBtn'),deleteLayerBtn=$<HTMLButtonElement>('deleteLayerBtn'),resetBtn=$<HTMLButtonElement>('resetBtn'),downloadPackBtn=$<HTMLButtonElement>('downloadPackBtn'),downloadPngBtn=$<HTMLButtonElement>('downloadPngBtn'),copyHtmlBtn=$<HTMLButtonElement>('copyHtmlBtn'),bringForwardBtn=$<HTMLButtonElement>('bringForwardBtn'),sendBackwardBtn=$<HTMLButtonElement>('sendBackwardBtn'),centerLayerBtn=$<HTMLButtonElement>('centerLayerBtn'),fitLayerBtn=$<HTMLButtonElement>('fitLayerBtn'),layersList=$<HTMLDivElement>('layersList'),status=$<HTMLParagraphElement>('status'),exportInfo=$<HTMLOutputElement>('exportInfo'),sizesGrid=$<HTMLDivElement>('sizesGrid'),customSize=$<HTMLInputElement>('customSize'),addCustomSizeBtn=$<HTMLButtonElement>('addCustomSizeBtn'),backgroundColor=$<HTMLInputElement>('backgroundColor'),shape=$<HTMLSelectElement>('shape'),cornerRadius=$<HTMLInputElement>('cornerRadius'),borderWidth=$<HTMLInputElement>('borderWidth'),borderColor=$<HTMLInputElement>('borderColor'),innerShadow=$<HTMLInputElement>('innerShadow'),emptyContext=$<HTMLDivElement>('emptyContext'),commonContext=$<HTMLDivElement>('commonContext'),textContext=$<HTMLDivElement>('textContext'),iconContext=$<HTMLDivElement>('iconContext'),layerName=$<HTMLInputElement>('layerName'),layerOpacity=$<HTMLInputElement>('layerOpacity'),layerShadow=$<HTMLInputElement>('layerShadow'),textContent=$<HTMLInputElement>('textContent'),textColor=$<HTMLInputElement>('textColor'),textWeight=$<HTMLSelectElement>('textWeight'),iconName=$<HTMLSelectElement>('iconName'),iconColor=$<HTMLInputElement>('iconColor'),iconStroke=$<HTMLInputElement>('iconStroke'),htmlCode=$<HTMLPreElement>('htmlCode'),mini64=$<HTMLCanvasElement>('canvas64'),mini32=$<HTMLCanvasElement>('canvas32'),mini16=$<HTMLCanvasElement>('canvas16');
+    const imageCache=new Map<string,HTMLImageElement>(),iconCache=new Map<string,HTMLImageElement>();let objectUrls:string[]=[],layers:Layer[]=[],selectedId:number|null=null,nextId=1,renderToken=0;let drag:{mode:DragMode;handle?:HandleName;pointerId?:number;start:Point;startLayer?:Layer;startDistance?:number;startAngle?:number}={mode:'none',start:{x:0,y:0}};
+    const clamp=(v:number,min:number,max:number)=>Math.min(max,Math.max(min,v)),rad=(d:number)=>d*Math.PI/180,deg=(r:number)=>r*180/Math.PI,selected=()=>layers.find(l=>l.id===selectedId)||null,clone=<T extends Layer>(l:T):T=>({...l} as T),setStatus=(m:string,t:'default'|'success'|'error'='default')=>{status.textContent=m;status.classList.toggle('success',t==='success');status.classList.toggle('error',t==='error')};
 
-      const drawRoundedRect = (ctx, x, y, width, height, radius) => {
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.arcTo(x + width, y, x + width, y + height, radius);
-        ctx.arcTo(x + width, y + height, x, y + height, radius);
-        ctx.arcTo(x, y + height, x, y, radius);
-        ctx.arcTo(x, y, x + width, y, radius);
-        ctx.closePath();
-      };
+    function roundedRect(c:CanvasRenderingContext2D,x:number,y:number,w:number,h:number,r:number){r=Math.min(r,w/2,h/2);c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+    function faviconPath(c:CanvasRenderingContext2D,size:number){if(shape.value==='circle'){c.beginPath();c.arc(size/2,size/2,size/2,0,Math.PI*2);return}const r=shape.value==='square'?0:size*(Number(cornerRadius.value)/100);roundedRect(c,0,0,size,size,r)}
+    const escapeAttr=(value:string|number)=>String(value).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    const toKebab=(name:string)=>name.replace(/([a-z0-9])([A-Z])/g,'$1-$2').toLowerCase();
+    const getLucide=()=>((window as Window&{lucide?:LucideGlobal}).lucide);
+    function svgFromIconNode(node:IconNode,color:string,stroke:number){const children=node.map(([tag,attrs])=>`<${tag} ${Object.entries(attrs).map(([k,v])=>`${k}="${escapeAttr(v)}"`).join(' ')} />`).join('');return `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24" fill="none" stroke="${escapeAttr(color)}" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round">${children}</svg>`}
+    function iconToSvg(name:string,color:string,stroke:number){const lucide=getLucide();if(!lucide)return '';const kebab=toKebab(name);const icon=(lucide.icons?.[name]||lucide.icons?.[kebab]||lucide[name]||lucide[kebab]) as IconNode|{iconNode?:IconNode}|unknown;if(lucide.createElement&&icon){try{const element=lucide.createElement(icon,{width:512,height:512,color,strokeWidth:stroke,fill:'none'});element.setAttribute('xmlns','http://www.w3.org/2000/svg');element.setAttribute('width','512');element.setAttribute('height','512');element.setAttribute('stroke',color);element.setAttribute('stroke-width',String(stroke));return new XMLSerializer().serializeToString(element)}catch{}}
+      const node=Array.isArray(icon)?icon:((icon as {iconNode?:IconNode})?.iconNode);return Array.isArray(node)?svgFromIconNode(node,color,stroke):''}
+    const point=(e:PointerEvent):Point=>{const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*(BASE/r.width),y:(e.clientY-r.top)*(BASE/r.height)}};
+    const toLocal=(l:Layer,p:Point):Point=>{const c=Math.cos(-rad(l.rotation)),s=Math.sin(-rad(l.rotation)),dx=p.x-l.x,dy=p.y-l.y;return{x:(dx*c-dy*s)/l.scale,y:(dx*s+dy*c)/l.scale}};
+    const fromLocal=(l:Layer,p:Point):Point=>{const c=Math.cos(rad(l.rotation)),s=Math.sin(rad(l.rotation)),x=p.x*l.scale,y=p.y*l.scale;return{x:l.x+x*c-y*s,y:l.y+x*s+y*c}};
+    const corners=(l:Layer)=>[fromLocal(l,{x:-l.w/2,y:-l.h/2}),fromLocal(l,{x:l.w/2,y:-l.h/2}),fromLocal(l,{x:l.w/2,y:l.h/2}),fromLocal(l,{x:-l.w/2,y:l.h/2})];
+    const handles=(l:Layer):Record<HandleName,Point>=>{const [nw,ne,se,sw]=corners(l);return{nw,ne,se,sw,rotate:fromLocal(l,{x:0,y:-l.h/2-ROTATE_OFFSET/Math.max(l.scale,.01)})}};
+    const loadImage=(src:string)=>imageCache.get(src)?Promise.resolve(imageCache.get(src) as HTMLImageElement):new Promise<HTMLImageElement>((res,rej)=>{const i=new Image();i.onload=()=>{imageCache.set(src,i);res(i)};i.onerror=()=>rej(new Error('image'));i.src=src});
+    const getIcon=(l:IconLayer)=>{const key=`${l.iconName}-${l.color}-${l.stroke}`,cached=iconCache.get(key);if(cached)return Promise.resolve(cached);const svg=iconToSvg(l.iconName,l.color,l.stroke);if(!svg)return Promise.reject(new Error('icon'));const img=new Image(),url=`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;return new Promise<HTMLImageElement>((res,rej)=>{img.onload=()=>{iconCache.set(key,img);res(img)};img.onerror=()=>rej(new Error('icon'));img.src=url})};
 
-      const renderLetters = (canvas) => {
-        const ctx = canvas.getContext('2d');
-        const size = canvas.width;
-        const letters = document.getElementById('lettersInput').value.trim() || 'A';
-        const bg = document.getElementById('backgroundColor').value;
-        const color = document.getElementById('textColor').value;
-        const shape = document.getElementById('shape').value;
+    async function drawLayer(c:CanvasRenderingContext2D,l:Layer,s:number){c.save();c.translate(l.x*s,l.y*s);c.rotate(rad(l.rotation));c.scale(l.scale*s,l.scale*s);c.globalAlpha=l.opacity;if(l.shadow>0){c.shadowColor='rgba(0,0,0,.42)';c.shadowBlur=l.shadow*s;c.shadowOffsetY=l.shadow*s*.22}if(l.type==='image'){const img=await loadImage(l.src);c.drawImage(img,-l.w/2,-l.h/2,l.w,l.h)}if(l.type==='text'){c.fillStyle=l.color;c.textAlign='center';c.textBaseline='middle';c.font=`${l.weight} ${l.fontSize}px Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif`;c.fillText(l.text,0,0,l.w)}if(l.type==='icon'){try{const img=await getIcon(l);c.drawImage(img,-l.w/2,-l.h/2,l.w,l.h)}catch{drawIconFallback(c,l)}}c.restore()}
+    function drawIconFallback(c:CanvasRenderingContext2D,l:IconLayer){c.save();c.strokeStyle=l.color;c.lineWidth=Math.max(2,l.stroke*4);c.lineCap='round';c.lineJoin='round';c.beginPath();c.moveTo(-l.w*.22,-l.h*.22);c.lineTo(l.w*.22,l.h*.22);c.moveTo(l.w*.22,-l.h*.22);c.lineTo(-l.w*.22,l.h*.22);c.stroke();c.restore()}
+    function drawSelection(c:CanvasRenderingContext2D,l:Layer){const cs=corners(l),hs=handles(l),top=fromLocal(l,{x:0,y:-l.h/2});c.save();c.lineWidth=2;c.strokeStyle='#67e8f9';c.fillStyle='#020617';c.beginPath();c.moveTo(cs[0].x,cs[0].y);cs.slice(1).forEach(p=>c.lineTo(p.x,p.y));c.closePath();c.stroke();c.beginPath();c.moveTo(top.x,top.y);c.lineTo(hs.rotate.x,hs.rotate.y);c.stroke();(['nw','ne','se','sw'] as HandleName[]).forEach(n=>{const p=hs[n];c.beginPath();c.rect(p.x-HANDLE/2,p.y-HANDLE/2,HANDLE,HANDLE);c.fill();c.stroke()});c.beginPath();c.arc(hs.rotate.x,hs.rotate.y,HANDLE/2,0,Math.PI*2);c.fill();c.stroke();c.restore()}
 
-        ctx.clearRect(0, 0, size, size);
-        ctx.fillStyle = bg;
+    async function renderFavicon(target:HTMLCanvasElement,size:number,selectBox=false){target.width=size;target.height=size;const c=target.getContext('2d') as CanvasRenderingContext2D,s=size/BASE,b=Number(borderWidth.value)*s;c.clearRect(0,0,size,size);c.save();faviconPath(c,size);c.clip();c.fillStyle=backgroundColor.value;c.fillRect(0,0,size,size);for(const l of layers)await drawLayer(c,l,s);const sh=Number(innerShadow.value)*s;if(sh>0){const g=c.createRadialGradient(size/2,size/2,size*.18,size/2,size/2,size*.72);g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(1,`rgba(0,0,0,${Math.min(.38,sh/140)})`);c.fillStyle=g;c.fillRect(0,0,size,size)}c.restore();if(b>0){c.save();faviconPath(c,size);c.lineWidth=b;c.strokeStyle=borderColor.value;c.stroke();c.restore()}if(selectBox&&selected())drawSelection(c,selected() as Layer)}
+    async function render(){const t=++renderToken;try{await renderFavicon(canvas,BASE,true);await Promise.all([renderFavicon(mini64,64),renderFavicon(mini32,32),renderFavicon(mini16,16)]);if(t===renderToken)updateUi()}catch{updateUi();setStatus('No se pudo renderizar alguna capa. Prueba con otro icono o imagen.','error')}}
 
-        if (shape === 'circle') {
-          ctx.beginPath();
-          ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-          ctx.fill();
-        } else if (shape === 'rounded') {
-          drawRoundedRect(ctx, 0, 0, size, size, size * .22);
-          ctx.fill();
-        } else {
-          ctx.fillRect(0, 0, size, size);
-        }
+    const hitHandle=(p:Point,l:Layer):HandleName|null=>{const hs=handles(l);for(const n of ['rotate','nw','ne','se','sw'] as HandleName[])if(Math.hypot(p.x-hs[n].x,p.y-hs[n].y)<=HANDLE)return n;return null};
+    const hitLayer=(p:Point):Layer|null=>{for(let i=layers.length-1;i>=0;i--){const l=layers[i],q=toLocal(l,p);if(Math.abs(q.x)<=l.w/2&&Math.abs(q.y)<=l.h/2)return l}return null};
+    function textW(t:string,fs:number,w:string){ctx.save();ctx.font=`${w} ${fs}px Inter, system-ui, sans-serif`;const width=Math.max(80,ctx.measureText(t||'A').width+28);ctx.restore();return Math.min(460,width)}
+    function add(l:Layer){layers.push(l);selectedId=l.id;setStatus(`${l.name} añadida y seleccionada.`,'success');render()}function addText(){const id=nextId++,text='A';add({id,type:'text',name:`Texto ${id}`,x:256,y:278,w:textW(text,188,'900'),h:210,scale:1,rotation:0,opacity:1,shadow:0,text,color:'#020617',weight:'900',fontSize:188})}function addIcon(){if(!getLucide())setStatus('Cargando Lucide desde CDN. Si no aparece, revisa la conexión o el bloqueador de scripts.','error');const id=nextId++;add({id,type:'icon',name:`Icono ${id}`,x:256,y:256,w:220,h:220,scale:1,rotation:0,opacity:1,shadow:0,iconName:'Star',color:'#020617',stroke:3})}
+    function addImageFromFile(file:File){if(!file.type.startsWith('image/'))return setStatus('El archivo debe ser una imagen.','error');const url=URL.createObjectURL(file);objectUrls.push(url);const img=new Image();img.onload=()=>{imageCache.set(url,img);const id=nextId++,ratio=Math.max(BASE*.72/img.width,BASE*.72/img.height),w=img.width*ratio,h=img.height*ratio;add({id,type:'image',name:file.name.replace(/\.[^.]+$/,'').slice(0,32)||`Imagen ${id}`,x:256,y:256,w,h,scale:1,rotation:0,opacity:1,shadow:0,src:url})};img.onerror=()=>setStatus('No se pudo cargar la imagen.','error');img.src=url}
+    function patch(p:Partial<Layer>){const l=selected();if(!l)return;Object.assign(l,p);if(l.type==='text')l.w=textW(l.text,l.fontSize,l.weight);render()}function selectLayer(id:number){selectedId=id;setStatus(`Capa seleccionada: ${selected()?.name||'capa'}.`);render()}function duplicate(){const l=selected();if(!l)return setStatus('Selecciona una capa para duplicarla.','error');const c=clone(l);c.id=nextId++;c.name=`${l.name} copia`;c.x=clamp(l.x+24,0,BASE);c.y=clamp(l.y+24,0,BASE);layers.push(c);selectedId=c.id;setStatus('Capa duplicada.','success');render()}function remove(){if(selectedId===null)return setStatus('Selecciona una capa para borrarla.','error');const i=layers.findIndex(l=>l.id===selectedId);layers=layers.filter(l=>l.id!==selectedId);selectedId=layers[Math.min(i,layers.length-1)]?.id||null;setStatus('Capa eliminada.','success');render()}function order(where:'front'|'back'){const i=layers.findIndex(l=>l.id===selectedId);if(i<0)return setStatus('Selecciona una capa para reordenarla.','error');const [l]=layers.splice(i,1);layers.splice(where==='front'?layers.length:0,0,l);render()}function fit(){const l=selected();if(!l)return setStatus('Selecciona una capa para ajustarla.','error');if(l.type==='text')l.scale=Math.min(2,(BASE*.82)/Math.max(l.w,l.h));else{l.w=BASE*.86;l.h=BASE*.86;l.scale=1}l.x=256;l.y=256;render()}
+    function editTextLayer(layer:Layer|null){if(layer?.type!=='text')return false;selectedId=layer.id;render();window.setTimeout(()=>{textContent.focus();textContent.select()},0);setStatus('Editando texto. Escribe en el panel de propiedades.','success');return true}
+    function renderList(){const nodes:HTMLElement[]=[];[...layers].reverse().forEach(l=>{const row=document.createElement('button');row.type='button';row.className=`layer-row${l.id===selectedId?' is-active':''}`;row.setAttribute('aria-label',`Seleccionar capa ${l.name}`);row.innerHTML=`<span class="layer-icon" aria-hidden="true">${l.type==='image'?'🖼️':l.type==='text'?'T':'✦'}</span><span><strong></strong><small>${l.type==='image'?'Imagen':l.type==='text'?'Texto':'Icono'}</small></span>`;(row.querySelector('strong') as HTMLElement).textContent=l.name;row.onclick=()=>selectLayer(l.id);row.ondblclick=()=>editTextLayer(l);nodes.push(row);if(l.id===selectedId){const actions=document.createElement('div');actions.className='layer-inline-actions';const dup=document.createElement('button');dup.type='button';dup.className='mini-action';dup.textContent='Duplicar';dup.onclick=duplicate;const del=document.createElement('button');del.type='button';del.className='mini-action';del.textContent='Borrar';del.onclick=remove;actions.append(dup,del);nodes.push(actions)}});layersList.replaceChildren(...nodes);if(!nodes.length)layersList.textContent='No hay capas todavía.'}
+    function syncPanel(){const l=selected(),on=!!l;emptyContext.hidden=on;commonContext.hidden=!on;textContext.hidden=l?.type!=='text';iconContext.hidden=l?.type!=='icon';if(!l)return;layerName.value=l.name;layerOpacity.value=String(l.opacity);layerShadow.value=String(l.shadow);if(l.type==='text'){textContent.value=l.text;textColor.value=l.color;textWeight.value=l.weight}if(l.type==='icon'){iconName.value=l.iconName;iconColor.value=l.color;iconStroke.value=String(l.stroke)}}
+    function exportSizes(){return [...sizesGrid.querySelectorAll<HTMLInputElement>('input[type="checkbox"]:checked')].map(i=>Number(i.value)).filter(Boolean).sort((a,b)=>a-b)}
+    function updateHtml(){const html=`<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />\n<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />\n<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />\n<link rel="manifest" href="/site.webmanifest" />`;htmlCode.textContent=html;exportInfo.textContent=`${exportSizes().length} tamaños seleccionados`}
+    function updateUi(){renderList();syncPanel();updateHtml();const has=!!selected();duplicateLayerBtn.disabled=!has;deleteLayerBtn.disabled=!has;bringForwardBtn.disabled=!has;sendBackwardBtn.disabled=!has;centerLayerBtn.disabled=!has;fitLayerBtn.disabled=!has;cornerRadius.disabled=shape.value!=='rounded'}
+    function reset(){objectUrls.forEach(URL.revokeObjectURL);objectUrls=[];imageCache.clear();iconCache.clear();layers=[];selectedId=null;nextId=1;backgroundColor.value='#38bdf8';shape.value='rounded';cornerRadius.value='22';borderWidth.value='0';borderColor.value='#020617';innerShadow.value='10';addText();setStatus('Favicon reiniciado.','success')}
+    function canvasBlob(c:HTMLCanvasElement){return new Promise<Blob>((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error('blob')),'image/png'))}
+    async function downloadSize(size:number,filename:string){const out=document.createElement('canvas');await renderFavicon(out,size);const link=document.createElement('a');link.href=out.toDataURL('image/png');link.download=filename;link.click()}
+    async function downloadPack(){try{downloadPackBtn.disabled=true;const zip=new JSZip(),sizes=exportSizes();for(const size of sizes){const out=document.createElement('canvas');await renderFavicon(out,size);const blob=await canvasBlob(out);zip.file(size===180?'apple-touch-icon.png':`favicon-${size}.png`,blob)}zip.file('favicon-html.txt',htmlCode.textContent||'');zip.file('site.webmanifest',JSON.stringify({icons:[{src:'/favicon-192.png',sizes:'192x192',type:'image/png'},{src:'/favicon-512.png',sizes:'512x512',type:'image/png'}]},null,2));const blob=await zip.generateAsync({type:'blob'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='favicon-pack.zip';link.click();setStatus('Pack de favicons descargado.','success')}catch{setStatus('No se pudo generar el pack.','error')}finally{downloadPackBtn.disabled=false}}
 
-        ctx.fillStyle = color;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.font = `900 ${Math.max(12, size / (letters.length > 2 ? 2.5 : 1.8))}px system-ui`;
-        ctx.fillText(letters.toUpperCase(), size / 2, size / 2 + size * .03);
-      };
+    imageInput.addEventListener('change',()=>{const file=imageInput.files?.[0];if(file)addImageFromFile(file);imageInput.value=''});addTextBtn.onclick=addText;addIconBtn.onclick=addIcon;duplicateLayerBtn.onclick=duplicate;deleteLayerBtn.onclick=remove;resetBtn.onclick=reset;bringForwardBtn.onclick=()=>order('front');sendBackwardBtn.onclick=()=>order('back');centerLayerBtn.onclick=()=>{const l=selected();if(l){l.x=256;l.y=256;render()}};fitLayerBtn.onclick=fit;downloadPngBtn.onclick=()=>downloadSize(512,'favicon-512.png');downloadPackBtn.onclick=downloadPack;copyHtmlBtn.onclick=async()=>{await navigator.clipboard.writeText(htmlCode.textContent||'');setStatus('HTML copiado al portapapeles.','success')};addCustomSizeBtn.onclick=()=>{const size=clamp(Math.round(Number(customSize.value)),16,4096);if(!size)return;const exists=[...sizesGrid.querySelectorAll<HTMLInputElement>('input')].some(i=>Number(i.value)===size);if(!exists){const label=document.createElement('label');label.innerHTML=`<input type="checkbox" value="${size}" checked />${size}`;sizesGrid.append(label)}customSize.value='';updateHtml()};
+    [backgroundColor,shape,cornerRadius,borderWidth,borderColor,innerShadow].forEach(el=>el.addEventListener('input',render));sizesGrid.addEventListener('change',updateHtml);layerName.addEventListener('input',()=>patch({name:layerName.value||'Capa'}));layerOpacity.addEventListener('input',()=>patch({opacity:Number(layerOpacity.value)}));layerShadow.addEventListener('input',()=>patch({shadow:Number(layerShadow.value)}));textContent.addEventListener('input',()=>patch({text:textContent.value||'A'}));textColor.addEventListener('input',()=>patch({color:textColor.value}));textWeight.addEventListener('change',()=>patch({weight:textWeight.value}));iconName.addEventListener('change',()=>patch({iconName:iconName.value}));iconColor.addEventListener('input',()=>patch({color:iconColor.value}));iconStroke.addEventListener('input',()=>patch({stroke:Number(iconStroke.value)}));
+    canvas.addEventListener('pointerdown',e=>{const p=point(e),l=selected(),handle=l?hitHandle(p,l):null,hit=handle?l:hitLayer(p);if(!hit){selectedId=null;render();return}selectedId=hit.id;const active=selected() as Layer;canvas.setPointerCapture(e.pointerId);if(handle==='rotate'){drag={mode:'rotate',handle,pointerId:e.pointerId,start:p,startLayer:clone(active),startAngle:Math.atan2(p.y-active.y,p.x-active.x)};}else if(handle){drag={mode:'scale',handle,pointerId:e.pointerId,start:p,startLayer:clone(active),startDistance:Math.hypot(p.x-active.x,p.y-active.y)};}else{drag={mode:'move',pointerId:e.pointerId,start:p,startLayer:clone(active)};}render();e.preventDefault()});
+    canvas.addEventListener('pointermove',e=>{if(drag.mode==='none'||drag.pointerId!==e.pointerId)return;const p=point(e),l=selected(),s=drag.startLayer;if(!l||!s)return;if(drag.mode==='move'){l.x=clamp(s.x+p.x-drag.start.x,-BASE,BASE*2);l.y=clamp(s.y+p.y-drag.start.y,-BASE,BASE*2)}if(drag.mode==='scale'){const d=Math.hypot(p.x-s.x,p.y-s.y),start=drag.startDistance||1;l.scale=clamp(s.scale*(d/start),.08,8)}if(drag.mode==='rotate'){const a=Math.atan2(p.y-s.y,p.x-s.x);l.rotation=s.rotation+deg(a-(drag.startAngle||0))}render();e.preventDefault()});
+    canvas.addEventListener('pointerup',e=>{if(drag.pointerId===e.pointerId){drag={mode:'none',start:{x:0,y:0}};canvas.releasePointerCapture(e.pointerId)}});canvas.addEventListener('pointercancel',()=>{drag={mode:'none',start:{x:0,y:0}}});canvas.addEventListener('dblclick',()=>editTextLayer(selected()));
+    ['dragenter','dragover'].forEach(name=>dropZone.addEventListener(name,e=>{e.preventDefault();dropZone.classList.add('is-dragover')}));['dragleave','drop'].forEach(name=>dropZone.addEventListener(name,e=>{e.preventDefault();dropZone.classList.remove('is-dragover')}));dropZone.addEventListener('drop',e=>{const file=e.dataTransfer?.files?.[0];if(file)addImageFromFile(file)});
 
-      const renderImage = (canvas) => {
-        const ctx = canvas.getContext('2d');
-        const size = canvas.width;
-        const bg = document.getElementById('imageBackground').value;
-
-        ctx.clearRect(0, 0, size, size);
-        ctx.fillStyle = bg;
-        ctx.fillRect(0, 0, size, size);
-
-        if (!uploadedImage) return;
-
-        const ratio = Math.max(size / uploadedImage.width, size / uploadedImage.height);
-        const width = uploadedImage.width * ratio;
-        const height = uploadedImage.height * ratio;
-        const x = (size - width) / 2;
-        const y = (size - height) / 2;
-
-        ctx.drawImage(uploadedImage, x, y, width, height);
-      };
-
-      const render = () => {
-        canvases.forEach((canvas) => {
-          if (mode === 'letters') {
-            renderLetters(canvas);
-          } else {
-            renderImage(canvas);
-          }
-        });
-      };
-
-      const downloadCanvas = (canvas, filename) => {
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = filename;
-        link.click();
-      };
-
-      lettersModeBtn.onclick = () => {
-        mode = 'letters';
-        lettersPanel.hidden = false;
-        imagePanel.hidden = true;
-        lettersModeBtn.classList.add('primary');
-        imageModeBtn.classList.remove('primary');
-        render();
-      };
-
-      imageModeBtn.onclick = () => {
-        mode = 'image';
-        lettersPanel.hidden = true;
-        imagePanel.hidden = false;
-        imageModeBtn.classList.add('primary');
-        lettersModeBtn.classList.remove('primary');
-        render();
-      };
-
-      imageInput.addEventListener('change', () => {
-        const file = imageInput.files[0];
-        if (!file) return;
-
-        const img = new Image();
-        img.onload = () => {
-          uploadedImage = img;
-          render();
-        };
-        img.src = URL.createObjectURL(file);
-      });
-
-      document.querySelectorAll('input, select').forEach((element) => {
-        element.addEventListener('input', render);
-        element.addEventListener('change', render);
-      });
-
-      document.getElementById('generateBtn').onclick = render;
-
-      document.getElementById('downloadPngBtn').onclick = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 512;
-        canvas.height = 512;
-
-        if (mode === 'letters') {
-          renderLetters(canvas);
-        } else {
-          renderImage(canvas);
-        }
-
-        downloadCanvas(canvas, 'favicon-512.png');
-      };
-
-      document.getElementById('downloadPackBtn').onclick = () => {
-        canvases.forEach((canvas) => {
-          downloadCanvas(canvas, `favicon-${canvas.width}.png`);
-        });
-      };
-
-      document.getElementById('copyHtmlBtn').onclick = async () => {
-        const html = `<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />\n<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />\n<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />`;
-        await navigator.clipboard.writeText(html);
-      };
-
-      render();
-    });
+    addText();
   </script>
 </Layout>
