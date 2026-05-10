@@ -1,68 +1,62 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const title = 'Mejorador de capturas de pantalla';
-const description = 'Crea imágenes profesionales a partir de capturas con fondos personalizables, edición visual, recorte, rotación y exportación a PNG, JPG, WebP y SVG.';
+const title = 'Editor de capturas de pantalla';
+const description = 'Mejora capturas con fondos personalizables, pegado desde portapapeles, edición visual y exportación a PNG, JPG, WebP y SVG.';
 ---
 
-<Layout title={`${title} — Alon Tools`} description={description} path="/screenshot-enhancer/">
+<Layout title={`${title} — Alon Tools`} description={description} path="/screenshot-enhancer-editor/">
   <section class="hero tool-hero">
     <div class="eyebrow">100% local</div>
     <h1>{title}</h1>
-    <p class="hero-text">
-      Sube una captura, muévela con el ratón, amplíala, recórtala, rótala y colócala sobre fondos generados para descargar una imagen lista para compartir.
-    </p>
+    <p class="hero-text">Arrastra, selecciona o pega una captura con Ctrl/Cmd + V. Después muévela, amplíala, recórtala y descárgala con un fondo profesional, sin añadir barras falsas encima.</p>
   </section>
 
   <section class="editor-shell" aria-label="Editor de capturas">
-    <aside class="control-panel" aria-label="Opciones de diseño">
-      <div class="drop-zone" id="dropZone">
+    <aside class="control-panel">
+      <button class="drop-zone" id="dropZone" type="button">
         <input id="fileInput" type="file" accept="image/*" hidden />
-        <div class="drop-icon" aria-hidden="true">IMG</div>
-        <div>
-          <strong>Arrastra una captura aquí</strong>
-          <span>o pulsa para seleccionar una imagen</span>
-        </div>
-      </div>
+        <span class="drop-icon">IMG</span>
+        <span><strong>Arrastra, pega o selecciona</strong><small>Ctrl/Cmd + V pega imágenes del portapapeles</small></span>
+      </button>
 
       <div class="panel-section">
-        <h2>Editar captura</h2>
+        <h2>Editar imagen</h2>
         <div class="tool-actions">
-          <button class="btn btn-primary" type="button" id="selectTool">Mover</button>
+          <button class="btn btn-primary" type="button" id="moveTool">Mover</button>
           <button class="btn btn-secondary" type="button" id="cropTool">Recortar</button>
           <button class="btn btn-secondary" type="button" id="fitImage">Encajar</button>
           <button class="btn btn-secondary" type="button" id="fillImage">Rellenar</button>
           <button class="btn btn-secondary" type="button" id="centerImage">Centrar</button>
           <button class="btn btn-secondary" type="button" id="resetImage">Reset</button>
         </div>
-        <p class="help-text" id="editHelp">Arrastra la imagen para moverla. Usa las esquinas para redimensionar y el punto superior para rotar.</p>
+        <p class="help-text" id="editHelp">Arrastra la imagen. Usa las esquinas para cambiar tamaño y el punto superior para rotar.</p>
         <div class="field-grid two">
           <label>X <input id="imageX" type="number" step="1" /></label>
           <label>Y <input id="imageY" type="number" step="1" /></label>
           <label>Ancho <input id="imageW" type="number" min="20" step="1" /></label>
           <label>Alto <input id="imageH" type="number" min="20" step="1" /></label>
         </div>
-        <label>Rotación <input id="rotation" type="range" min="-45" max="45" value="0" /></label>
+        <label>Rotación <input id="rotation" type="range" min="-180" max="180" value="0" /></label>
         <label>Opacidad <input id="opacity" type="range" min="10" max="100" value="100" /></label>
-        <label>Radio captura <input id="imageRadius" type="range" min="0" max="54" value="18" /></label>
+        <label>Radio de esquinas <input id="imageRadius" type="range" min="0" max="64" value="18" /></label>
       </div>
 
       <div class="panel-section">
         <h2>Fondo</h2>
-        <div class="preset-grid" id="presetGrid" aria-label="Fondos generados">
-          <button type="button" class="preset active" data-preset="soft" aria-label="Fondo suave"><span></span></button>
-          <button type="button" class="preset" data-preset="aurora" aria-label="Fondo aurora"><span></span></button>
-          <button type="button" class="preset" data-preset="mesh" aria-label="Fondo mesh"><span></span></button>
-          <button type="button" class="preset" data-preset="stripes" aria-label="Fondo con líneas"><span></span></button>
-          <button type="button" class="preset" data-preset="grid" aria-label="Fondo de rejilla"><span></span></button>
-          <button type="button" class="preset" data-preset="solid" aria-label="Fondo sólido"><span></span></button>
+        <div class="preset-grid" id="presetGrid">
+          <button type="button" class="preset active" data-preset="soft"><span></span></button>
+          <button type="button" class="preset" data-preset="aurora"><span></span></button>
+          <button type="button" class="preset" data-preset="mesh"><span></span></button>
+          <button type="button" class="preset" data-preset="stripes"><span></span></button>
+          <button type="button" class="preset" data-preset="grid"><span></span></button>
+          <button type="button" class="preset" data-preset="solid"><span></span></button>
         </div>
-
         <div class="field-grid two">
           <label>Color 1 <input id="colorA" type="color" value="#dbeafe" /></label>
           <label>Color 2 <input id="colorB" type="color" value="#ccfbf1" /></label>
-          <label>Color 3 <input id="colorC" type="color" value="#ffffff" /></label>
-          <label>Tarjeta <input id="cardColor" type="color" value="#ffffff" /></label>
+          <label>Base <input id="colorC" type="color" value="#ffffff" /></label>
+          <label>Marco <input id="cardColor" type="color" value="#ffffff" /></label>
         </div>
       </div>
 
@@ -79,15 +73,14 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
               <option value="custom">Personalizado</option>
             </select>
           </label>
-          <div class="field-grid two custom-size" id="customSize" hidden>
+          <div class="field-grid two" id="customSize" hidden>
             <label>Ancho <input id="canvasWidth" type="number" min="400" max="4000" value="1200" /></label>
             <label>Alto <input id="canvasHeight" type="number" min="300" max="4000" value="800" /></label>
           </div>
-          <label>Margen exterior <input id="padding" type="range" min="40" max="220" value="82" /></label>
-          <label>Radio fondo <input id="cardRadius" type="range" min="0" max="80" value="48" /></label>
-          <label class="check-row"><input id="browserFrame" type="checkbox" checked /> Añadir barra superior tipo navegador</label>
+          <label>Margen exterior <input id="padding" type="range" min="24" max="220" value="82" /></label>
+          <label>Radio del marco <input id="cardRadius" type="range" min="0" max="90" value="48" /></label>
           <label class="check-row"><input id="shadow" type="checkbox" checked /> Sombra suave</label>
-          <label class="check-row"><input id="clipToCard" type="checkbox" checked /> Recortar al marco blanco</label>
+          <label class="check-row"><input id="clipToCard" type="checkbox" checked /> Recortar al marco</label>
         </div>
       </div>
 
@@ -99,703 +92,44 @@ const description = 'Crea imágenes profesionales a partir de capturas con fondo
           <button class="btn btn-secondary" type="button" data-download="webp">WebP</button>
           <button class="btn btn-secondary" type="button" data-download="svg">SVG</button>
         </div>
-        <p class="help-text" id="status">Sube una imagen para empezar.</p>
+        <p class="help-text" id="status">Sube o pega una imagen para empezar.</p>
       </div>
     </aside>
 
-    <div class="preview-panel">
-      <div class="canvas-wrap">
-        <canvas id="previewCanvas" width="1200" height="800" aria-label="Vista previa editable de la captura mejorada"></canvas>
-      </div>
-    </div>
+    <div class="preview-panel"><div class="canvas-wrap"><canvas id="previewCanvas" width="1200" height="800" tabindex="0"></canvas></div></div>
   </section>
 
   <script>
-    const state = {
-      image: null,
-      imageName: 'captura',
-      preset: 'soft',
-      width: 1200,
-      height: 800,
-      mode: 'move',
-      selected: true,
-      drag: null,
-      imageLayer: {
-        x: 220,
-        y: 250,
-        w: 760,
-        h: 360,
-        rotation: 0,
-        opacity: 1,
-        crop: { x: 0, y: 0, w: 1, h: 1 }
-      }
-    };
-
-    const els = {
-      canvas: document.getElementById('previewCanvas'),
-      dropZone: document.getElementById('dropZone'),
-      fileInput: document.getElementById('fileInput'),
-      selectTool: document.getElementById('selectTool'),
-      cropTool: document.getElementById('cropTool'),
-      fitImage: document.getElementById('fitImage'),
-      fillImage: document.getElementById('fillImage'),
-      centerImage: document.getElementById('centerImage'),
-      resetImage: document.getElementById('resetImage'),
-      editHelp: document.getElementById('editHelp'),
-      imageX: document.getElementById('imageX'),
-      imageY: document.getElementById('imageY'),
-      imageW: document.getElementById('imageW'),
-      imageH: document.getElementById('imageH'),
-      rotation: document.getElementById('rotation'),
-      opacity: document.getElementById('opacity'),
-      presetGrid: document.getElementById('presetGrid'),
-      colorA: document.getElementById('colorA'),
-      colorB: document.getElementById('colorB'),
-      colorC: document.getElementById('colorC'),
-      cardColor: document.getElementById('cardColor'),
-      sizePreset: document.getElementById('sizePreset'),
-      customSize: document.getElementById('customSize'),
-      canvasWidth: document.getElementById('canvasWidth'),
-      canvasHeight: document.getElementById('canvasHeight'),
-      padding: document.getElementById('padding'),
-      cardRadius: document.getElementById('cardRadius'),
-      imageRadius: document.getElementById('imageRadius'),
-      browserFrame: document.getElementById('browserFrame'),
-      shadow: document.getElementById('shadow'),
-      clipToCard: document.getElementById('clipToCard'),
-      status: document.getElementById('status')
-    };
-
-    const ctx = els.canvas.getContext('2d');
-    const HANDLE = 14;
-
-    const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-    const radians = (degrees) => degrees * Math.PI / 180;
-    const degrees = (rad) => rad * 180 / Math.PI;
-    const escapeXml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[char]));
-
-    function roundRectPath(context, x, y, width, height, radius) {
-      const r = clamp(radius, 0, Math.min(width, height) / 2);
-      context.beginPath();
-      context.moveTo(x + r, y);
-      context.lineTo(x + width - r, y);
-      context.quadraticCurveTo(x + width, y, x + width, y + r);
-      context.lineTo(x + width, y + height - r);
-      context.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
-      context.lineTo(x + r, y + height);
-      context.quadraticCurveTo(x, y + height, x, y + height - r);
-      context.lineTo(x, y + r);
-      context.quadraticCurveTo(x, y, x + r, y);
-      context.closePath();
-    }
-
-    function setCanvasSize() {
-      const dpr = window.devicePixelRatio || 1;
-      els.canvas.width = state.width * dpr;
-      els.canvas.height = state.height * dpr;
-      els.canvas.style.aspectRatio = `${state.width} / ${state.height}`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    function getPointer(event) {
-      const rect = els.canvas.getBoundingClientRect();
-      return {
-        x: (event.clientX - rect.left) * (state.width / rect.width),
-        y: (event.clientY - rect.top) * (state.height / rect.height)
-      };
-    }
-
-    function screenToLocal(point) {
-      const layer = state.imageLayer;
-      const cx = layer.x + layer.w / 2;
-      const cy = layer.y + layer.h / 2;
-      const angle = -radians(layer.rotation);
-      const dx = point.x - cx;
-      const dy = point.y - cy;
-      return {
-        x: dx * Math.cos(angle) - dy * Math.sin(angle) + layer.w / 2,
-        y: dx * Math.sin(angle) + dy * Math.cos(angle) + layer.h / 2
-      };
-    }
-
-    function localToScreen(local) {
-      const layer = state.imageLayer;
-      const cx = layer.x + layer.w / 2;
-      const cy = layer.y + layer.h / 2;
-      const angle = radians(layer.rotation);
-      const dx = local.x - layer.w / 2;
-      const dy = local.y - layer.h / 2;
-      return {
-        x: cx + dx * Math.cos(angle) - dy * Math.sin(angle),
-        y: cy + dx * Math.sin(angle) + dy * Math.cos(angle)
-      };
-    }
-
-    function getLayout() {
-      const padding = Number(els.padding.value);
-      const frameH = els.browserFrame.checked ? Math.max(46, Math.round(state.height * 0.09)) : 0;
-      const card = {
-        x: padding,
-        y: padding,
-        w: state.width - padding * 2,
-        h: state.height - padding * 2,
-        r: Number(els.cardRadius.value),
-        frameH
-      };
-      const innerPad = Math.max(28, Math.round(Math.min(card.w, card.h) * 0.05));
-      const imageBox = {
-        x: card.x + innerPad,
-        y: card.y + innerPad + frameH,
-        w: card.w - innerPad * 2,
-        h: card.h - innerPad * 2 - frameH
-      };
-      return { card, imageBox };
-    }
-
-    function drawBackground(context, width, height) {
-      const a = els.colorA.value;
-      const b = els.colorB.value;
-      const c = els.colorC.value;
-      context.fillStyle = c;
-      context.fillRect(0, 0, width, height);
-
-      if (state.preset === 'solid') {
-        context.fillStyle = a;
-        context.fillRect(0, 0, width, height);
-        return;
-      }
-
-      const linear = context.createLinearGradient(0, 0, width, height);
-      linear.addColorStop(0, c);
-      linear.addColorStop(0.55, '#f8fbff');
-      linear.addColorStop(1, b);
-      context.fillStyle = linear;
-      context.fillRect(0, 0, width, height);
-
-      if (state.preset === 'soft' || state.preset === 'aurora' || state.preset === 'mesh') {
-        const circles = state.preset === 'soft'
-          ? [[a, -width * 0.04, -height * 0.1, width * 0.34], [b, width * 0.9, -height * 0.08, width * 0.36]]
-          : [[a, width * 0.08, height * 0.04, width * 0.42], [b, width * 0.72, height * 0.08, width * 0.44], ['#fde68a', width * 0.42, height * 0.78, width * 0.34]];
-        circles.forEach(([color, x, y, r]) => {
-          context.save();
-          context.globalAlpha = state.preset === 'mesh' ? 0.64 : 0.72;
-          context.fillStyle = color;
-          context.beginPath();
-          context.arc(x, y, r, 0, Math.PI * 2);
-          context.fill();
-          context.restore();
-        });
-      }
-
-      if (state.preset === 'stripes') {
-        context.save();
-        context.globalAlpha = 0.18;
-        context.strokeStyle = a;
-        context.lineWidth = 7;
-        for (let x = -height; x < width + height; x += 46) {
-          context.beginPath();
-          context.moveTo(x, height);
-          context.lineTo(x + height, 0);
-          context.stroke();
-        }
-        context.restore();
-      }
-
-      if (state.preset === 'grid') {
-        context.save();
-        context.globalAlpha = 0.22;
-        context.strokeStyle = a;
-        context.lineWidth = 1;
-        for (let x = 0; x <= width; x += 48) { context.beginPath(); context.moveTo(x, 0); context.lineTo(x, height); context.stroke(); }
-        for (let y = 0; y <= height; y += 48) { context.beginPath(); context.moveTo(0, y); context.lineTo(width, y); context.stroke(); }
-        context.restore();
-      }
-    }
-
-    function drawCard(context, card) {
-      context.save();
-      if (els.shadow.checked) {
-        context.shadowColor = 'rgba(15, 23, 42, .18)';
-        context.shadowBlur = 42;
-        context.shadowOffsetY = 22;
-      }
-      roundRectPath(context, card.x, card.y, card.w, card.h, card.r);
-      context.fillStyle = els.cardColor.value;
-      context.fill();
-      context.restore();
-
-      if (!els.browserFrame.checked) return;
-      context.save();
-      roundRectPath(context, card.x + 48, card.y + 48, card.w - 96, Math.max(62, card.frameH * .82), 26);
-      context.fillStyle = '#0f172a';
-      context.fill();
-      context.fillStyle = '#2563eb';
-      roundRectPath(context, card.x + 82, card.y + 68, 48, 30, 10);
-      context.fill();
-      context.fillStyle = '#f8fafc';
-      roundRectPath(context, card.x + 154, card.y + 74, Math.min(178, card.w * .22), 18, 99);
-      context.fill();
-      context.globalAlpha = 0.12;
-      context.fillStyle = '#f8fafc';
-      roundRectPath(context, card.x + card.w - 280, card.y + 70, 104, 24, 99);
-      context.fill();
-      roundRectPath(context, card.x + card.w - 154, card.y + 70, 112, 24, 99);
-      context.fill();
-      context.restore();
-    }
-
-    function drawPlaceholder(context, box) {
-      context.save();
-      roundRectPath(context, box.x, box.y, box.w, box.h, Number(els.imageRadius.value));
-      context.fillStyle = 'rgba(15,23,42,.05)';
-      context.fill();
-      context.strokeStyle = 'rgba(15,23,42,.12)';
-      context.setLineDash([16, 14]);
-      context.lineWidth = 3;
-      context.stroke();
-      context.fillStyle = '#334155';
-      context.font = '800 32px system-ui, sans-serif';
-      context.textAlign = 'center';
-      context.fillText('Arrastra una captura', box.x + box.w / 2, box.y + box.h / 2 - 8);
-      context.font = '500 20px system-ui, sans-serif';
-      context.fillStyle = '#64748b';
-      context.fillText('Después podrás moverla, ampliar y recortar', box.x + box.w / 2, box.y + box.h / 2 + 28);
-      context.restore();
-    }
-
-    function drawImageLayer(context) {
-      if (!state.image) return;
-      const layer = state.imageLayer;
-      const crop = layer.crop;
-      const sx = crop.x * state.image.width;
-      const sy = crop.y * state.image.height;
-      const sw = crop.w * state.image.width;
-      const sh = crop.h * state.image.height;
-      const cx = layer.x + layer.w / 2;
-      const cy = layer.y + layer.h / 2;
-
-      context.save();
-      context.translate(cx, cy);
-      context.rotate(radians(layer.rotation));
-      context.globalAlpha = layer.opacity;
-      if (els.shadow.checked) {
-        context.shadowColor = 'rgba(15, 23, 42, .16)';
-        context.shadowBlur = 28;
-        context.shadowOffsetY = 16;
-      }
-      roundRectPath(context, -layer.w / 2, -layer.h / 2, layer.w, layer.h, Number(els.imageRadius.value));
-      context.clip();
-      context.drawImage(state.image, sx, sy, sw, sh, -layer.w / 2, -layer.h / 2, layer.w, layer.h);
-      context.restore();
-    }
-
-    function getHandles() {
-      const layer = state.imageLayer;
-      const points = {
-        nw: localToScreen({ x: 0, y: 0 }),
-        ne: localToScreen({ x: layer.w, y: 0 }),
-        se: localToScreen({ x: layer.w, y: layer.h }),
-        sw: localToScreen({ x: 0, y: layer.h }),
-        rotate: localToScreen({ x: layer.w / 2, y: -52 })
-      };
-      return points;
-    }
-
-    function drawSelection(context) {
-      if (!state.image || !state.selected) return;
-      const layer = state.imageLayer;
-      const handles = getHandles();
-      const corners = [handles.nw, handles.ne, handles.se, handles.sw];
-
-      context.save();
-      context.strokeStyle = state.mode === 'crop' ? '#14b8a6' : '#2563eb';
-      context.lineWidth = 2;
-      context.setLineDash([8, 6]);
-      context.beginPath();
-      context.moveTo(corners[0].x, corners[0].y);
-      corners.slice(1).forEach((point) => context.lineTo(point.x, point.y));
-      context.closePath();
-      context.stroke();
-      context.setLineDash([]);
-
-      context.beginPath();
-      context.moveTo(localToScreen({ x: layer.w / 2, y: 0 }).x, localToScreen({ x: layer.w / 2, y: 0 }).y);
-      context.lineTo(handles.rotate.x, handles.rotate.y);
-      context.stroke();
-
-      Object.entries(handles).forEach(([name, point]) => {
-        context.beginPath();
-        context.fillStyle = name === 'rotate' ? '#0f172a' : '#ffffff';
-        context.strokeStyle = '#2563eb';
-        context.lineWidth = 2;
-        context.arc(point.x, point.y, name === 'rotate' ? 8 : HANDLE / 2, 0, Math.PI * 2);
-        context.fill();
-        context.stroke();
-      });
-
-      if (state.mode === 'crop') {
-        const crop = layer.crop;
-        const x = crop.x * layer.w;
-        const y = crop.y * layer.h;
-        const w = crop.w * layer.w;
-        const h = crop.h * layer.h;
-        const a = localToScreen({ x, y });
-        const b = localToScreen({ x: x + w, y });
-        const c = localToScreen({ x: x + w, y: y + h });
-        const d = localToScreen({ x, y: y + h });
-        context.fillStyle = 'rgba(20, 184, 166, .12)';
-        context.beginPath();
-        context.moveTo(a.x, a.y);
-        [b, c, d].forEach((point) => context.lineTo(point.x, point.y));
-        context.closePath();
-        context.fill();
-        context.strokeStyle = '#14b8a6';
-        context.lineWidth = 3;
-        context.stroke();
-      }
-      context.restore();
-    }
-
-    function render(options = {}) {
-      setCanvasSize();
-      drawBackground(ctx, state.width, state.height);
-      const { card, imageBox } = getLayout();
-      drawCard(ctx, card);
-      if (!state.image) drawPlaceholder(ctx, imageBox);
-      ctx.save();
-      if (els.clipToCard.checked) {
-        roundRectPath(ctx, card.x, card.y, card.w, card.h, card.r);
-        ctx.clip();
-      }
-      drawImageLayer(ctx);
-      ctx.restore();
-      if (!options.exporting) drawSelection(ctx);
-    }
-
-    function syncControlsFromLayer() {
-      const layer = state.imageLayer;
-      els.imageX.value = Math.round(layer.x);
-      els.imageY.value = Math.round(layer.y);
-      els.imageW.value = Math.round(layer.w);
-      els.imageH.value = Math.round(layer.h);
-      els.rotation.value = String(Math.round(layer.rotation));
-      els.opacity.value = String(Math.round(layer.opacity * 100));
-    }
-
-    function syncLayerFromControls() {
-      const layer = state.imageLayer;
-      layer.x = Number(els.imageX.value) || layer.x;
-      layer.y = Number(els.imageY.value) || layer.y;
-      layer.w = clamp(Number(els.imageW.value) || layer.w, 20, 6000);
-      layer.h = clamp(Number(els.imageH.value) || layer.h, 20, 6000);
-      layer.rotation = Number(els.rotation.value) || 0;
-      layer.opacity = clamp(Number(els.opacity.value) / 100, 0.1, 1);
-      render();
-    }
-
-    function fitImage(mode = 'contain') {
-      if (!state.image) return;
-      const { imageBox } = getLayout();
-      const fit = mode === 'cover'
-        ? Math.max(imageBox.w / state.image.width, imageBox.h / state.image.height)
-        : Math.min(imageBox.w / state.image.width, imageBox.h / state.image.height);
-      const layer = state.imageLayer;
-      layer.w = state.image.width * fit;
-      layer.h = state.image.height * fit;
-      layer.x = imageBox.x + (imageBox.w - layer.w) / 2;
-      layer.y = imageBox.y + (imageBox.h - layer.h) / 2;
-      layer.rotation = 0;
-      layer.opacity = Number(els.opacity.value) / 100;
-      layer.crop = { x: 0, y: 0, w: 1, h: 1 };
-      syncControlsFromLayer();
-      render();
-    }
-
-    function centerImage() {
-      if (!state.image) return;
-      const { imageBox } = getLayout();
-      const layer = state.imageLayer;
-      layer.x = imageBox.x + (imageBox.w - layer.w) / 2;
-      layer.y = imageBox.y + (imageBox.h - layer.h) / 2;
-      syncControlsFromLayer();
-      render();
-    }
-
-    function setMode(mode) {
-      state.mode = mode;
-      els.selectTool.classList.toggle('btn-primary', mode === 'move');
-      els.selectTool.classList.toggle('btn-secondary', mode !== 'move');
-      els.cropTool.classList.toggle('btn-primary', mode === 'crop');
-      els.cropTool.classList.toggle('btn-secondary', mode !== 'crop');
-      els.editHelp.textContent = mode === 'crop'
-        ? 'Modo recorte: arrastra dentro del recuadro verde para elegir qué parte de la captura se ve. Usa las esquinas azules para cambiar el tamaño final.'
-        : 'Arrastra la imagen para moverla. Usa las esquinas para redimensionar y el punto superior para rotar.';
-      render();
-    }
-
-    function hitHandle(point) {
-      const handles = getHandles();
-      for (const [name, handle] of Object.entries(handles)) {
-        const dist = Math.hypot(point.x - handle.x, point.y - handle.y);
-        if (dist <= HANDLE) return name;
-      }
-      return null;
-    }
-
-    function hitImage(point) {
-      const local = screenToLocal(point);
-      const layer = state.imageLayer;
-      return local.x >= 0 && local.y >= 0 && local.x <= layer.w && local.y <= layer.h;
-    }
-
-    function startDrag(event) {
-      if (!state.image) return;
-      const point = getPointer(event);
-      const layer = state.imageLayer;
-      const handle = hitHandle(point);
-      const local = screenToLocal(point);
-      state.selected = hitImage(point) || Boolean(handle);
-
-      if (!state.selected) {
-        render();
-        return;
-      }
-
-      els.canvas.setPointerCapture(event.pointerId);
-      if (state.mode === 'crop' && hitImage(point) && !handle) {
-        state.drag = { type: 'cropMove', start: point, localStart: local, cropStart: { ...layer.crop } };
-      } else if (handle === 'rotate') {
-        const cx = layer.x + layer.w / 2;
-        const cy = layer.y + layer.h / 2;
-        state.drag = { type: 'rotate', cx, cy, startAngle: degrees(Math.atan2(point.y - cy, point.x - cx)), rotationStart: layer.rotation };
-      } else if (handle) {
-        state.drag = { type: 'resize', handle, start: point, layerStart: { ...layer } };
-      } else if (hitImage(point)) {
-        state.drag = { type: 'move', start: point, layerStart: { ...layer } };
-      }
-      event.preventDefault();
-    }
-
-    function dragMove(event) {
-      if (!state.drag) return;
-      const point = getPointer(event);
-      const layer = state.imageLayer;
-
-      if (state.drag.type === 'move') {
-        layer.x = state.drag.layerStart.x + point.x - state.drag.start.x;
-        layer.y = state.drag.layerStart.y + point.y - state.drag.start.y;
-      }
-
-      if (state.drag.type === 'resize') {
-        const start = state.drag.layerStart;
-        const local = screenToLocal(point);
-        const keepRatio = event.shiftKey;
-        let x = start.x;
-        let y = start.y;
-        let w = start.w;
-        let h = start.h;
-        if (state.drag.handle.includes('e')) w = clamp(local.x, 24, 6000);
-        if (state.drag.handle.includes('s')) h = clamp(local.y, 24, 6000);
-        if (state.drag.handle.includes('w')) { const right = start.x + start.w; x = start.x + local.x; w = clamp(right - x, 24, 6000); }
-        if (state.drag.handle.includes('n')) { const bottom = start.y + start.h; y = start.y + local.y; h = clamp(bottom - y, 24, 6000); }
-        if (keepRatio && state.image) {
-          const ratio = start.w / start.h;
-          if (w / h > ratio) w = h * ratio;
-          else h = w / ratio;
-        }
-        layer.x = x;
-        layer.y = y;
-        layer.w = w;
-        layer.h = h;
-      }
-
-      if (state.drag.type === 'rotate') {
-        const angle = degrees(Math.atan2(point.y - state.drag.cy, point.x - state.drag.cx));
-        layer.rotation = clamp(state.drag.rotationStart + angle - state.drag.startAngle, -180, 180);
-      }
-
-      if (state.drag.type === 'cropMove') {
-        const local = screenToLocal(point);
-        const dx = (local.x - state.drag.localStart.x) / layer.w;
-        const dy = (local.y - state.drag.localStart.y) / layer.h;
-        layer.crop.x = clamp(state.drag.cropStart.x + dx, 0, 1 - layer.crop.w);
-        layer.crop.y = clamp(state.drag.cropStart.y + dy, 0, 1 - layer.crop.h);
-      }
-
-      syncControlsFromLayer();
-      render();
-    }
-
-    function endDrag(event) {
-      if (state.drag && event.pointerId) {
-        try { els.canvas.releasePointerCapture(event.pointerId); } catch {}
-      }
-      state.drag = null;
-    }
-
-    function loadFile(file) {
-      if (!file || !file.type.startsWith('image/')) {
-        els.status.textContent = 'Selecciona un archivo de imagen válido.';
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        const image = new Image();
-        image.onload = () => {
-          state.image = image;
-          state.imageName = file.name.replace(/\.[^/.]+$/, '') || 'captura';
-          els.status.textContent = `${file.name} cargada. Ya puedes mover, ampliar, rotar y recortar la captura en el canvas.`;
-          fitImage('contain');
-        };
-        image.src = reader.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function downloadBlob(blob, filename) {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function download(format) {
-      const filename = `${state.imageName}-mejorada-${state.width}x${state.height}.${format === 'jpeg' ? 'jpg' : format}`;
-      render({ exporting: true });
-      if (format === 'svg') {
-        const dataUrl = els.canvas.toDataURL('image/png');
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}"><image href="${escapeXml(dataUrl)}" width="${state.width}" height="${state.height}"/></svg>`;
-        downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), filename);
-        render();
-        return;
-      }
-      const mime = format === 'jpeg' ? 'image/jpeg' : `image/${format}`;
-      els.canvas.toBlob((blob) => {
-        if (blob) downloadBlob(blob, filename);
-        render();
-      }, mime, 0.94);
-    }
-
-    els.dropZone.addEventListener('click', () => els.fileInput.click());
-    els.fileInput.addEventListener('change', () => loadFile(els.fileInput.files?.[0]));
-    ['dragenter', 'dragover'].forEach((eventName) => els.dropZone.addEventListener(eventName, (event) => {
-      event.preventDefault();
-      els.dropZone.classList.add('is-dragging');
-    }));
-    ['dragleave', 'drop'].forEach((eventName) => els.dropZone.addEventListener(eventName, (event) => {
-      event.preventDefault();
-      els.dropZone.classList.remove('is-dragging');
-    }));
-    els.dropZone.addEventListener('drop', (event) => loadFile(event.dataTransfer?.files?.[0]));
-
-    els.canvas.addEventListener('pointerdown', startDrag);
-    els.canvas.addEventListener('pointermove', dragMove);
-    els.canvas.addEventListener('pointerup', endDrag);
-    els.canvas.addEventListener('pointercancel', endDrag);
-
-    els.presetGrid.addEventListener('click', (event) => {
-      const button = event.target.closest('[data-preset]');
-      if (!button) return;
-      state.preset = button.dataset.preset;
-      document.querySelectorAll('[data-preset]').forEach((item) => item.classList.toggle('active', item === button));
-      render();
-    });
-
-    els.sizePreset.addEventListener('change', () => {
-      els.customSize.hidden = els.sizePreset.value !== 'custom';
-      if (els.sizePreset.value !== 'custom') {
-        const [width, height] = els.sizePreset.value.split('x').map(Number);
-        state.width = width;
-        state.height = height;
-        els.canvasWidth.value = width;
-        els.canvasHeight.value = height;
-        if (state.image) fitImage('contain');
-        render();
-      }
-    });
-
-    [els.canvasWidth, els.canvasHeight].forEach((input) => input.addEventListener('input', () => {
-      state.width = clamp(Number(els.canvasWidth.value) || 1200, 400, 4000);
-      state.height = clamp(Number(els.canvasHeight.value) || 800, 300, 4000);
-      render();
-    }));
-
-    [els.imageX, els.imageY, els.imageW, els.imageH, els.rotation, els.opacity].forEach((input) => input.addEventListener('input', syncLayerFromControls));
-    [els.colorA, els.colorB, els.colorC, els.cardColor, els.padding, els.cardRadius, els.imageRadius, els.browserFrame, els.shadow, els.clipToCard].forEach((input) => {
-      input.addEventListener('input', render);
-      input.addEventListener('change', render);
-    });
-
-    els.selectTool.addEventListener('click', () => setMode('move'));
-    els.cropTool.addEventListener('click', () => setMode('crop'));
-    els.fitImage.addEventListener('click', () => fitImage('contain'));
-    els.fillImage.addEventListener('click', () => fitImage('cover'));
-    els.centerImage.addEventListener('click', centerImage);
-    els.resetImage.addEventListener('click', () => fitImage('contain'));
-
-    document.querySelectorAll('[data-download]').forEach((button) => {
-      button.addEventListener('click', () => download(button.dataset.download));
-    });
-
-    document.addEventListener('keydown', (event) => {
-      if (!state.image || ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName || '')) return;
-      const step = event.shiftKey ? 10 : 1;
-      if (event.key === 'ArrowLeft') state.imageLayer.x -= step;
-      if (event.key === 'ArrowRight') state.imageLayer.x += step;
-      if (event.key === 'ArrowUp') state.imageLayer.y -= step;
-      if (event.key === 'ArrowDown') state.imageLayer.y += step;
-      if (event.key === '0') fitImage('contain');
-      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '0'].includes(event.key)) {
-        event.preventDefault();
-        syncControlsFromLayer();
-        render();
-      }
-    });
-
-    syncControlsFromLayer();
-    render();
+    const state={image:null,imageName:'captura',preset:'soft',width:1200,height:800,mode:'move',selected:true,drag:null,layer:{x:220,y:220,w:760,h:380,rotation:0,opacity:1,crop:{x:0,y:0,w:1,h:1}}};
+    const $=(id)=>document.getElementById(id);const els={canvas:$('previewCanvas'),dropZone:$('dropZone'),fileInput:$('fileInput'),moveTool:$('moveTool'),cropTool:$('cropTool'),fitImage:$('fitImage'),fillImage:$('fillImage'),centerImage:$('centerImage'),resetImage:$('resetImage'),editHelp:$('editHelp'),imageX:$('imageX'),imageY:$('imageY'),imageW:$('imageW'),imageH:$('imageH'),rotation:$('rotation'),opacity:$('opacity'),imageRadius:$('imageRadius'),presetGrid:$('presetGrid'),colorA:$('colorA'),colorB:$('colorB'),colorC:$('colorC'),cardColor:$('cardColor'),sizePreset:$('sizePreset'),customSize:$('customSize'),canvasWidth:$('canvasWidth'),canvasHeight:$('canvasHeight'),padding:$('padding'),cardRadius:$('cardRadius'),shadow:$('shadow'),clipToCard:$('clipToCard'),status:$('status')};
+    const ctx=els.canvas.getContext('2d');const HANDLE=14;const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));const rad=(d)=>d*Math.PI/180;const deg=(r)=>r*180/Math.PI;const esc=(v)=>String(v).replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+    function rr(c,x,y,w,h,r){const q=clamp(r,0,Math.min(w,h)/2);c.beginPath();c.moveTo(x+q,y);c.lineTo(x+w-q,y);c.quadraticCurveTo(x+w,y,x+w,y+q);c.lineTo(x+w,y+h-q);c.quadraticCurveTo(x+w,y+h,x+w-q,y+h);c.lineTo(x+q,y+h);c.quadraticCurveTo(x,y+h,x,y+h-q);c.lineTo(x,y+q);c.quadraticCurveTo(x,y,x+q,y);c.closePath()}
+    function size(){const d=window.devicePixelRatio||1;els.canvas.width=state.width*d;els.canvas.height=state.height*d;els.canvas.style.aspectRatio=`${state.width}/${state.height}`;ctx.setTransform(d,0,0,d,0,0)}
+    function layout(){const p=Number(els.padding.value);const card={x:p,y:p,w:state.width-p*2,h:state.height-p*2,r:Number(els.cardRadius.value)};const i=Math.max(26,Math.round(Math.min(card.w,card.h)*.055));return{card,box:{x:card.x+i,y:card.y+i,w:card.w-i*2,h:card.h-i*2}}}
+    function bg(c){const a=els.colorA.value,b=els.colorB.value,base=els.colorC.value;c.fillStyle=base;c.fillRect(0,0,state.width,state.height);if(state.preset==='solid'){c.fillStyle=a;c.fillRect(0,0,state.width,state.height);return}const g=c.createLinearGradient(0,0,state.width,state.height);g.addColorStop(0,base);g.addColorStop(.6,'#f8fbff');g.addColorStop(1,b);c.fillStyle=g;c.fillRect(0,0,state.width,state.height);if(['soft','aurora','mesh'].includes(state.preset)){const circles=state.preset==='soft'?[[a,-state.width*.04,-state.height*.1,state.width*.34],[b,state.width*.9,-state.height*.08,state.width*.36]]:[[a,state.width*.08,state.height*.04,state.width*.42],[b,state.width*.72,state.height*.08,state.width*.44],['#fde68a',state.width*.42,state.height*.78,state.width*.34]];circles.forEach(([col,x,y,r])=>{c.save();c.globalAlpha=state.preset==='mesh'?.64:.72;c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();c.restore()})}if(state.preset==='stripes'){c.save();c.globalAlpha=.18;c.strokeStyle=a;c.lineWidth=7;for(let x=-state.height;x<state.width+state.height;x+=46){c.beginPath();c.moveTo(x,state.height);c.lineTo(x+state.height,0);c.stroke()}c.restore()}if(state.preset==='grid'){c.save();c.globalAlpha=.22;c.strokeStyle=a;for(let x=0;x<=state.width;x+=48){c.beginPath();c.moveTo(x,0);c.lineTo(x,state.height);c.stroke()}for(let y=0;y<=state.height;y+=48){c.beginPath();c.moveTo(0,y);c.lineTo(state.width,y);c.stroke()}c.restore()}}
+    function card(c,r){c.save();if(els.shadow.checked){c.shadowColor='rgba(15,23,42,.18)';c.shadowBlur=42;c.shadowOffsetY=22}rr(c,r.x,r.y,r.w,r.h,r.r);c.fillStyle=els.cardColor.value;c.fill();c.restore()}
+    function placeholder(c,b){c.save();rr(c,b.x,b.y,b.w,b.h,Number(els.imageRadius.value));c.fillStyle='rgba(15,23,42,.05)';c.fill();c.strokeStyle='rgba(15,23,42,.12)';c.setLineDash([16,14]);c.lineWidth=3;c.stroke();c.fillStyle='#334155';c.font='800 31px system-ui,sans-serif';c.textAlign='center';c.fillText('Arrastra o pega una captura',b.x+b.w/2,b.y+b.h/2-8);c.font='500 20px system-ui,sans-serif';c.fillStyle='#64748b';c.fillText('Ctrl/Cmd + V para pegar desde el portapapeles',b.x+b.w/2,b.y+b.h/2+30);c.restore()}
+    function drawImg(c){if(!state.image)return;const l=state.layer,cr=l.crop;c.save();c.translate(l.x+l.w/2,l.y+l.h/2);c.rotate(rad(l.rotation));c.globalAlpha=l.opacity;if(els.shadow.checked){c.shadowColor='rgba(15,23,42,.16)';c.shadowBlur=28;c.shadowOffsetY=16}rr(c,-l.w/2,-l.h/2,l.w,l.h,Number(els.imageRadius.value));c.clip();c.drawImage(state.image,cr.x*state.image.width,cr.y*state.image.height,cr.w*state.image.width,cr.h*state.image.height,-l.w/2,-l.h/2,l.w,l.h);c.restore()}
+    function l2s(p){const l=state.layer,cx=l.x+l.w/2,cy=l.y+l.h/2,a=rad(l.rotation),dx=p.x-l.w/2,dy=p.y-l.h/2;return{x:cx+dx*Math.cos(a)-dy*Math.sin(a),y:cy+dx*Math.sin(a)+dy*Math.cos(a)}}
+    function s2l(p){const l=state.layer,cx=l.x+l.w/2,cy=l.y+l.h/2,a=-rad(l.rotation),dx=p.x-cx,dy=p.y-cy;return{x:dx*Math.cos(a)-dy*Math.sin(a)+l.w/2,y:dx*Math.sin(a)+dy*Math.cos(a)+l.h/2}}
+    function handles(){const l=state.layer;return{nw:l2s({x:0,y:0}),ne:l2s({x:l.w,y:0}),se:l2s({x:l.w,y:l.h}),sw:l2s({x:0,y:l.h}),rotate:l2s({x:l.w/2,y:-52})}}
+    function selection(c){if(!state.image||!state.selected)return;const h=handles(),pts=[h.nw,h.ne,h.se,h.sw];c.save();c.strokeStyle=state.mode==='crop'?'#14b8a6':'#2563eb';c.lineWidth=2;c.setLineDash([8,6]);c.beginPath();c.moveTo(pts[0].x,pts[0].y);pts.slice(1).forEach(p=>c.lineTo(p.x,p.y));c.closePath();c.stroke();c.setLineDash([]);const top=l2s({x:state.layer.w/2,y:0});c.beginPath();c.moveTo(top.x,top.y);c.lineTo(h.rotate.x,h.rotate.y);c.stroke();Object.entries(h).forEach(([n,p])=>{c.beginPath();c.fillStyle=n==='rotate'?'#0f172a':'#fff';c.strokeStyle='#2563eb';c.arc(p.x,p.y,n==='rotate'?8:HANDLE/2,0,Math.PI*2);c.fill();c.stroke()});c.restore()}
+    function render(o={}){size();bg(ctx);const{card:ca,box}=layout();card(ctx,ca);if(!state.image)placeholder(ctx,box);ctx.save();if(els.clipToCard.checked){rr(ctx,ca.x,ca.y,ca.w,ca.h,ca.r);ctx.clip()}drawImg(ctx);ctx.restore();if(!o.exporting)selection(ctx)}
+    function sync(){const l=state.layer;els.imageX.value=Math.round(l.x);els.imageY.value=Math.round(l.y);els.imageW.value=Math.round(l.w);els.imageH.value=Math.round(l.h);els.rotation.value=Math.round(l.rotation);els.opacity.value=Math.round(l.opacity*100)}
+    function apply(){const l=state.layer;l.x=Number(els.imageX.value)||l.x;l.y=Number(els.imageY.value)||l.y;l.w=clamp(Number(els.imageW.value)||l.w,20,6000);l.h=clamp(Number(els.imageH.value)||l.h,20,6000);l.rotation=Number(els.rotation.value)||0;l.opacity=clamp(Number(els.opacity.value)/100,.1,1);render()}
+    function fit(mode='contain'){if(!state.image)return;const{box}=layout();const r=mode==='cover'?Math.max(box.w/state.image.width,box.h/state.image.height):Math.min(box.w/state.image.width,box.h/state.image.height);state.layer.w=state.image.width*r;state.layer.h=state.image.height*r;state.layer.x=box.x+(box.w-state.layer.w)/2;state.layer.y=box.y+(box.h-state.layer.h)/2;state.layer.rotation=0;state.layer.crop={x:0,y:0,w:1,h:1};sync();render()}
+    function center(){const{box}=layout();state.layer.x=box.x+(box.w-state.layer.w)/2;state.layer.y=box.y+(box.h-state.layer.h)/2;sync();render()}
+    function mode(m){state.mode=m;els.moveTool.className=`btn ${m==='move'?'btn-primary':'btn-secondary'}`;els.cropTool.className=`btn ${m==='crop'?'btn-primary':'btn-secondary'}`;els.editHelp.textContent=m==='crop'?'Modo recorte: arrastra dentro de la imagen para desplazar el recorte visible.':'Arrastra la imagen. Usa las esquinas para cambiar tamaño y el punto superior para rotar.';render()}
+    function load(file){if(!file||!file.type.startsWith('image/')){els.status.textContent='Selecciona o pega una imagen válida.';return}const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{state.image=img;state.imageName=(file.name||'imagen-pegada').replace(/\.[^/.]+$/,'')||'captura';state.selected=true;els.status.textContent=`${file.name||'Imagen pegada'} cargada.`;fit('contain')};img.src=reader.result};reader.readAsDataURL(file)}
+    function pointer(e){const r=els.canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*(state.width/r.width),y:(e.clientY-r.top)*(state.height/r.height)}}function hit(p){const q=s2l(p);return q.x>=0&&q.y>=0&&q.x<=state.layer.w&&q.y<=state.layer.h}function hitHandle(p){for(const[n,h]of Object.entries(handles()))if(Math.hypot(p.x-h.x,p.y-h.y)<=HANDLE)return n;return null}
+    function down(e){if(!state.image)return;const p=pointer(e),hh=hitHandle(p),local=s2l(p);state.selected=hit(p)||!!hh;if(!state.selected){render();return}els.canvas.setPointerCapture(e.pointerId);if(state.mode==='crop'&&hit(p)&&!hh)state.drag={type:'crop',local,crop:{...state.layer.crop}};else if(hh==='rotate'){const cx=state.layer.x+state.layer.w/2,cy=state.layer.y+state.layer.h/2;state.drag={type:'rotate',cx,cy,start:deg(Math.atan2(p.y-cy,p.x-cx)),rot:state.layer.rotation}}else if(hh)state.drag={type:'resize',handle:hh,start:p,layer:{...state.layer}};else state.drag={type:'move',start:p,layer:{...state.layer}};e.preventDefault()}
+    function move(e){if(!state.drag)return;const p=pointer(e),l=state.layer;if(state.drag.type==='move'){l.x=state.drag.layer.x+p.x-state.drag.start.x;l.y=state.drag.layer.y+p.y-state.drag.start.y}if(state.drag.type==='rotate')l.rotation=clamp(state.drag.rot+deg(Math.atan2(p.y-state.drag.cy,p.x-state.drag.cx))-state.drag.start,-180,180);if(state.drag.type==='crop'){const local=s2l(p),dx=(local.x-state.drag.local.x)/l.w,dy=(local.y-state.drag.local.y)/l.h;l.crop.x=clamp(state.drag.crop.x+dx,0,1-l.crop.w);l.crop.y=clamp(state.drag.crop.y+dy,0,1-l.crop.h)}if(state.drag.type==='resize'){const s=state.drag.layer,local=s2l(p);let x=s.x,y=s.y,w=s.w,h=s.h;if(state.drag.handle.includes('e'))w=clamp(local.x,24,6000);if(state.drag.handle.includes('s'))h=clamp(local.y,24,6000);if(state.drag.handle.includes('w')){const right=s.x+s.w;x=s.x+local.x;w=clamp(right-x,24,6000)}if(state.drag.handle.includes('n')){const bottom=s.y+s.h;y=s.y+local.y;h=clamp(bottom-y,24,6000)}if(e.shiftKey){const ratio=s.w/s.h;if(w/h>ratio)w=h*ratio;else h=w/ratio}Object.assign(l,{x,y,w,h})}sync();render()}
+    function up(e){if(state.drag){try{els.canvas.releasePointerCapture(e.pointerId)}catch{}}state.drag=null}
+    function save(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}function download(f){const name=`${state.imageName}-mejorada-${state.width}x${state.height}.${f==='jpeg'?'jpg':f}`;render({exporting:true});if(f==='svg'){const data=els.canvas.toDataURL('image/png');save(new Blob([`<svg xmlns="http://www.w3.org/2000/svg" width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}"><image href="${esc(data)}" width="${state.width}" height="${state.height}"/></svg>`],{type:'image/svg+xml'}),name);render();return}els.canvas.toBlob(b=>{if(b)save(b,name);render()},f==='jpeg'?'image/jpeg':`image/${f}`,.94)}
+    els.dropZone.addEventListener('click',()=>els.fileInput.click());els.fileInput.addEventListener('change',()=>load(els.fileInput.files?.[0]));['dragenter','dragover'].forEach(n=>els.dropZone.addEventListener(n,e=>{e.preventDefault();els.dropZone.classList.add('is-dragging')}));['dragleave','drop'].forEach(n=>els.dropZone.addEventListener(n,e=>{e.preventDefault();els.dropZone.classList.remove('is-dragging')}));els.dropZone.addEventListener('drop',e=>load(e.dataTransfer?.files?.[0]));document.addEventListener('paste',e=>{const item=Array.from(e.clipboardData?.items||[]).find(i=>i.type.startsWith('image/'));if(!item)return;e.preventDefault();load(item.getAsFile())});els.canvas.addEventListener('pointerdown',down);els.canvas.addEventListener('pointermove',move);els.canvas.addEventListener('pointerup',up);els.canvas.addEventListener('pointercancel',up);els.presetGrid.addEventListener('click',e=>{const b=e.target.closest('[data-preset]');if(!b)return;state.preset=b.dataset.preset;document.querySelectorAll('[data-preset]').forEach(i=>i.classList.toggle('active',i===b));render()});els.sizePreset.addEventListener('change',()=>{els.customSize.hidden=els.sizePreset.value!=='custom';if(els.sizePreset.value!=='custom'){const[w,h]=els.sizePreset.value.split('x').map(Number);state.width=w;state.height=h;els.canvasWidth.value=w;els.canvasHeight.value=h;if(state.image)fit('contain');render()}});[els.canvasWidth,els.canvasHeight].forEach(i=>i.addEventListener('input',()=>{state.width=clamp(Number(els.canvasWidth.value)||1200,400,4000);state.height=clamp(Number(els.canvasHeight.value)||800,300,4000);render()}));[els.imageX,els.imageY,els.imageW,els.imageH,els.rotation,els.opacity].forEach(i=>i.addEventListener('input',apply));[els.colorA,els.colorB,els.colorC,els.cardColor,els.padding,els.cardRadius,els.imageRadius,els.shadow,els.clipToCard].forEach(i=>{i.addEventListener('input',render);i.addEventListener('change',render)});els.moveTool.addEventListener('click',()=>mode('move'));els.cropTool.addEventListener('click',()=>mode('crop'));els.fitImage.addEventListener('click',()=>fit('contain'));els.fillImage.addEventListener('click',()=>fit('cover'));els.centerImage.addEventListener('click',center);els.resetImage.addEventListener('click',()=>fit('contain'));document.querySelectorAll('[data-download]').forEach(b=>b.addEventListener('click',()=>download(b.dataset.download)));sync();render();
   </script>
 </Layout>
 
 <style>
-  .tool-hero { padding-bottom: var(--space-8); }
-  .editor-shell { display: grid; grid-template-columns: minmax(290px, 390px) minmax(0, 1fr); gap: var(--space-6); align-items: start; }
-  .control-panel, .preview-panel { border: 1px solid var(--color-border); border-radius: var(--radius-2xl); background: color-mix(in srgb, var(--color-surface) 94%, transparent); box-shadow: var(--shadow-sm); }
-  .control-panel { display: grid; gap: var(--space-5); padding: var(--space-5); position: sticky; top: 5.5rem; }
-  .drop-zone { display: grid; grid-template-columns: auto 1fr; gap: var(--space-4); align-items: center; min-height: 7rem; padding: var(--space-4); border: 2px dashed var(--color-border-strong); border-radius: var(--radius-xl); background: var(--color-surface-soft); cursor: pointer; transition: border-color var(--transition-base), background var(--transition-base), transform var(--transition-base); }
-  .drop-zone:hover, .drop-zone.is-dragging { transform: translateY(-1px); border-color: var(--color-primary); background: var(--color-primary-soft); }
-  .drop-icon { display: grid; place-items: center; width: 3.4rem; height: 3.4rem; border-radius: var(--radius-lg); background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color: #fff; font-size: .82rem; font-weight: 900; box-shadow: var(--shadow-brand); }
-  .drop-zone strong, .drop-zone span { display: block; }
-  .drop-zone span { color: var(--color-text-muted); font-size: .92rem; }
-  .panel-section { display: grid; gap: var(--space-3); }
-  .panel-section h2 { margin: 0; font-size: 1rem; letter-spacing: -.01em; }
-  .tool-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
-  .tool-actions .btn { width: 100%; min-height: 2.65rem; padding-inline: .75rem; }
-  .preset-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-2); }
-  .preset { min-height: 3.1rem; padding: .25rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); cursor: pointer; }
-  .preset.active { border-color: var(--color-primary); box-shadow: var(--shadow-focus); }
-  .preset span { display: block; width: 100%; height: 100%; border-radius: .75rem; }
-  .preset[data-preset='soft'] span { background: radial-gradient(circle at 0 0,#dbeafe 0 40%,transparent 42%), radial-gradient(circle at 100% 0,#ccfbf1 0 40%,transparent 42%), #f8fbff; }
-  .preset[data-preset='aurora'] span { background: radial-gradient(circle at 20% 20%,#bfdbfe,transparent 42%), radial-gradient(circle at 80% 20%,#a7f3d0,transparent 44%), radial-gradient(circle at 50% 90%,#fde68a,transparent 36%), #fff; }
-  .preset[data-preset='mesh'] span { background: linear-gradient(135deg,#fdf2f8,#ecfeff), radial-gradient(circle,#60a5fa,transparent); }
-  .preset[data-preset='stripes'] span { background: repeating-linear-gradient(135deg,#dbeafe 0 8px,#fff 8px 22px); }
-  .preset[data-preset='grid'] span { background-color:#fff; background-image: linear-gradient(#bfdbfe 1px,transparent 1px), linear-gradient(90deg,#bfdbfe 1px,transparent 1px); background-size: 12px 12px; }
-  .preset[data-preset='solid'] span { background: #dbeafe; }
-  .field-grid { display: grid; gap: var(--space-3); }
-  .field-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .custom-size { margin-top: calc(var(--space-2) * -1); }
-  .check-row { display: flex; flex-direction: row; align-items: center; gap: var(--space-2); min-height: 2.5rem; }
-  .check-row input { width: 1.1rem; height: 1.1rem; accent-color: var(--color-primary); }
-  input[type='range'] { accent-color: var(--color-primary); }
-  input[type='color'] { min-height: 2.9rem; padding: .25rem; cursor: pointer; }
-  .download-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
-  .download-grid .btn { width: 100%; }
-  .preview-panel { min-height: 620px; padding: clamp(1rem, 2vw, 1.5rem); }
-  .canvas-wrap { display: grid; min-height: 580px; place-items: center; overflow: auto; border-radius: var(--radius-xl); background: color-mix(in srgb, var(--color-bg) 72%, var(--color-surface)); }
-  #previewCanvas { width: min(100%, 980px); height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); touch-action: none; cursor: grab; }
-  #previewCanvas:active { cursor: grabbing; }
-  @media (max-width: 980px) { .editor-shell { grid-template-columns: 1fr; } .control-panel { position: static; } .preview-panel, .canvas-wrap { min-height: auto; } }
-  @media (max-width: 560px) { .preset-grid { grid-template-columns: repeat(3, 1fr); } .field-grid.two, .download-grid, .tool-actions { grid-template-columns: 1fr; } .drop-zone { grid-template-columns: 1fr; } }
+  .tool-hero{padding-bottom:var(--space-8)}.editor-shell{display:grid;grid-template-columns:minmax(290px,390px) minmax(0,1fr);gap:var(--space-6);align-items:start}.control-panel,.preview-panel{border:1px solid var(--color-border);border-radius:var(--radius-2xl);background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-sm)}.control-panel{display:grid;gap:var(--space-5);padding:var(--space-5);position:sticky;top:5.5rem}.drop-zone{display:grid;width:100%;grid-template-columns:auto 1fr;gap:var(--space-4);align-items:center;min-height:7rem;padding:var(--space-4);border:2px dashed var(--color-border-strong);border-radius:var(--radius-xl);background:var(--color-surface-soft);color:var(--color-text);text-align:left;cursor:pointer}.drop-zone:hover,.drop-zone.is-dragging{border-color:var(--color-primary);background:var(--color-primary-soft)}.drop-icon{display:grid;place-items:center;width:3.4rem;height:3.4rem;border-radius:var(--radius-lg);background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:#fff;font-size:.82rem;font-weight:900;box-shadow:var(--shadow-brand)}.drop-zone strong,.drop-zone small{display:block}.drop-zone small{color:var(--color-text-muted);font-size:.92rem;line-height:1.5}.panel-section{display:grid;gap:var(--space-3)}.panel-section h2{margin:0;font-size:1rem}.tool-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)}.tool-actions .btn{width:100%;min-height:2.65rem;padding-inline:.75rem}.preset-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:var(--space-2)}.preset{min-height:3.1rem;padding:.25rem;border-radius:var(--radius-md);border:1px solid var(--color-border);background:var(--color-surface);cursor:pointer}.preset.active{border-color:var(--color-primary);box-shadow:var(--shadow-focus)}.preset span{display:block;width:100%;height:100%;border-radius:.75rem}.preset[data-preset='soft'] span{background:radial-gradient(circle at 0 0,#dbeafe 0 40%,transparent 42%),radial-gradient(circle at 100% 0,#ccfbf1 0 40%,transparent 42%),#f8fbff}.preset[data-preset='aurora'] span{background:radial-gradient(circle at 20% 20%,#bfdbfe,transparent 42%),radial-gradient(circle at 80% 20%,#a7f3d0,transparent 44%),radial-gradient(circle at 50% 90%,#fde68a,transparent 36%),#fff}.preset[data-preset='mesh'] span{background:linear-gradient(135deg,#fdf2f8,#ecfeff),radial-gradient(circle,#60a5fa,transparent)}.preset[data-preset='stripes'] span{background:repeating-linear-gradient(135deg,#dbeafe 0 8px,#fff 8px 22px)}.preset[data-preset='grid'] span{background-color:#fff;background-image:linear-gradient(#bfdbfe 1px,transparent 1px),linear-gradient(90deg,#bfdbfe 1px,transparent 1px);background-size:12px 12px}.preset[data-preset='solid'] span{background:#dbeafe}.field-grid{display:grid;gap:var(--space-3)}.field-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.check-row{display:flex;flex-direction:row;align-items:center;gap:var(--space-2);min-height:2.5rem}.check-row input{width:1.1rem;height:1.1rem;accent-color:var(--color-primary)}input[type='range']{accent-color:var(--color-primary)}input[type='color']{min-height:2.9rem;padding:.25rem;cursor:pointer}.download-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)}.download-grid .btn{width:100%}.preview-panel{min-height:620px;padding:clamp(1rem,2vw,1.5rem)}.canvas-wrap{display:grid;min-height:580px;place-items:center;overflow:auto;border-radius:var(--radius-xl);background:color-mix(in srgb,var(--color-bg) 72%,var(--color-surface))}#previewCanvas{width:min(100%,980px);height:auto;border-radius:var(--radius-lg);box-shadow:var(--shadow-md);touch-action:none;cursor:grab}#previewCanvas:active{cursor:grabbing}@media(max-width:980px){.editor-shell{grid-template-columns:1fr}.control-panel{position:static}.preview-panel,.canvas-wrap{min-height:auto}}@media(max-width:560px){.preset-grid{grid-template-columns:repeat(3,1fr)}.field-grid.two,.download-grid,.tool-actions{grid-template-columns:1fr}.drop-zone{grid-template-columns:1fr}}
 </style>
