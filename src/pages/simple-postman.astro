@@ -1,0 +1,422 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl } from '../i18n/ui';
+const lang = getLangFromUrl(Astro.url);
+const es = lang === 'es';
+const title = es ? 'SimplePostman' : 'SimplePostman';
+const description = es
+  ? 'Cliente HTTP reducido en el navegador para preparar peticiones, generar cURL y ver respuestas.'
+  : 'A reduced browser HTTP client to prepare requests, generate cURL and inspect responses.';
+const copy = {
+  eyebrow: es ? 'Herramienta frontend' : 'Frontend tool',
+  hero: es ? 'Un Postman reducido, rápido y sin backend' : 'A reduced, fast Postman without a backend',
+  text: es ? 'Prepara peticiones GET, POST, PUT, PATCH o DELETE, añade headers y auth, genera cURL y ejecuta la petición desde el navegador. Las APIs sin CORS pueden bloquear la respuesta.' : 'Prepare GET, POST, PUT, PATCH or DELETE requests, add headers and auth, generate cURL and run the request from the browser. APIs without CORS may block the response.',
+  request: es ? 'Petición' : 'Request',
+  response: es ? 'Respuesta' : 'Response',
+  curl: 'cURL',
+  method: es ? 'Método' : 'Method',
+  url: 'URL',
+  headers: es ? 'Headers' : 'Headers',
+  auth: es ? 'Auth' : 'Auth',
+  body: 'Body',
+  bodyType: es ? 'Tipo de body' : 'Body type',
+  noAuth: es ? 'Sin auth' : 'No auth',
+  bearer: 'Bearer token',
+  basic: 'Basic auth',
+  jsonPreset: es ? 'JSON' : 'JSON',
+  formPreset: es ? 'Formulario' : 'Form',
+  customPreset: es ? 'Personalizado' : 'Custom',
+  noneBody: es ? 'Sin body' : 'No body',
+  jsonBody: 'JSON',
+  textBody: 'Text',
+  formBody: 'x-www-form-urlencoded',
+  addHeader: es ? 'Añadir header' : 'Add header',
+  send: es ? 'Enviar petición' : 'Send request',
+  generateCurl: es ? 'Generar cURL' : 'Generate cURL',
+  copyCurl: es ? 'Copiar cURL' : 'Copy cURL',
+  clear: es ? 'Limpiar' : 'Clear',
+  importCurl: es ? 'Importar cURL' : 'Import cURL',
+  parseCurl: es ? 'Leer cURL' : 'Parse cURL',
+  status: es ? 'Estado' : 'Status',
+  time: es ? 'Tiempo' : 'Time',
+  size: es ? 'Tamaño' : 'Size',
+  tabs: { pretty: es ? 'bonito' : 'pretty', raw: 'raw', headers: 'headers' },
+  placeholders: {
+    url: 'https://api.example.com/posts',
+    headerName: 'Content-Type',
+    headerValue: 'application/json',
+    token: es ? 'Pega aquí el token' : 'Paste token here',
+    username: es ? 'usuario' : 'username',
+    password: es ? 'contraseña' : 'password',
+    body: '{\n  "title": "Hola"\n}',
+    curl: 'curl -X POST https://api.example.com/posts -H "Content-Type: application/json" -d \'{"title":"Hola"}\''
+  },
+  messages: {
+    ready: es ? 'Listo para preparar una petición.' : 'Ready to prepare a request.',
+    invalidUrl: es ? 'La URL no es válida. Debe empezar por http:// o https://.' : 'Invalid URL. It must start with http:// or https://.',
+    getBody: es ? 'Aviso: GET/HEAD no envían body. Se ignorará el contenido.' : 'Warning: GET/HEAD do not send a body. Body content will be ignored.',
+    invalidJson: es ? 'El body JSON no es válido.' : 'The JSON body is not valid.',
+    sending: es ? 'Enviando petición...' : 'Sending request...',
+    done: es ? 'Petición completada.' : 'Request completed.',
+    fetchError: es ? 'No se pudo completar la petición. Puede ser un problema de CORS, red, certificado o URL.' : 'The request could not be completed. It may be caused by CORS, network, certificate or URL issues.',
+    curlCopied: es ? 'cURL copiado.' : 'cURL copied.',
+    curlGenerated: es ? 'cURL generado.' : 'cURL generated.',
+    curlEmpty: es ? 'Pega primero un comando cURL.' : 'Paste a cURL command first.',
+    curlInvalid: es ? 'No parece un cURL válido. Debe empezar por curl e incluir una URL.' : 'This does not look like a valid cURL. It must start with curl and include a URL.',
+    curlParsed: es ? 'cURL importado. Revisa headers, método y body antes de enviar.' : 'cURL imported. Review headers, method and body before sending.',
+    cleared: es ? 'Contenido limpiado.' : 'Content cleared.'
+  }
+};
+---
+<Layout title={title} description={description} lang={lang} path="/simple-postman/" translated={true}>
+  <section class="postman-page">
+    <div class="eyebrow">{copy.eyebrow}</div>
+    <h1>{copy.hero}</h1>
+    <p class="hero-text">{copy.text}</p>
+
+    <section class="tool-card postman-tool" aria-label={title}>
+      <div class="workspace">
+        <section class="request-panel" aria-labelledby="requestTitle">
+          <div class="panel-heading">
+            <div>
+              <h2 id="requestTitle">{copy.request}</h2>
+              <p>{es ? 'Configura método, URL, headers, auth y body.' : 'Configure method, URL, headers, auth and body.'}</p>
+            </div>
+            <button id="clearBtn" type="button">{copy.clear}</button>
+          </div>
+
+          <div class="url-row">
+            <label>
+              {copy.method}
+              <select id="methodSelect">
+                <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>HEAD</option><option>OPTIONS</option>
+              </select>
+            </label>
+            <label class="url-field">
+              {copy.url}
+              <input id="urlInput" type="url" placeholder={copy.placeholders.url} autocomplete="url" />
+            </label>
+          </div>
+
+          <div class="quick-presets" aria-label="Header presets">
+            <button type="button" data-preset="json">{copy.jsonPreset}</button>
+            <button type="button" data-preset="form">{copy.formPreset}</button>
+            <button type="button" data-preset="custom">{copy.customPreset}</button>
+          </div>
+
+          <details open>
+            <summary>{copy.headers}</summary>
+            <div id="headersList" class="headers-list"></div>
+            <button id="addHeaderBtn" class="secondary" type="button">+ {copy.addHeader}</button>
+          </details>
+
+          <details open>
+            <summary>{copy.auth}</summary>
+            <div class="auth-grid">
+              <label>
+                {copy.auth}
+                <select id="authType">
+                  <option value="none">{copy.noAuth}</option>
+                  <option value="bearer">{copy.bearer}</option>
+                  <option value="basic">{copy.basic}</option>
+                </select>
+              </label>
+              <label class="auth-token" data-auth-field="bearer">
+                Token
+                <input id="bearerToken" type="password" placeholder={copy.placeholders.token} autocomplete="off" />
+              </label>
+              <label data-auth-field="basic">
+                {copy.placeholders.username}
+                <input id="basicUser" type="text" placeholder={copy.placeholders.username} autocomplete="username" />
+              </label>
+              <label data-auth-field="basic">
+                {copy.placeholders.password}
+                <input id="basicPass" type="password" placeholder={copy.placeholders.password} autocomplete="current-password" />
+              </label>
+            </div>
+          </details>
+
+          <details open>
+            <summary>{copy.body}</summary>
+            <label>
+              {copy.bodyType}
+              <select id="bodyType">
+                <option value="none">{copy.noneBody}</option>
+                <option value="json" selected>{copy.jsonBody}</option>
+                <option value="text">{copy.textBody}</option>
+                <option value="form">{copy.formBody}</option>
+              </select>
+            </label>
+            <textarea id="bodyInput" spellcheck="false" placeholder={copy.placeholders.body}></textarea>
+          </details>
+
+          <div class="actions">
+            <button id="sendBtn" class="primary" type="button">{copy.send}</button>
+            <button id="curlBtn" type="button">{copy.generateCurl}</button>
+            <button id="copyCurlBtn" type="button">{copy.copyCurl}</button>
+          </div>
+        </section>
+
+        <section class="response-panel" aria-labelledby="responseTitle">
+          <div class="panel-heading">
+            <div>
+              <h2 id="responseTitle">{copy.response}</h2>
+              <p id="statusText">{copy.messages.ready}</p>
+            </div>
+          </div>
+
+          <div class="metrics" aria-label="Response metrics">
+            <output id="statusMetric">{copy.status}: —</output>
+            <output id="timeMetric">{copy.time}: —</output>
+            <output id="sizeMetric">{copy.size}: —</output>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="Response view">
+            <button class="tab active" type="button" data-view="pretty">{copy.tabs.pretty}</button>
+            <button class="tab" type="button" data-view="raw">{copy.tabs.raw}</button>
+            <button class="tab" type="button" data-view="headers">{copy.tabs.headers}</button>
+          </div>
+          <pre id="responseView" class="response-view"></pre>
+        </section>
+      </div>
+
+      <details class="curl-panel" open>
+        <summary>{copy.curl}</summary>
+        <div class="curl-grid">
+          <label>
+            {copy.importCurl}
+            <textarea id="curlInput" spellcheck="false" placeholder={copy.placeholders.curl}></textarea>
+          </label>
+          <label>
+            {copy.curl}
+            <textarea id="curlOutput" readonly spellcheck="false"></textarea>
+          </label>
+        </div>
+        <div class="actions compact">
+          <button id="parseCurlBtn" type="button">{copy.parseCurl}</button>
+        </div>
+        <ul id="warnings" class="warnings" aria-live="polite"></ul>
+      </details>
+    </section>
+  </section>
+
+  <style>
+    .postman-page{padding:clamp(2rem,6vw,4rem) 0}.postman-tool{padding:clamp(.8rem,2vw,1rem);margin-top:2rem;display:grid;gap:1rem}.workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.95fr);gap:1rem}.request-panel,.response-panel,.curl-panel{border:1px solid var(--color-border,var(--border));border-radius:22px;background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-xs);overflow:hidden}.request-panel,.response-panel{padding:1rem;display:grid;gap:1rem;align-content:start}.panel-heading{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start}.panel-heading h2{margin:0 0 .2rem;font-size:1.25rem}.panel-heading p{margin:0;color:var(--color-text-muted,var(--muted));line-height:1.6}.url-row,.auth-grid{display:grid;grid-template-columns:160px minmax(0,1fr);gap:.75rem}.url-field{min-width:0}label{display:grid;gap:.4rem;color:var(--color-text-muted,var(--muted));font-weight:850}input,select,textarea{width:100%;border:1px solid var(--color-border,var(--border));border-radius:14px;background:var(--color-surface);color:var(--color-text);padding:.75rem .85rem;font:inherit}textarea{min-height:160px;font-family:var(--font-mono);line-height:1.55;resize:vertical;tab-size:2}.headers-list{display:grid;gap:.55rem;margin-bottom:.7rem}.header-row{display:grid;grid-template-columns:minmax(120px,.7fr) minmax(160px,1fr) auto;gap:.5rem}.header-row button{min-width:2.7rem}.quick-presets,.actions,.tabs{display:flex;flex-wrap:wrap;gap:.5rem}button{min-height:2.4rem;border-radius:999px;border:1px solid var(--color-border,var(--border));background:var(--color-surface);color:var(--color-text);padding:.55rem .85rem;font:inherit;font-weight:900;cursor:pointer;box-shadow:var(--shadow-xs)}button:hover{border-color:color-mix(in srgb,var(--color-primary,var(--primary)) 55%,var(--color-border,var(--border)))}button.primary{background:var(--color-primary,var(--primary));color:#020617;border-color:transparent}.secondary{width:max-content}details{border:1px solid var(--color-border,var(--border));border-radius:18px;padding:.8rem;background:var(--color-surface-soft,rgba(148,163,184,.08))}summary{cursor:pointer;font-weight:950;color:var(--color-text);margin-bottom:.75rem}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}.metrics output{border:1px solid var(--color-border,var(--border));border-radius:14px;background:var(--color-surface-soft,rgba(148,163,184,.08));padding:.7rem;color:var(--color-text-muted,var(--muted));font-weight:850}.tab.active{background:#111827;color:#fff;border-color:#111827}.response-view{min-height:440px;max-height:620px;overflow:auto;margin:0;border-radius:18px;background:#111827;color:#e5e7eb;padding:1rem;font:500 .92rem/1.6 var(--font-mono);white-space:pre-wrap;word-break:break-word}.curl-panel{padding:1rem}.curl-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}.curl-grid textarea{min-height:140px;background:#111827;color:#e5e7eb}.compact{margin-top:.7rem}.warnings{display:grid;gap:.35rem;margin:.8rem 0 0;padding-left:1.2rem;color:#f59e0b}.status-error{color:#fca5a5!important}.status-ok{color:#86efac!important}[data-hidden=true]{display:none}@media(max-width:980px){.workspace,.curl-grid,.url-row,.auth-grid{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}.response-view{min-height:300px}.header-row{grid-template-columns:1fr}.header-row button{width:100%}.actions button,.quick-presets button,.tabs button{flex:1 1 calc(50% - .5rem)}}
+  </style>
+
+  <script define:vars={{ copy }}>
+    window.addEventListener('DOMContentLoaded', () => {
+      const $ = (id) => document.getElementById(id);
+      const methodSelect = $('methodSelect');
+      const urlInput = $('urlInput');
+      const headersList = $('headersList');
+      const authType = $('authType');
+      const bearerToken = $('bearerToken');
+      const basicUser = $('basicUser');
+      const basicPass = $('basicPass');
+      const bodyType = $('bodyType');
+      const bodyInput = $('bodyInput');
+      const curlInput = $('curlInput');
+      const curlOutput = $('curlOutput');
+      const responseView = $('responseView');
+      const statusText = $('statusText');
+      const statusMetric = $('statusMetric');
+      const timeMetric = $('timeMetric');
+      const sizeMetric = $('sizeMetric');
+      const warnings = $('warnings');
+      const tabs = Array.from(document.querySelectorAll('.tab'));
+      let currentResponse = { pretty: '', raw: '', headers: '' };
+      let currentView = 'pretty';
+
+      const setStatus = (message, type = '') => {
+        statusText.textContent = message;
+        statusText.classList.toggle('status-error', type === 'error');
+        statusText.classList.toggle('status-ok', type === 'ok');
+      };
+      const formatBytes = (bytes) => bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(2)} MB`;
+      const shellQuote = (value) => `'${String(value).replaceAll("'", "'\\''")}'`;
+      const addWarning = (message) => { const li = document.createElement('li'); li.textContent = message; warnings.append(li); };
+      const clearWarnings = () => warnings.replaceChildren();
+      const isValidUrl = (value) => { try { const url = new URL(value); return ['http:', 'https:'].includes(url.protocol); } catch { return false; } };
+
+      const addHeaderRow = (name = '', value = '') => {
+        const row = document.createElement('div');
+        row.className = 'header-row';
+        row.innerHTML = `<input data-header-name placeholder="${copy.placeholders.headerName}"><input data-header-value placeholder="${copy.placeholders.headerValue}"><button type="button" aria-label="Remove header">×</button>`;
+        row.querySelector('[data-header-name]').value = name;
+        row.querySelector('[data-header-value]').value = value;
+        row.querySelector('button').addEventListener('click', () => { row.remove(); generateCurl(); });
+        row.querySelectorAll('input').forEach((input) => input.addEventListener('input', generateCurl));
+        headersList.append(row);
+      };
+      const readHeaders = () => Array.from(headersList.querySelectorAll('.header-row')).map((row) => ({ name: row.querySelector('[data-header-name]').value.trim(), value: row.querySelector('[data-header-value]').value.trim() })).filter((header) => header.name);
+      const setHeader = (name, value) => {
+        const existing = Array.from(headersList.querySelectorAll('.header-row')).find((row) => row.querySelector('[data-header-name]').value.trim().toLowerCase() === name.toLowerCase());
+        if (existing) existing.querySelector('[data-header-value]').value = value;
+        else addHeaderRow(name, value);
+      };
+      const updateAuthVisibility = () => document.querySelectorAll('[data-auth-field]').forEach((field) => field.dataset.hidden = String(field.dataset.authField !== authType.value));
+
+      const getBody = () => {
+        const method = methodSelect.value.toUpperCase();
+        if (method === 'GET' || method === 'HEAD' || bodyType.value === 'none') return undefined;
+        if (bodyType.value === 'json') {
+          const raw = bodyInput.value.trim();
+          if (!raw) return undefined;
+          JSON.parse(raw);
+          return raw;
+        }
+        if (bodyType.value === 'form') return new URLSearchParams(bodyInput.value).toString();
+        return bodyInput.value;
+      };
+
+      const buildHeaders = () => {
+        const headers = new Headers();
+        readHeaders().forEach(({ name, value }) => headers.set(name, value));
+        if (authType.value === 'bearer' && bearerToken.value.trim()) headers.set('Authorization', `Bearer ${bearerToken.value.trim()}`);
+        if (authType.value === 'basic' && basicUser.value) headers.set('Authorization', `Basic ${btoa(`${basicUser.value}:${basicPass.value}`)}`);
+        return headers;
+      };
+
+      const validateRequest = () => {
+        clearWarnings();
+        if (!isValidUrl(urlInput.value.trim())) { addWarning(copy.messages.invalidUrl); return false; }
+        const method = methodSelect.value.toUpperCase();
+        if ((method === 'GET' || method === 'HEAD') && bodyInput.value.trim() && bodyType.value !== 'none') addWarning(copy.messages.getBody);
+        if (bodyType.value === 'json' && bodyInput.value.trim() && method !== 'GET' && method !== 'HEAD') {
+          try { JSON.parse(bodyInput.value); } catch { addWarning(copy.messages.invalidJson); return false; }
+        }
+        return true;
+      };
+
+      const generateCurl = () => {
+        const method = methodSelect.value.toUpperCase();
+        const parts = ['curl', '-X', method, shellQuote(urlInput.value.trim() || copy.placeholders.url)];
+        readHeaders().forEach(({ name, value }) => parts.push('-H', shellQuote(`${name}: ${value}`)));
+        if (authType.value === 'bearer' && bearerToken.value.trim()) parts.push('-H', shellQuote(`Authorization: Bearer ${bearerToken.value.trim()}`));
+        if (authType.value === 'basic' && basicUser.value) parts.push('-u', shellQuote(`${basicUser.value}:${basicPass.value}`));
+        try {
+          const body = getBody();
+          if (body !== undefined) parts.push('--data-raw', shellQuote(body));
+        } catch {}
+        curlOutput.value = parts.join(' \\\n  ');
+        validateRequest();
+        return curlOutput.value;
+      };
+
+      const renderResponse = () => {
+        tabs.forEach((tab) => tab.classList.toggle('active', tab.dataset.view === currentView));
+        responseView.textContent = currentResponse[currentView] || '';
+      };
+
+      const sendRequest = async () => {
+        if (!validateRequest()) { setStatus(copy.messages.invalidUrl, 'error'); return; }
+        let body;
+        try { body = getBody(); } catch { setStatus(copy.messages.invalidJson, 'error'); return; }
+        const method = methodSelect.value.toUpperCase();
+        const init = { method, headers: buildHeaders(), mode: 'cors' };
+        if (body !== undefined) init.body = body;
+        setStatus(copy.messages.sending);
+        const start = performance.now();
+        try {
+          const response = await fetch(urlInput.value.trim(), init);
+          const elapsed = Math.round(performance.now() - start);
+          const raw = await response.text();
+          let pretty = raw;
+          const contentType = response.headers.get('content-type') || '';
+          if (contentType.includes('application/json') || /^[\[{]/.test(raw.trim())) {
+            try { pretty = JSON.stringify(JSON.parse(raw), null, 2); } catch {}
+          }
+          currentResponse = {
+            pretty,
+            raw,
+            headers: Array.from(response.headers.entries()).map(([key, value]) => `${key}: ${value}`).join('\n')
+          };
+          statusMetric.textContent = `${copy.status}: ${response.status} ${response.statusText}`;
+          timeMetric.textContent = `${copy.time}: ${elapsed} ms`;
+          sizeMetric.textContent = `${copy.size}: ${formatBytes(new Blob([raw]).size)}`;
+          currentView = 'pretty';
+          renderResponse();
+          setStatus(copy.messages.done, response.ok ? 'ok' : 'error');
+        } catch (error) {
+          currentResponse = { pretty: `${copy.messages.fetchError}\n\n${error instanceof Error ? error.message : String(error)}`, raw: '', headers: '' };
+          currentView = 'pretty';
+          renderResponse();
+          statusMetric.textContent = `${copy.status}: —`;
+          timeMetric.textContent = `${copy.time}: —`;
+          sizeMetric.textContent = `${copy.size}: —`;
+          addWarning(copy.messages.fetchError);
+          setStatus(copy.messages.fetchError, 'error');
+        }
+      };
+
+      const tokenizeCurl = (value) => {
+        const tokens = [];
+        let token = '';
+        let quote = '';
+        let escaped = false;
+        for (const char of value.replace(/\\\n/g, ' ')) {
+          if (escaped) { token += char; escaped = false; continue; }
+          if (char === '\\') { escaped = true; continue; }
+          if (quote) { if (char === quote) quote = ''; else token += char; continue; }
+          if (char === '"' || char === "'") { quote = char; continue; }
+          if (/\s/.test(char)) { if (token) { tokens.push(token); token = ''; } continue; }
+          token += char;
+        }
+        if (token) tokens.push(token);
+        return tokens;
+      };
+
+      const importCurl = () => {
+        clearWarnings();
+        const raw = curlInput.value.trim();
+        if (!raw) { addWarning(copy.messages.curlEmpty); setStatus(copy.messages.curlEmpty, 'error'); return; }
+        const tokens = tokenizeCurl(raw);
+        if (tokens[0] !== 'curl') { addWarning(copy.messages.curlInvalid); setStatus(copy.messages.curlInvalid, 'error'); return; }
+        let foundUrl = '';
+        let method = 'GET';
+        let body = '';
+        headersList.replaceChildren();
+        authType.value = 'none';
+        for (let i = 1; i < tokens.length; i += 1) {
+          const token = tokens[i];
+          const next = tokens[i + 1];
+          if ((token === '-X' || token === '--request') && next) { method = next.toUpperCase(); i += 1; continue; }
+          if ((token === '-H' || token === '--header') && next) { const index = next.indexOf(':'); if (index > 0) addHeaderRow(next.slice(0, index).trim(), next.slice(index + 1).trim()); else addWarning(`${copy.headers}: ${next}`); i += 1; continue; }
+          if (['-d','--data','--data-raw','--data-binary','--data-ascii'].includes(token) && next !== undefined) { body = next; if (method === 'GET') method = 'POST'; i += 1; continue; }
+          if ((token === '-u' || token === '--user') && next) { const [user, ...pass] = next.split(':'); authType.value = 'basic'; basicUser.value = user || ''; basicPass.value = pass.join(':'); i += 1; continue; }
+          if (!token.startsWith('-') && isValidUrl(token)) foundUrl = token;
+        }
+        if (!foundUrl) { addWarning(copy.messages.curlInvalid); setStatus(copy.messages.curlInvalid, 'error'); return; }
+        methodSelect.value = method;
+        urlInput.value = foundUrl;
+        bodyInput.value = body;
+        bodyType.value = body ? (body.trim().startsWith('{') || body.trim().startsWith('[') ? 'json' : 'text') : 'none';
+        updateAuthVisibility();
+        generateCurl();
+        setStatus(copy.messages.curlParsed, 'ok');
+      };
+
+      document.querySelectorAll('[data-preset]').forEach((button) => button.addEventListener('click', () => {
+        const preset = button.dataset.preset;
+        if (preset === 'json') { setHeader('Accept', 'application/json'); setHeader('Content-Type', 'application/json'); bodyType.value = 'json'; }
+        if (preset === 'form') { setHeader('Content-Type', 'application/x-www-form-urlencoded'); bodyType.value = 'form'; }
+        if (preset === 'custom') addHeaderRow('', '');
+        generateCurl();
+      }));
+      $('addHeaderBtn').addEventListener('click', () => addHeaderRow('', ''));
+      $('sendBtn').addEventListener('click', sendRequest);
+      $('curlBtn').addEventListener('click', () => { generateCurl(); setStatus(copy.messages.curlGenerated, 'ok'); });
+      $('copyCurlBtn').addEventListener('click', async () => { await navigator.clipboard.writeText(generateCurl()); setStatus(copy.messages.curlCopied, 'ok'); });
+      $('parseCurlBtn').addEventListener('click', importCurl);
+      $('clearBtn').addEventListener('click', () => {
+        urlInput.value = ''; bodyInput.value = ''; curlInput.value = ''; curlOutput.value = ''; headersList.replaceChildren(); addHeaderRow('Accept','application/json'); authType.value = 'none'; updateAuthVisibility(); clearWarnings(); currentResponse = { pretty: '', raw: '', headers: '' }; renderResponse(); statusMetric.textContent = `${copy.status}: —`; timeMetric.textContent = `${copy.time}: —`; sizeMetric.textContent = `${copy.size}: —`; setStatus(copy.messages.cleared);
+      });
+      [methodSelect, urlInput, authType, bearerToken, basicUser, basicPass, bodyType, bodyInput].forEach((element) => element.addEventListener('input', () => { updateAuthVisibility(); generateCurl(); }));
+      tabs.forEach((tab) => tab.addEventListener('click', () => { currentView = tab.dataset.view; renderResponse(); }));
+      addHeaderRow('Accept', 'application/json');
+      updateAuthVisibility();
+      generateCurl();
+    });
+  </script>
+</Layout>
