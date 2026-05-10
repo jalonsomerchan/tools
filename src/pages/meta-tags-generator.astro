@@ -1,0 +1,150 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Generador de meta tags y Open Graph';
+const description = 'Genera title, meta description, canonical, Open Graph y Twitter Cards localmente desde un formulario.';
+---
+
+<Layout title={`${title} — Alon Tools`} description={description} path="/meta-tags-generator/" translated={false}>
+  <section class="meta-page">
+    <div class="eyebrow">100% local</div>
+    <h1>{title}</h1>
+    <p class="hero-text">Crea snippets SEO y tarjetas sociales sin consultar APIs externas. El HTML se escapa antes de mostrarse y copiarse.</p>
+
+    <section class="tool-card meta-tool" aria-labelledby="metaToolTitle">
+      <div class="tool-header">
+        <div>
+          <h2 id="metaToolTitle">Datos de la página</h2>
+          <p>Rellena los campos y copia el bloque completo para pegarlo en el <code>&lt;head&gt;</code>.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <label for="titleInput">Título<input id="titleInput" type="text" maxlength="120" value="Título de ejemplo para mi página" /></label>
+        <label for="descriptionInput">Descripción<textarea id="descriptionInput" maxlength="220">Descripción breve y atractiva para buscadores y redes sociales.</textarea></label>
+        <label for="canonicalInput">Canonical URL<input id="canonicalInput" type="url" placeholder="https://example.com/pagina" value="https://example.com/pagina" /></label>
+        <label for="imageInput">Imagen social<input id="imageInput" type="url" placeholder="https://example.com/og.jpg" value="https://example.com/og.jpg" /></label>
+        <label for="siteNameInput">Nombre del sitio<input id="siteNameInput" type="text" value="Mi sitio" /></label>
+        <label for="localeInput">Idioma / locale<input id="localeInput" type="text" value="es_ES" /></label>
+        <label for="typeSelect">Tipo Open Graph<select id="typeSelect"><option value="website">website</option><option value="article">article</option><option value="profile">profile</option><option value="product">product</option></select></label>
+      </div>
+
+      <div class="counters" aria-label="Contadores SEO">
+        <output id="titleCount">Título: 0 caracteres</output>
+        <output id="descriptionCount">Descripción: 0 caracteres</output>
+      </div>
+
+      <div class="toolbar" aria-label="Acciones">
+        <button class="primary" id="generateBtn" type="button">Generar HTML</button>
+        <button id="copyBtn" type="button">Copiar snippet</button>
+        <button id="downloadBtn" type="button">Descargar .html</button>
+        <button id="clearBtn" type="button">Limpiar</button>
+      </div>
+
+      <div class="preview-grid">
+        <div class="snippet-card" aria-label="Vista previa Google">
+          <span id="previewUrl">example.com</span>
+          <strong id="previewTitle">Título de ejemplo</strong>
+          <p id="previewDescription">Descripción de ejemplo.</p>
+        </div>
+        <div class="social-card" aria-label="Vista previa social">
+          <div class="social-image" id="previewImage">OG</div>
+          <div class="social-body"><strong id="socialTitle">Título de ejemplo</strong><p id="socialDescription">Descripción de ejemplo.</p><span id="socialSite">Mi sitio</span></div>
+        </div>
+      </div>
+
+      <label for="output">Snippet HTML generado<textarea id="output" readonly spellcheck="false"></textarea></label>
+      <p class="status" id="status" role="status" aria-live="polite">Listo.</p>
+    </section>
+  </section>
+
+  <style>
+    .meta-page{padding:clamp(2rem,6vw,4rem) 0}.meta-tool{display:grid;gap:var(--space-4)}.tool-header h2{margin:0 0 var(--space-2);font-size:clamp(1.25rem,2vw,1.6rem)}.tool-header p,.status,.snippet-card p,.social-card p{margin:0;color:var(--color-text-muted,var(--muted));line-height:1.7}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}.form-grid label:first-child,.form-grid label:nth-child(2){grid-column:1/-1}label{display:grid;gap:.45rem;color:var(--color-text-muted,var(--muted));font-weight:800}input,select,button,textarea{border-radius:var(--radius-lg,14px);border:1px solid var(--color-border,var(--border));background:var(--color-surface,#020617);color:var(--color-text,#fff);padding:.85rem 1rem;font:inherit}textarea{min-height:110px;font:inherit;resize:vertical}#output{min-height:360px;font:500 .95rem/1.6 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre;overflow:auto}.toolbar,.counters{display:flex;gap:var(--space-2);flex-wrap:wrap}.counters output{border:1px solid var(--color-border,var(--border));border-radius:var(--radius-lg,14px);padding:.65rem .85rem;color:var(--color-text-muted,var(--muted));font-weight:800}.counters .warn{color:#f59e0b}.counters .bad{color:#f87171}button{font-weight:800;cursor:pointer}button.primary{background:var(--color-primary,var(--primary));color:#020617;border-color:transparent}.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}.snippet-card,.social-card{border:1px solid var(--color-border,var(--border));border-radius:var(--radius-xl,18px);background:color-mix(in srgb,var(--color-surface,#020617) 92%,transparent);padding:1rem}.snippet-card span,.social-body span{display:block;color:var(--color-text-muted,var(--muted));font-size:.85rem}.snippet-card strong{display:block;margin:.35rem 0;color:#60a5fa;font-size:1.15rem}.social-card{display:grid;grid-template-columns:140px 1fr;gap:1rem}.social-image{min-height:100px;border-radius:var(--radius-lg,14px);background:linear-gradient(135deg,var(--color-primary,var(--primary)),var(--color-secondary,#a78bfa));display:grid;place-items:center;font-weight:900;color:#020617}.social-body strong{display:block;margin-bottom:.35rem}.status.success{color:#86efac}.status.error{color:#fca5a5}@media(max-width:900px){.form-grid,.preview-grid{grid-template-columns:1fr}.toolbar{display:grid;grid-template-columns:1fr}.social-card{grid-template-columns:1fr}button,input,select{width:100%}}
+  </style>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const status = $('status');
+    const htmlEscape = (value) => String(value).replace(/[<>&'"]/g, (char) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&#39;', '"': '&quot;' }[char]));
+    const attr = htmlEscape;
+    const setStatus = (message, type = 'default') => {
+      status.textContent = message;
+      status.classList.toggle('success', type === 'success');
+      status.classList.toggle('error', type === 'error');
+    };
+    const safeUrl = (value) => {
+      try { return new URL(value).href; } catch { return ''; }
+    };
+    const updateCounters = () => {
+      const titleLength = $('titleInput').value.length;
+      const descriptionLength = $('descriptionInput').value.length;
+      $('titleCount').textContent = `Título: ${titleLength} caracteres`;
+      $('descriptionCount').textContent = `Descripción: ${descriptionLength} caracteres`;
+      $('titleCount').className = titleLength > 65 ? 'warn' : titleLength < 25 ? 'bad' : '';
+      $('descriptionCount').className = descriptionLength > 160 ? 'warn' : descriptionLength < 70 ? 'bad' : '';
+    };
+    const updatePreview = () => {
+      const title = $('titleInput').value || 'Título de ejemplo';
+      const description = $('descriptionInput').value || 'Descripción de ejemplo.';
+      const canonical = safeUrl($('canonicalInput').value);
+      const image = safeUrl($('imageInput').value);
+      $('previewUrl').textContent = canonical ? new URL(canonical).hostname : 'URL no válida';
+      $('previewTitle').textContent = title;
+      $('previewDescription').textContent = description;
+      $('socialTitle').textContent = title;
+      $('socialDescription').textContent = description;
+      $('socialSite').textContent = $('siteNameInput').value || 'Sitio web';
+      $('previewImage').textContent = image ? 'OG' : 'Sin imagen';
+      updateCounters();
+    };
+    const generate = () => {
+      const title = $('titleInput').value.trim();
+      const description = $('descriptionInput').value.trim();
+      const canonical = safeUrl($('canonicalInput').value.trim());
+      const image = safeUrl($('imageInput').value.trim());
+      if (!title || !description) return setStatus('Título y descripción son obligatorios.', 'error');
+      if (!canonical) return setStatus('La URL canonical no es válida.', 'error');
+      const siteName = $('siteNameInput').value.trim();
+      const locale = $('localeInput').value.trim() || 'es_ES';
+      const type = $('typeSelect').value;
+      const lines = [
+        `<title>${htmlEscape(title)}</title>`,
+        `<meta name="description" content="${attr(description)}">`,
+        `<link rel="canonical" href="${attr(canonical)}">`,
+        `<meta property="og:type" content="${attr(type)}">`,
+        `<meta property="og:title" content="${attr(title)}">`,
+        `<meta property="og:description" content="${attr(description)}">`,
+        `<meta property="og:url" content="${attr(canonical)}">`,
+        siteName ? `<meta property="og:site_name" content="${attr(siteName)}">` : '',
+        `<meta property="og:locale" content="${attr(locale)}">`,
+        image ? `<meta property="og:image" content="${attr(image)}">` : '',
+        `<meta name="twitter:card" content="${image ? 'summary_large_image' : 'summary'}">`,
+        `<meta name="twitter:title" content="${attr(title)}">`,
+        `<meta name="twitter:description" content="${attr(description)}">`,
+        image ? `<meta name="twitter:image" content="${attr(image)}">` : ''
+      ].filter(Boolean);
+      $('output').value = `${lines.join('\n')}\n`;
+      updatePreview();
+      setStatus('Snippet generado correctamente.', 'success');
+    };
+    const download = () => {
+      const blob = new Blob([$('output').value], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'meta-tags.html';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setStatus('Snippet descargado.', 'success');
+    };
+    ['titleInput','descriptionInput','canonicalInput','imageInput','siteNameInput','localeInput','typeSelect'].forEach((id) => $(id).addEventListener('input', updatePreview));
+    $('generateBtn').addEventListener('click', generate);
+    $('copyBtn').addEventListener('click', async () => { if (!$('output').value) generate(); await navigator.clipboard.writeText($('output').value); setStatus('Snippet copiado.', 'success'); });
+    $('downloadBtn').addEventListener('click', () => { if (!$('output').value) generate(); if ($('output').value) download(); });
+    $('clearBtn').addEventListener('click', () => { ['titleInput','descriptionInput','canonicalInput','imageInput','siteNameInput','localeInput','output'].forEach((id) => { $(id).value = ''; }); updatePreview(); setStatus('Campos limpiados.'); });
+    updatePreview();
+    generate();
+  </script>
+</Layout>

@@ -1,0 +1,115 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Generador de robots.txt y sitemap XML';
+const description = 'Crea robots.txt y un sitemap XML básico desde el navegador, sin rastrear webs ni hacer llamadas de red.';
+---
+
+<Layout title={`${title} — Alon Tools`} description={description} path="/robots-sitemap-generator/" translated={false}>
+  <section class="seo-page">
+    <div class="eyebrow">100% local</div>
+    <h1>{title}</h1>
+    <p class="hero-text">Genera archivos SEO básicos a partir de URLs pegadas manualmente. La herramienta no rastrea tu web y no consulta ningún servidor externo.</p>
+
+    <section class="tool-card seo-tool" aria-labelledby="robotsToolTitle">
+      <div class="tool-header">
+        <div>
+          <h2 id="robotsToolTitle">Configuración</h2>
+          <p>Introduce el dominio, las reglas principales y una lista de URLs para crear ambos archivos.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <label for="domainInput">Dominio principal<input id="domainInput" type="url" placeholder="https://example.com" value="https://example.com" /></label>
+        <label for="userAgentInput">User-agent<input id="userAgentInput" type="text" value="*" /></label>
+        <label for="changefreqSelect">Changefreq<select id="changefreqSelect"><option>daily</option><option>always</option><option>hourly</option><option>weekly</option><option>monthly</option><option>yearly</option><option>never</option></select></label>
+        <label for="priorityInput">Priority<input id="priorityInput" type="number" min="0" max="1" step="0.1" value="0.8" /></label>
+      </div>
+
+      <div class="split-grid">
+        <label for="allowInput">Allow, una ruta por línea<textarea id="allowInput" spellcheck="false" placeholder="/\n/blog/"></textarea></label>
+        <label for="disallowInput">Disallow, una ruta por línea<textarea id="disallowInput" spellcheck="false" placeholder="/admin/\n/tmp/"></textarea></label>
+      </div>
+
+      <label for="urlsInput">URLs del sitemap, una por línea<textarea id="urlsInput" spellcheck="false" placeholder="https://example.com/\nhttps://example.com/blog/"></textarea></label>
+
+      <div class="toolbar" aria-label="Acciones">
+        <button class="primary" id="generateBtn" type="button">Generar</button>
+        <button id="copyRobotsBtn" type="button">Copiar robots.txt</button>
+        <button id="copySitemapBtn" type="button">Copiar sitemap</button>
+        <button id="downloadRobotsBtn" type="button">Descargar robots.txt</button>
+        <button id="downloadSitemapBtn" type="button">Descargar sitemap.xml</button>
+        <button id="clearBtn" type="button">Limpiar</button>
+      </div>
+
+      <div class="result-grid">
+        <label for="robotsOutput">robots.txt<textarea id="robotsOutput" readonly spellcheck="false"></textarea></label>
+        <label for="sitemapOutput">sitemap.xml<textarea id="sitemapOutput" readonly spellcheck="false"></textarea></label>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">Listo.</p>
+    </section>
+  </section>
+
+  <style>
+    .seo-page{padding:clamp(2rem,6vw,4rem) 0}.seo-tool{display:grid;gap:var(--space-4)}.tool-header h2{margin:0 0 var(--space-2);font-size:clamp(1.25rem,2vw,1.6rem)}.tool-header p,.status{margin:0;color:var(--color-text-muted,var(--muted));line-height:1.7}.form-grid,.split-grid,.result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}.form-grid{grid-template-columns:2fr 1fr 1fr 1fr}label{display:grid;gap:.45rem;color:var(--color-text-muted,var(--muted));font-weight:800}input,select,button,textarea{border-radius:var(--radius-lg,14px);border:1px solid var(--color-border,var(--border));background:var(--color-surface,#020617);color:var(--color-text,#fff);padding:.85rem 1rem;font:inherit}textarea{min-height:150px;font:500 .95rem/1.6 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;resize:vertical}#robotsOutput,#sitemapOutput{min-height:360px;white-space:pre;overflow:auto}button{font-weight:800;cursor:pointer}button.primary{background:var(--color-primary,var(--primary));color:#020617;border-color:transparent}.toolbar{display:flex;gap:var(--space-2);flex-wrap:wrap}.status.success{color:#86efac}.status.error{color:#fca5a5}@media(max-width:900px){.form-grid,.split-grid,.result-grid{grid-template-columns:1fr}.toolbar{display:grid;grid-template-columns:1fr}button,input,select{width:100%}}
+  </style>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const status = $('status');
+    const setStatus = (message, type = 'default') => {
+      status.textContent = message;
+      status.classList.toggle('success', type === 'success');
+      status.classList.toggle('error', type === 'error');
+    };
+    const lines = (value) => value.split('\n').map((line) => line.trim()).filter(Boolean);
+    const xmlEscape = (value) => String(value).replace(/[<>&'"]/g, (char) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[char]));
+    const normalizePath = (value) => value.startsWith('/') ? value : `/${value}`;
+    const normalizeUrl = (value, base) => {
+      try { return new URL(value, base).href; } catch { return null; }
+    };
+    const download = (filename, content, type) => {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    };
+    const generate = () => {
+      let base;
+      try { base = new URL($('domainInput').value.trim()); } catch { setStatus('Introduce un dominio válido con protocolo, por ejemplo https://example.com.', 'error'); return; }
+      const origin = base.origin;
+      const sitemapUrl = `${origin}/sitemap.xml`;
+      const allow = lines($('allowInput').value).map(normalizePath);
+      const disallow = lines($('disallowInput').value).map(normalizePath);
+      const robots = [`User-agent: ${$('userAgentInput').value.trim() || '*'}`];
+      allow.forEach((path) => robots.push(`Allow: ${path}`));
+      disallow.forEach((path) => robots.push(`Disallow: ${path}`));
+      robots.push(`Sitemap: ${sitemapUrl}`);
+      $('robotsOutput').value = `${robots.join('\n')}\n`;
+      const pastedUrls = lines($('urlsInput').value);
+      const urls = pastedUrls.length ? pastedUrls : [origin, sitemapUrl.replace('/sitemap.xml', '/')];
+      const validUrls = [];
+      const invalidUrls = [];
+      urls.forEach((value) => { const normalized = normalizeUrl(value, origin); normalized ? validUrls.push(normalized) : invalidUrls.push(value); });
+      const changefreq = $('changefreqSelect').value;
+      const priority = Math.max(0, Math.min(1, Number($('priorityInput').value) || 0.8)).toFixed(1);
+      $('priorityInput').value = priority;
+      const body = validUrls.map((url) => `  <url>\n    <loc>${xmlEscape(url)}</loc>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`).join('\n');
+      $('sitemapOutput').value = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
+      setStatus(invalidUrls.length ? `Generado con ${invalidUrls.length} URL inválida omitida.` : 'robots.txt y sitemap.xml generados.', invalidUrls.length ? 'error' : 'success');
+    };
+    $('generateBtn').addEventListener('click', generate);
+    $('copyRobotsBtn').addEventListener('click', async () => { await navigator.clipboard.writeText($('robotsOutput').value); setStatus('robots.txt copiado.', 'success'); });
+    $('copySitemapBtn').addEventListener('click', async () => { await navigator.clipboard.writeText($('sitemapOutput').value); setStatus('sitemap.xml copiado.', 'success'); });
+    $('downloadRobotsBtn').addEventListener('click', () => { download('robots.txt', $('robotsOutput').value, 'text/plain;charset=utf-8'); setStatus('robots.txt descargado.', 'success'); });
+    $('downloadSitemapBtn').addEventListener('click', () => { download('sitemap.xml', $('sitemapOutput').value, 'application/xml;charset=utf-8'); setStatus('sitemap.xml descargado.', 'success'); });
+    $('clearBtn').addEventListener('click', () => { ['allowInput','disallowInput','urlsInput','robotsOutput','sitemapOutput'].forEach((id) => { $(id).value = ''; }); setStatus('Campos limpiados.'); });
+    generate();
+  </script>
+</Layout>
