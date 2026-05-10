@@ -6,6 +6,13 @@ import type { Lang } from '../i18n/ui';
 const { lang } = Astro.props as { lang: Lang };
 const copy = homeTranslations[lang];
 const categories = getCatalogByCategory(lang);
+const favoriteCopy = {
+  title: lang === 'es' ? 'Favoritas' : 'Favorites',
+  add: lang === 'es' ? 'Añadir a favoritas' : 'Add to favorites',
+  remove: lang === 'es' ? 'Quitar de favoritas' : 'Remove from favorites',
+  added: lang === 'es' ? 'Herramienta añadida a favoritas.' : 'Tool added to favorites.',
+  removed: lang === 'es' ? 'Herramienta quitada de favoritas.' : 'Tool removed from favorites.'
+};
 const extraTools = [
   {
     category: lang === 'es' ? 'Imágenes' : 'Images',
@@ -108,6 +115,14 @@ const totalTools = categories.reduce((total, category) => total + category.items
 
   <p class="empty-state" id="emptyState" hidden>{copy.emptyState}</p>
 
+  <section class="category-section favorites-section" id="favoritesSection" data-category-section={favoriteCopy.title} hidden>
+    <div class="category-header favorites-header">
+      <h2>{favoriteCopy.title}</h2>
+      <p>{lang === 'es' ? 'Se guardan solo en este navegador.' : 'Saved only in this browser.'}</p>
+    </div>
+    <div class="directory-grid" id="favoritesGrid"></div>
+  </section>
+
   <section class="category-section" data-category-section={lang === 'es' ? 'Nuevas herramientas' : 'New tools'}>
     <div class="category-header">
       <h2>{lang === 'es' ? 'Nuevas herramientas' : 'New tools'}</h2>
@@ -119,9 +134,11 @@ const totalTools = categories.reduce((total, category) => total + category.items
           class="tool-link-card featured-tool"
           href={tool.path}
           data-tool-card
+          data-tool-path={tool.path}
           data-category={tool.category}
           data-search={`${tool.title} ${tool.description} ${tool.path} ${tool.icon} ${tool.search} ${tool.category}`.toLowerCase()}
         >
+          <button class="favorite-button" type="button" data-favorite-toggle aria-label={favoriteCopy.add} aria-pressed="false">☆</button>
           <div class="tool-icon">{tool.icon}</div>
           <div>
             <strong>{tool.title}</strong>
@@ -144,9 +161,11 @@ const totalTools = categories.reduce((total, category) => total + category.items
             class="tool-link-card"
             href={tool.path}
             data-tool-card
+            data-tool-path={tool.path}
             data-category={category.title}
             data-search={`${tool.title} ${tool.description} ${tool.path} ${tool.icon} ${category.title}`.toLowerCase()}
           >
+            <button class="favorite-button" type="button" data-favorite-toggle aria-label={favoriteCopy.add} aria-pressed="false">☆</button>
             <div class="tool-icon">{tool.icon}</div>
             <div>
               <strong>{tool.title}</strong>
@@ -158,26 +177,81 @@ const totalTools = categories.reduce((total, category) => total + category.items
     </section>
   ))}
 
-  <script define:vars={{ showingTemplate: copy.showing(0, 0), lang }}>
+  <script define:vars={{ showingTemplate: copy.showing(0, 0), lang, favoriteCopy }}>
     const searchInput = document.getElementById('toolSearch');
     const clearFilters = document.getElementById('clearFilters');
     const toolsCount = document.getElementById('toolsCount');
     const emptyState = document.getElementById('emptyState');
+    const favoritesSection = document.getElementById('favoritesSection');
+    const favoritesGrid = document.getElementById('favoritesGrid');
     const cards = Array.from(document.querySelectorAll('[data-tool-card]'));
     const sections = Array.from(document.querySelectorAll('[data-category-section]'));
     const filterButtons = Array.from(document.querySelectorAll('[data-category-filter]'));
     const total = cards.length;
+    const favoritesKey = 'alon-tools-favorite-tools';
     let activeCategory = 'all';
+    let favoritePaths = new Set();
+
+    const originalPlaces = new Map(cards.map((card, index) => [card, {
+      parent: card.parentElement,
+      index
+    }]));
 
     const formatCount = (visible, countTotal) => {
       if (lang === 'es') return `Mostrando ${visible} de ${countTotal} herramientas`;
       return `Showing ${visible} of ${countTotal} tools`;
     };
 
+    const readFavorites = () => {
+      try {
+        const stored = JSON.parse(window.localStorage.getItem(favoritesKey) || '[]');
+        favoritePaths = new Set(Array.isArray(stored) ? stored : []);
+      } catch {
+        favoritePaths = new Set();
+      }
+    };
+
+    const saveFavorites = () => {
+      window.localStorage.setItem(favoritesKey, JSON.stringify([...favoritePaths]));
+    };
+
     const setActiveButton = () => {
       filterButtons.forEach((button) => {
         button.classList.toggle('active', button.dataset.categoryFilter === activeCategory);
       });
+    };
+
+    const syncFavoriteButtons = () => {
+      cards.forEach((card) => {
+        const isFavorite = favoritePaths.has(card.dataset.toolPath);
+        const button = card.querySelector('[data-favorite-toggle]');
+        card.dataset.favorite = String(isFavorite);
+        if (button) {
+          button.textContent = isFavorite ? '★' : '☆';
+          button.setAttribute('aria-pressed', String(isFavorite));
+          button.setAttribute('aria-label', isFavorite ? favoriteCopy.remove : favoriteCopy.add);
+          button.title = isFavorite ? favoriteCopy.remove : favoriteCopy.add;
+        }
+      });
+    };
+
+    const orderOriginalGrid = (parent) => {
+      const children = cards
+        .filter((card) => originalPlaces.get(card)?.parent === parent && !favoritePaths.has(card.dataset.toolPath))
+        .sort((a, b) => originalPlaces.get(a).index - originalPlaces.get(b).index);
+      children.forEach((card) => parent.append(card));
+    };
+
+    const placeFavoriteCards = () => {
+      cards.forEach((card) => {
+        if (favoritePaths.has(card.dataset.toolPath)) {
+          favoritesGrid.append(card);
+        }
+      });
+
+      const originalParents = [...new Set([...originalPlaces.values()].map((place) => place.parent))];
+      originalParents.forEach(orderOriginalGrid);
+      favoritesSection.hidden = favoritesGrid.children.length === 0;
     };
 
     const filterTools = () => {
@@ -194,13 +268,44 @@ const totalTools = categories.reduce((total, category) => total + category.items
       });
 
       sections.forEach((section) => {
-        section.hidden = !section.querySelector('[data-tool-card]:not([hidden])');
+        const hasVisibleCard = Boolean(section.querySelector('[data-tool-card]:not([hidden])'));
+        if (section === favoritesSection) {
+          section.hidden = !hasVisibleCard;
+        } else {
+          section.hidden = !hasVisibleCard;
+        }
       });
 
       toolsCount.textContent = formatCount(visible, total);
       emptyState.hidden = visible !== 0;
       setActiveButton();
     };
+
+    const refreshFavorites = () => {
+      syncFavoriteButtons();
+      placeFavoriteCards();
+      filterTools();
+    };
+
+    document.querySelectorAll('[data-favorite-toggle]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const card = button.closest('[data-tool-card]');
+        if (!card?.dataset.toolPath) return;
+
+        if (favoritePaths.has(card.dataset.toolPath)) {
+          favoritePaths.delete(card.dataset.toolPath);
+          toolsCount.textContent = favoriteCopy.removed;
+        } else {
+          favoritePaths.add(card.dataset.toolPath);
+          toolsCount.textContent = favoriteCopy.added;
+        }
+
+        saveFavorites();
+        refreshFavorites();
+      });
+    });
 
     filterButtons.forEach((button) => {
       button.addEventListener('click', () => {
@@ -218,10 +323,11 @@ const totalTools = categories.reduce((total, category) => total + category.items
       searchInput.focus();
     });
 
-    filterTools();
+    readFavorites();
+    refreshFavorites();
   </script>
 </Layout>
 
 <style>
-  .hero{padding:clamp(3rem,8vw,6rem) 0 var(--space-8)}.search-panel{margin:var(--space-4) 0 var(--space-10);padding:clamp(1rem,3vw,1.5rem);border-radius:var(--radius-2xl);border:1px solid var(--color-border);background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-sm)}.search-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-4)}.search-heading h2{margin:0 0 var(--space-1);font-size:1.25rem}.search-heading p{margin:0;color:var(--color-text-muted)}input[type='search']{font-size:1rem}.category-filters{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-4)}.filter-button{min-height:2.55rem;border-radius:var(--radius-full);border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-muted);padding:.65rem .9rem;cursor:pointer;font:inherit;font-weight:800;transition:transform var(--transition-fast),background-color var(--transition-base),color var(--transition-base),border-color var(--transition-base)}.filter-button:hover{transform:translateY(-1px);border-color:var(--color-border-strong);color:var(--color-text)}.filter-button.active{background:var(--color-primary);color:#fff;border-color:transparent}[data-theme='dark'] .filter-button.active{color:#020617}.empty-state{padding:var(--space-5);border-radius:var(--radius-xl);border:1px dashed var(--color-border-strong);background:var(--color-surface);color:var(--color-text-muted);text-align:center}.category-section{margin-top:var(--space-12)}.category-section[hidden]{display:none}.category-header{margin-bottom:var(--space-4)}.category-header h2{margin:0}.directory-grid{display:grid;gap:var(--space-4);grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}.tool-link-card{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-2xl);border:1px solid var(--color-border);background:color-mix(in srgb,var(--color-surface) 94%,transparent);color:inherit;text-decoration:none;box-shadow:var(--shadow-xs);transition:transform var(--transition-base),border-color var(--transition-base),box-shadow var(--transition-base),background-color var(--transition-base)}.tool-link-card:hover{transform:translateY(-2px);border-color:var(--color-border-strong);box-shadow:var(--shadow-sm);color:inherit}.tool-link-card[hidden]{display:none}.featured-tool{background:linear-gradient(135deg,color-mix(in srgb,var(--color-primary-soft) 58%,var(--color-surface)),var(--color-surface));}.tool-icon{width:4rem;height:4rem;display:grid;place-items:center;border-radius:var(--radius-lg);background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:#fff;font-weight:900;font-size:.9rem;flex-shrink:0;box-shadow:var(--shadow-xs)}.tool-link-card strong{display:block;margin-bottom:var(--space-2);color:var(--color-text);line-height:1.3}.tool-link-card small{color:var(--color-text-muted);line-height:1.7}@media(max-width:640px){.hero{padding-top:var(--space-10)}.search-heading{flex-direction:column}#clearFilters,.filter-button{width:100%}.tool-link-card{padding:var(--space-4)}}
+  .hero{padding:clamp(3rem,8vw,6rem) 0 var(--space-8)}.search-panel{margin:var(--space-4) 0 var(--space-10);padding:clamp(1rem,3vw,1.5rem);border-radius:var(--radius-2xl);border:1px solid var(--color-border);background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-sm)}.search-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-4)}.search-heading h2{margin:0 0 var(--space-1);font-size:1.25rem}.search-heading p{margin:0;color:var(--color-text-muted)}input[type='search']{font-size:1rem}.category-filters{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-4)}.filter-button{min-height:2.55rem;border-radius:var(--radius-full);border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-muted);padding:.65rem .9rem;cursor:pointer;font:inherit;font-weight:800;transition:transform var(--transition-fast),background-color var(--transition-base),color var(--transition-base),border-color var(--transition-base)}.filter-button:hover{transform:translateY(-1px);border-color:var(--color-border-strong);color:var(--color-text)}.filter-button.active{background:var(--color-primary);color:#fff;border-color:transparent}[data-theme='dark'] .filter-button.active{color:#020617}.empty-state{padding:var(--space-5);border-radius:var(--radius-xl);border:1px dashed var(--color-border-strong);background:var(--color-surface);color:var(--color-text-muted);text-align:center}.category-section{margin-top:var(--space-12)}.category-section[hidden]{display:none}.favorites-section{order:-1}.category-header{margin-bottom:var(--space-4)}.category-header h2{margin:0}.favorites-header{display:flex;align-items:end;justify-content:space-between;gap:var(--space-4)}.favorites-header p{margin:0;color:var(--color-text-muted);font-size:.95rem}.directory-grid{display:grid;gap:var(--space-4);grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}.tool-link-card{position:relative;display:flex;gap:var(--space-4);padding:var(--space-5);padding-right:4.25rem;border-radius:var(--radius-2xl);border:1px solid var(--color-border);background:color-mix(in srgb,var(--color-surface) 94%,transparent);color:inherit;text-decoration:none;box-shadow:var(--shadow-xs);transition:transform var(--transition-base),border-color var(--transition-base),box-shadow var(--transition-base),background-color var(--transition-base)}.tool-link-card:hover{transform:translateY(-2px);border-color:var(--color-border-strong);box-shadow:var(--shadow-sm);color:inherit}.tool-link-card[hidden]{display:none}.featured-tool{background:linear-gradient(135deg,color-mix(in srgb,var(--color-primary-soft) 58%,var(--color-surface)),var(--color-surface));}.tool-link-card[data-favorite='true']{border-color:color-mix(in srgb,var(--color-primary) 55%,var(--color-border));box-shadow:var(--shadow-sm)}.favorite-button{position:absolute;top:1rem;right:1rem;z-index:2;width:2.35rem;height:2.35rem;border-radius:var(--radius-full);border:1px solid var(--color-border);background:color-mix(in srgb,var(--color-surface) 95%,transparent);color:var(--color-text-muted);font-size:1.2rem;line-height:1;display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow-xs);transition:transform var(--transition-fast),background-color var(--transition-base),color var(--transition-base),border-color var(--transition-base)}.favorite-button:hover{transform:scale(1.06);color:var(--color-primary);border-color:var(--color-primary)}.tool-link-card[data-favorite='true'] .favorite-button{background:var(--color-primary);color:#fff;border-color:transparent}.tool-icon{width:4rem;height:4rem;display:grid;place-items:center;border-radius:var(--radius-lg);background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:#fff;font-weight:900;font-size:.9rem;flex-shrink:0;box-shadow:var(--shadow-xs)}.tool-link-card strong{display:block;margin-bottom:var(--space-2);color:var(--color-text);line-height:1.3}.tool-link-card small{color:var(--color-text-muted);line-height:1.7}@media(max-width:640px){.hero{padding-top:var(--space-10)}.search-heading{flex-direction:column}#clearFilters,.filter-button{width:100%}.favorites-header{display:block}.favorites-header p{margin-top:var(--space-2)}.tool-link-card{padding:var(--space-4);padding-right:3.5rem}.favorite-button{top:.8rem;right:.8rem}}
 </style>
