@@ -3,29 +3,28 @@ import Layout from '../layouts/Layout.astro';
 import { getLangFromUrl } from '../i18n/ui';
 const lang = getLangFromUrl(Astro.url);
 const es = lang === 'es';
-const title = es ? 'SimplePostman' : 'SimplePostman';
+const title = 'SimplePostman';
 const description = es
   ? 'Cliente HTTP reducido en el navegador para preparar peticiones, generar cURL y ver respuestas.'
   : 'A reduced browser HTTP client to prepare requests, generate cURL and inspect responses.';
 const copy = {
   eyebrow: es ? 'Herramienta frontend' : 'Frontend tool',
-  hero: es ? 'Un Postman reducido, rápido y sin backend' : 'A reduced, fast Postman without a backend',
-  text: es ? 'Prepara peticiones GET, POST, PUT, PATCH o DELETE, añade headers y auth, genera cURL y ejecuta la petición desde el navegador. Las APIs sin CORS pueden bloquear la respuesta.' : 'Prepare GET, POST, PUT, PATCH or DELETE requests, add headers and auth, generate cURL and run the request from the browser. APIs without CORS may block the response.',
-  request: es ? 'Petición' : 'Request',
+  hero: es ? 'SimplePostman' : 'SimplePostman',
+  text: es ? 'Un Postman reducido para probar APIs desde el navegador: método, URL, headers, auth, body, cURL y respuesta en dos columnas.' : 'A reduced Postman-like client for testing APIs from the browser: method, URL, headers, auth, body, cURL and response in two columns.',
+  requestData: es ? 'Datos de la petición' : 'Request data',
   response: es ? 'Respuesta' : 'Response',
-  curl: 'cURL',
   method: es ? 'Método' : 'Method',
   url: 'URL',
-  headers: es ? 'Headers' : 'Headers',
-  auth: es ? 'Auth' : 'Auth',
+  headers: 'Headers',
+  auth: 'Auth',
   body: 'Body',
   bodyType: es ? 'Tipo de body' : 'Body type',
   noAuth: es ? 'Sin auth' : 'No auth',
   bearer: 'Bearer token',
   basic: 'Basic auth',
-  jsonPreset: es ? 'JSON' : 'JSON',
+  jsonPreset: 'JSON',
   formPreset: es ? 'Formulario' : 'Form',
-  customPreset: es ? 'Personalizado' : 'Custom',
+  customPreset: es ? 'Header personalizado' : 'Custom header',
   noneBody: es ? 'Sin body' : 'No body',
   jsonBody: 'JSON',
   textBody: 'Text',
@@ -40,15 +39,16 @@ const copy = {
   status: es ? 'Estado' : 'Status',
   time: es ? 'Tiempo' : 'Time',
   size: es ? 'Tamaño' : 'Size',
+  curl: 'cURL',
   tabs: { pretty: es ? 'bonito' : 'pretty', raw: 'raw', headers: 'headers' },
   placeholders: {
-    url: 'https://api.example.com/posts',
+    url: 'https://jsonplaceholder.typicode.com/posts/1',
     headerName: 'Content-Type',
     headerValue: 'application/json',
     token: es ? 'Pega aquí el token' : 'Paste token here',
     username: es ? 'usuario' : 'username',
     password: es ? 'contraseña' : 'password',
-    body: '{\n  "title": "Hola"\n}',
+    body: '{\n  "title": "Hola",\n  "body": "Probando SimplePostman"\n}',
     curl: 'curl -X POST https://api.example.com/posts -H "Content-Type: application/json" -d \'{"title":"Hola"}\''
   },
   messages: {
@@ -75,33 +75,29 @@ const copy = {
     <p class="hero-text">{copy.text}</p>
 
     <section class="tool-card postman-tool" aria-label={title}>
-      <div class="workspace">
-        <section class="request-panel" aria-labelledby="requestTitle">
-          <div class="panel-heading">
+      <div class="request-bar" aria-label="Request builder">
+        <select id="methodSelect" aria-label={copy.method}>
+          <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>HEAD</option><option>OPTIONS</option>
+        </select>
+        <input id="urlInput" class="url-input" type="url" placeholder={copy.placeholders.url} autocomplete="url" aria-label={copy.url} />
+        <button id="sendBtn" class="primary" type="button">{copy.send}</button>
+        <button id="curlBtn" type="button">{copy.generateCurl}</button>
+      </div>
+
+      <div class="main-grid">
+        <section class="column request-column" aria-labelledby="requestDataTitle">
+          <div class="column-head">
             <div>
-              <h2 id="requestTitle">{copy.request}</h2>
-              <p>{es ? 'Configura método, URL, headers, auth y body.' : 'Configure method, URL, headers, auth and body.'}</p>
+              <h2 id="requestDataTitle">{copy.requestData}</h2>
+              <p>{es ? 'Headers, auth, body y cURL de la petición.' : 'Headers, auth, body and request cURL.'}</p>
             </div>
             <button id="clearBtn" type="button">{copy.clear}</button>
-          </div>
-
-          <div class="url-row">
-            <label>
-              {copy.method}
-              <select id="methodSelect">
-                <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>HEAD</option><option>OPTIONS</option>
-              </select>
-            </label>
-            <label class="url-field">
-              {copy.url}
-              <input id="urlInput" type="url" placeholder={copy.placeholders.url} autocomplete="url" />
-            </label>
           </div>
 
           <div class="quick-presets" aria-label="Header presets">
             <button type="button" data-preset="json">{copy.jsonPreset}</button>
             <button type="button" data-preset="form">{copy.formPreset}</button>
-            <button type="button" data-preset="custom">{copy.customPreset}</button>
+            <button type="button" data-preset="custom">+ {copy.customPreset}</button>
           </div>
 
           <details open>
@@ -121,7 +117,7 @@ const copy = {
                   <option value="basic">{copy.basic}</option>
                 </select>
               </label>
-              <label class="auth-token" data-auth-field="bearer">
+              <label data-auth-field="bearer">
                 Token
                 <input id="bearerToken" type="password" placeholder={copy.placeholders.token} autocomplete="off" />
               </label>
@@ -150,15 +146,27 @@ const copy = {
             <textarea id="bodyInput" spellcheck="false" placeholder={copy.placeholders.body}></textarea>
           </details>
 
-          <div class="actions">
-            <button id="sendBtn" class="primary" type="button">{copy.send}</button>
-            <button id="curlBtn" type="button">{copy.generateCurl}</button>
-            <button id="copyCurlBtn" type="button">{copy.copyCurl}</button>
-          </div>
+          <details class="curl-box" open>
+            <summary>{copy.curl}</summary>
+            <label>
+              {copy.importCurl}
+              <textarea id="curlInput" class="code-area small" spellcheck="false" placeholder={copy.placeholders.curl}></textarea>
+            </label>
+            <div class="mini-actions">
+              <button id="parseCurlBtn" type="button">{copy.parseCurl}</button>
+              <button id="copyCurlBtn" type="button">{copy.copyCurl}</button>
+            </div>
+            <label>
+              {copy.curl}
+              <textarea id="curlOutput" class="code-area small" readonly spellcheck="false"></textarea>
+            </label>
+          </details>
+
+          <ul id="warnings" class="warnings" aria-live="polite"></ul>
         </section>
 
-        <section class="response-panel" aria-labelledby="responseTitle">
-          <div class="panel-heading">
+        <section class="column response-column" aria-labelledby="responseTitle">
+          <div class="column-head response-head">
             <div>
               <h2 id="responseTitle">{copy.response}</h2>
               <p id="statusText">{copy.messages.ready}</p>
@@ -179,29 +187,11 @@ const copy = {
           <pre id="responseView" class="response-view"></pre>
         </section>
       </div>
-
-      <details class="curl-panel" open>
-        <summary>{copy.curl}</summary>
-        <div class="curl-grid">
-          <label>
-            {copy.importCurl}
-            <textarea id="curlInput" spellcheck="false" placeholder={copy.placeholders.curl}></textarea>
-          </label>
-          <label>
-            {copy.curl}
-            <textarea id="curlOutput" readonly spellcheck="false"></textarea>
-          </label>
-        </div>
-        <div class="actions compact">
-          <button id="parseCurlBtn" type="button">{copy.parseCurl}</button>
-        </div>
-        <ul id="warnings" class="warnings" aria-live="polite"></ul>
-      </details>
     </section>
   </section>
 
   <style>
-    .postman-page{padding:clamp(2rem,6vw,4rem) 0}.postman-tool{padding:clamp(.8rem,2vw,1rem);margin-top:2rem;display:grid;gap:1rem}.workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.95fr);gap:1rem}.request-panel,.response-panel,.curl-panel{border:1px solid var(--color-border,var(--border));border-radius:22px;background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-xs);overflow:hidden}.request-panel,.response-panel{padding:1rem;display:grid;gap:1rem;align-content:start}.panel-heading{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start}.panel-heading h2{margin:0 0 .2rem;font-size:1.25rem}.panel-heading p{margin:0;color:var(--color-text-muted,var(--muted));line-height:1.6}.url-row,.auth-grid{display:grid;grid-template-columns:160px minmax(0,1fr);gap:.75rem}.url-field{min-width:0}label{display:grid;gap:.4rem;color:var(--color-text-muted,var(--muted));font-weight:850}input,select,textarea{width:100%;border:1px solid var(--color-border,var(--border));border-radius:14px;background:var(--color-surface);color:var(--color-text);padding:.75rem .85rem;font:inherit}textarea{min-height:160px;font-family:var(--font-mono);line-height:1.55;resize:vertical;tab-size:2}.headers-list{display:grid;gap:.55rem;margin-bottom:.7rem}.header-row{display:grid;grid-template-columns:minmax(120px,.7fr) minmax(160px,1fr) auto;gap:.5rem}.header-row button{min-width:2.7rem}.quick-presets,.actions,.tabs{display:flex;flex-wrap:wrap;gap:.5rem}button{min-height:2.4rem;border-radius:999px;border:1px solid var(--color-border,var(--border));background:var(--color-surface);color:var(--color-text);padding:.55rem .85rem;font:inherit;font-weight:900;cursor:pointer;box-shadow:var(--shadow-xs)}button:hover{border-color:color-mix(in srgb,var(--color-primary,var(--primary)) 55%,var(--color-border,var(--border)))}button.primary{background:var(--color-primary,var(--primary));color:#020617;border-color:transparent}.secondary{width:max-content}details{border:1px solid var(--color-border,var(--border));border-radius:18px;padding:.8rem;background:var(--color-surface-soft,rgba(148,163,184,.08))}summary{cursor:pointer;font-weight:950;color:var(--color-text);margin-bottom:.75rem}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}.metrics output{border:1px solid var(--color-border,var(--border));border-radius:14px;background:var(--color-surface-soft,rgba(148,163,184,.08));padding:.7rem;color:var(--color-text-muted,var(--muted));font-weight:850}.tab.active{background:#111827;color:#fff;border-color:#111827}.response-view{min-height:440px;max-height:620px;overflow:auto;margin:0;border-radius:18px;background:#111827;color:#e5e7eb;padding:1rem;font:500 .92rem/1.6 var(--font-mono);white-space:pre-wrap;word-break:break-word}.curl-panel{padding:1rem}.curl-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}.curl-grid textarea{min-height:140px;background:#111827;color:#e5e7eb}.compact{margin-top:.7rem}.warnings{display:grid;gap:.35rem;margin:.8rem 0 0;padding-left:1.2rem;color:#f59e0b}.status-error{color:#fca5a5!important}.status-ok{color:#86efac!important}[data-hidden=true]{display:none}@media(max-width:980px){.workspace,.curl-grid,.url-row,.auth-grid{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}.response-view{min-height:300px}.header-row{grid-template-columns:1fr}.header-row button{width:100%}.actions button,.quick-presets button,.tabs button{flex:1 1 calc(50% - .5rem)}}
+    .postman-page{padding:clamp(2rem,6vw,4rem) 0}.postman-tool{padding:clamp(.75rem,2vw,1rem);margin-top:2rem;display:grid;gap:1rem}.request-bar{position:sticky;top:.75rem;z-index:5;display:grid;grid-template-columns:150px minmax(180px,1fr) max-content max-content;gap:.65rem;align-items:center;padding:.75rem;border:1px solid var(--color-border,var(--border));border-radius:22px;background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-sm);backdrop-filter:blur(14px)}.main-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(380px,1fr);gap:1rem;align-items:start}.column{border:1px solid var(--color-border,var(--border));border-radius:22px;background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-xs);padding:1rem;display:grid;gap:1rem;min-width:0}.column-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start}.column-head h2{margin:0 0 .2rem;font-size:1.25rem}.column-head p{margin:0;color:var(--color-text-muted,var(--muted));line-height:1.55}.url-input{font-size:1rem}label{display:grid;gap:.4rem;color:var(--color-text-muted,var(--muted));font-weight:850}input,select,textarea{width:100%;border:1px solid var(--color-border,var(--border));border-radius:14px;background:var(--color-surface);color:var(--color-text);padding:.78rem .9rem;font:inherit}textarea{min-height:180px;font-family:var(--font-mono);line-height:1.55;resize:vertical;tab-size:2}.code-area{background:#111827;color:#e5e7eb}.code-area.small{min-height:105px}.quick-presets,.mini-actions,.tabs{display:flex;flex-wrap:wrap;gap:.5rem}button{min-height:2.6rem;border-radius:999px;border:1px solid var(--color-border,var(--border));background:var(--color-surface);color:var(--color-text);padding:.6rem .9rem;font:inherit;font-weight:900;cursor:pointer;box-shadow:var(--shadow-xs);white-space:nowrap}button:hover{border-color:color-mix(in srgb,var(--color-primary,var(--primary)) 55%,var(--color-border,var(--border)))}button.primary{background:var(--color-primary,var(--primary));color:#020617;border-color:transparent}.secondary{width:max-content}details{border:1px solid var(--color-border,var(--border));border-radius:18px;padding:.85rem;background:var(--color-surface-soft,rgba(148,163,184,.08))}summary{cursor:pointer;font-weight:950;color:var(--color-text);margin-bottom:.75rem}.headers-list{display:grid;gap:.55rem;margin-bottom:.7rem}.header-row{display:grid;grid-template-columns:minmax(120px,.7fr) minmax(160px,1fr) auto;gap:.5rem}.header-row button{min-width:2.7rem}.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}.metrics output{border:1px solid var(--color-border,var(--border));border-radius:14px;background:var(--color-surface-soft,rgba(148,163,184,.08));padding:.75rem;color:var(--color-text-muted,var(--muted));font-weight:850}.tab.active{background:#111827;color:#fff;border-color:#111827}.response-view{min-height:620px;max-height:820px;overflow:auto;margin:0;border-radius:18px;background:#111827;color:#e5e7eb;padding:1rem;font:500 .92rem/1.6 var(--font-mono);white-space:pre-wrap;word-break:break-word}.warnings{display:grid;gap:.35rem;margin:0;padding-left:1.2rem;color:#f59e0b}.warnings:empty{display:none}.status-error{color:#fca5a5!important}.status-ok{color:#86efac!important}[data-hidden=true]{display:none}@media(max-width:1080px){.request-bar{position:static;grid-template-columns:130px 1fr}.request-bar button{width:100%}.main-grid{grid-template-columns:1fr}.response-view{min-height:360px}.auth-grid,.metrics{grid-template-columns:1fr}}@media(max-width:640px){.request-bar{grid-template-columns:1fr}.header-row{grid-template-columns:1fr}.header-row button{width:100%}.quick-presets button,.mini-actions button,.tabs button{flex:1 1 calc(50% - .5rem)}}
   </style>
 
   <script define:vars={{ copy }}>
