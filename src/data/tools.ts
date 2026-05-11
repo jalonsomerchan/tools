@@ -2,22 +2,8 @@ import type { Lang } from '../i18n/ui';
 
 export type ToolPrivacy = 'local' | 'external-api';
 export type ToolCategoryId = 'development' | 'images' | 'internet' | 'writing' | 'finance';
-
-export type LocalizedToolText = {
-  title: string;
-  description: string;
-};
-
-export type ToolDefinition = {
-  id: string;
-  slug: string;
-  category: ToolCategoryId;
-  icon: string;
-  privacy: ToolPrivacy;
-  apiProvider?: string;
-  search?: string;
-  text: Record<Lang, LocalizedToolText>;
-};
+export type LocalizedToolText = { title: string; description: string };
+export type ToolDefinition = { id: string; slug: string; category: ToolCategoryId; icon: string; privacy: ToolPrivacy; apiProvider?: string; search?: string; text: Record<Lang, LocalizedToolText> };
 
 export const toolCategoryLabels: Record<ToolCategoryId, Record<Lang, string>> = {
   development: { en: 'Development', es: 'Desarrollo' },
@@ -26,34 +12,9 @@ export const toolCategoryLabels: Record<ToolCategoryId, Record<Lang, string>> = 
   writing: { en: 'Text & writing', es: 'Texto y escritura' },
   finance: { en: 'Finance', es: 'Finanzas' }
 };
+export const privacyLabels: Record<ToolPrivacy, Record<Lang, string>> = { local: { en: '100% local', es: '100% local' }, 'external-api': { en: 'External API', es: 'API externa' } };
 
-export const privacyLabels: Record<ToolPrivacy, Record<Lang, string>> = {
-  local: { en: '100% local', es: '100% local' },
-  'external-api': { en: 'External API', es: 'API externa' }
-};
-
-const tool = (
-  id: string,
-  category: ToolCategoryId,
-  icon: string,
-  privacy: ToolPrivacy,
-  enTitle: string,
-  enDescription: string,
-  esTitle: string,
-  esDescription: string,
-  options: Pick<ToolDefinition, 'apiProvider' | 'search'> = {}
-): ToolDefinition => ({
-  id,
-  slug: id,
-  category,
-  icon,
-  privacy,
-  ...options,
-  text: {
-    en: { title: enTitle, description: enDescription },
-    es: { title: esTitle, description: esDescription }
-  }
-});
+const tool = (id: string, category: ToolCategoryId, icon: string, privacy: ToolPrivacy, enTitle: string, enDescription: string, esTitle: string, esDescription: string, options: Pick<ToolDefinition, 'apiProvider' | 'search'> = {}): ToolDefinition => ({ id, slug: id, category, icon, privacy, ...options, text: { en: { title: enTitle, description: enDescription }, es: { title: esTitle, description: esDescription } } });
 
 export const tools: ToolDefinition[] = [
   tool('currency-converter', 'finance', 'FX', 'external-api', 'Currency converter', 'Convert amounts between currencies with Frankfurter, exchange date, swap action and copyable result.', 'Conversor de divisas', 'Convierte importes entre monedas con Frankfurter, fecha del cambio, inversión y copia del resultado.', { apiProvider: 'Frankfurter', search: 'currency converter divisas monedas frankfurter exchange rate cambio forex eur usd gbp' }),
@@ -96,36 +57,10 @@ export const tools: ToolDefinition[] = [
   tool('xml-formatter', 'development', 'XML', 'local', 'XML formatter & validator', 'Format, validate and minify XML locally.', 'Formateador y validador XML', 'Formatea, valida y minifica XML localmente.')
 ];
 
-export type LocalizedTool = ToolDefinition & {
-  title: string;
-  description: string;
-  categoryLabel: string;
-  privacyLabel: string;
-  path: `/${string}/`;
-};
-
-export type ToolCategoryGroup = {
-  id: ToolCategoryId;
-  title: string;
-  items: LocalizedTool[];
-};
-
-export const getLocalizedTools = (lang: Lang): LocalizedTool[] => tools.map((item) => ({
-  ...item,
-  title: item.text[lang].title,
-  description: item.text[lang].description,
-  categoryLabel: toolCategoryLabels[item.category][lang],
-  privacyLabel: privacyLabels[item.privacy][lang],
-  path: `/${item.slug}/`
-}));
-
+export type LocalizedTool = ToolDefinition & { title: string; description: string; categoryLabel: string; privacyLabel: string; path: `/${string}/` };
+export type ToolCategoryGroup = { id: ToolCategoryId; title: string; items: LocalizedTool[] };
+export const getLocalizedTools = (lang: Lang): LocalizedTool[] => tools.map((item) => ({ ...item, title: item.text[lang].title, description: item.text[lang].description, categoryLabel: toolCategoryLabels[item.category][lang], privacyLabel: privacyLabels[item.privacy][lang], path: `/${item.slug}/` }));
 export const getToolsByCategory = (lang: Lang): ToolCategoryGroup[] => {
   const localizedTools = getLocalizedTools(lang);
-  return (Object.keys(toolCategoryLabels) as ToolCategoryId[])
-    .map((categoryId) => ({
-      id: categoryId,
-      title: toolCategoryLabels[categoryId][lang],
-      items: localizedTools.filter((item) => item.category === categoryId)
-    }))
-    .filter((category) => category.items.length > 0);
+  return (Object.keys(toolCategoryLabels) as ToolCategoryId[]).map((categoryId) => ({ id: categoryId, title: toolCategoryLabels[categoryId][lang], items: localizedTools.filter((item) => item.category === categoryId) })).filter((category) => category.items.length > 0);
 };
