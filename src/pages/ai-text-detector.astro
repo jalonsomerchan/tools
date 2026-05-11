@@ -22,7 +22,7 @@ const copy = {
     labelHuman: 'Likely human-written',
     labelUncertain: 'Uncertain result',
     confidence: 'Confidence',
-    model: 'Model: roberta-base-openai-detector',
+    model: 'Model: Xenova/roberta-base-openai-detector',
     privacyTitle: 'Important limitation',
     privacyText: 'AI detectors are not definitive proof. Use this as a signal only: short texts, edited texts, translations or niche topics can produce false positives or false negatives.',
     localText: 'Your text is processed locally. The browser downloads the RoBERTa model the first time and may cache it.',
@@ -62,7 +62,7 @@ const copy = {
     labelHuman: 'Probablemente escrito por humano',
     labelUncertain: 'Resultado incierto',
     confidence: 'Confianza',
-    model: 'Modelo: roberta-base-openai-detector',
+    model: 'Modelo: Xenova/roberta-base-openai-detector',
     privacyTitle: 'Limitación importante',
     privacyText: 'Los detectores de IA no son una prueba definitiva. Úsalo solo como señal: textos cortos, editados, traducidos o de temas nicho pueden dar falsos positivos o falsos negativos.',
     localText: 'Tu texto se procesa localmente. El navegador descarga el modelo RoBERTa la primera vez y puede cachearlo.',
@@ -168,7 +168,7 @@ const copy = {
     type Classifier = (input: string, options?: Record<string, unknown>) => Promise<ClassifierResult>;
 
     const copy = JSON.parse(document.getElementById('aiDetectorCopy')?.textContent || '{}') as Record<string, string>;
-    const MODEL_ID = 'roberta-base-openai-detector';
+    const MODEL_ID = 'Xenova/roberta-base-openai-detector';
     const MIN_CHARS = 200;
     const MAX_CHARS = 20000;
 
