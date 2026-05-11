@@ -1,11 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { homeTranslations, getCatalogByCategory } from '../i18n/tools';
+import { homeTranslations } from '../i18n/tools';
+import { getToolsByCategory } from '../data/tools';
 import type { Lang } from '../i18n/ui';
 
 const { lang } = Astro.props as { lang: Lang };
 const copy = homeTranslations[lang];
-const categories = getCatalogByCategory(lang);
+const categories = getToolsByCategory(lang);
 const favoriteCopy = {
   title: lang === 'es' ? 'Favoritas' : 'Favorites',
   add: lang === 'es' ? 'Añadir a favoritas' : 'Add to favorites',
@@ -13,80 +14,10 @@ const favoriteCopy = {
   added: lang === 'es' ? 'Herramienta añadida a favoritas.' : 'Tool added to favorites.',
   removed: lang === 'es' ? 'Herramienta quitada de favoritas.' : 'Tool removed from favorites.'
 };
-const extraTools = [
-  {
-    category: lang === 'es' ? 'Finanzas' : 'Finance',
-    path: '/currency-converter/',
-    icon: 'FX',
-    title: lang === 'es' ? 'Conversor de divisas' : 'Currency converter',
-    description: lang === 'es'
-      ? 'Convierte importes entre monedas con Frankfurter, fecha del cambio, inversión y copia del resultado.'
-      : 'Convert amounts between currencies with Frankfurter, exchange date, swap action and copyable result.',
-    search: 'currency converter divisas monedas frankfurter exchange rate cambio forex eur usd gbp'
-  },
-  {
-    category: lang === 'es' ? 'Desarrollo' : 'Development',
-    path: '/simple-postman/',
-    icon: 'HTTP',
-    title: 'SimplePostman',
-    description: lang === 'es'
-      ? 'Cliente HTTP reducido para crear peticiones, generar cURL y ver respuestas desde el navegador.'
-      : 'A reduced HTTP client to build requests, generate cURL and inspect responses in the browser.',
-    search: 'postman api http curl fetch request response headers auth bearer basic cors'
-  },
-  {
-    category: lang === 'es' ? 'Imágenes' : 'Images',
-    path: '/screenshot-enhancer/',
-    icon: 'SHOT',
-    title: lang === 'es' ? 'Mejorador de capturas' : 'Screenshot enhancer',
-    description: lang === 'es'
-      ? 'Convierte capturas en imágenes profesionales con fondos, colores y exportación PNG, JPG, WebP o SVG.'
-      : 'Turn screenshots into polished images with backgrounds, colors and PNG, JPG, WebP or SVG exports.',
-    search: 'screenshot capture captura imagen fondos svg'
-  },
-  {
-    category: lang === 'es' ? 'Desarrollo' : 'Development',
-    path: '/uuid-generator/',
-    icon: 'UUID',
-    title: lang === 'es' ? 'Generador de UUID y claves' : 'UUID and random key generator',
-    description: lang === 'es'
-      ? 'Genera UUID v4 y cadenas aleatorias con Web Crypto, todo local en el navegador.'
-      : 'Generate UUID v4 values and random strings with Web Crypto, fully local in the browser.',
-    search: 'uuid random key clave token crypto'
-  },
-  {
-    category: lang === 'es' ? 'Desarrollo' : 'Development',
-    path: '/password-generator/',
-    icon: 'PASS',
-    title: lang === 'es' ? 'Generador de contraseñas' : 'Password and passphrase generator',
-    description: lang === 'es'
-      ? 'Crea contraseñas y frases seguras sin guardar datos ni hacer llamadas de red.'
-      : 'Create passwords and secure passphrases without storing data or making network calls.',
-    search: 'password contraseña passphrase seguridad crypto'
-  },
-  {
-    category: lang === 'es' ? 'Internet y mapas' : 'Internet & maps',
-    path: '/robots-sitemap-generator/',
-    icon: 'SEO',
-    title: lang === 'es' ? 'Generador de robots.txt y sitemap' : 'Robots.txt and sitemap generator',
-    description: lang === 'es'
-      ? 'Crea robots.txt y un sitemap XML básico pegando URLs manualmente, sin rastrear ni consultar servidores.'
-      : 'Create robots.txt and a basic XML sitemap from pasted URLs, without crawling or server requests.',
-    search: 'robots sitemap xml seo crawler rastreo'
-  },
-  {
-    category: lang === 'es' ? 'Internet y mapas' : 'Internet & maps',
-    path: '/meta-tags-generator/',
-    icon: 'META',
-    title: lang === 'es' ? 'Generador de meta tags y Open Graph' : 'Meta tags and Open Graph generator',
-    description: lang === 'es'
-      ? 'Genera title, description, canonical, Open Graph y Twitter Cards con vista previa local.'
-      : 'Generate title, description, canonical, Open Graph and Twitter Cards with a local preview.',
-    search: 'meta tags open graph twitter cards seo title description canonical'
-  }
-];
-const extraCategories = [...new Set(extraTools.map((tool) => tool.category))];
-const totalTools = categories.reduce((total, category) => total + category.items.length, 0) + extraTools.length;
+const totalTools = categories.reduce((total, category) => total + category.items.length, 0);
+const privacyCopy = {
+  provider: lang === 'es' ? 'Proveedor' : 'Provider'
+};
 ---
 
 <Layout title={copy.title} description={copy.description} lang={lang} path="/" translated={true}>
@@ -125,11 +56,9 @@ const totalTools = categories.reduce((total, category) => total + category.items
 
     <div class="category-filters" aria-label={copy.categoryFilters}>
       <button class="filter-button active" type="button" data-category-filter="all">{copy.filterAll}</button>
-      {[...extraCategories, ...categories.map((category) => category.title)]
-        .filter((title, index, all) => all.indexOf(title) === index)
-        .map((title) => (
-          <button class="filter-button" type="button" data-category-filter={title}>{title}</button>
-        ))}
+      {categories.map((category) => (
+        <button class="filter-button" type="button" data-category-filter={category.title}>{category.title}</button>
+      ))}
     </div>
   </section>
 
@@ -143,32 +72,6 @@ const totalTools = categories.reduce((total, category) => total + category.items
     <div class="directory-grid" id="favoritesGrid"></div>
   </section>
 
-  <section class="category-section" data-category-section={lang === 'es' ? 'Nuevas herramientas' : 'New tools'}>
-    <div class="category-header">
-      <h2>{lang === 'es' ? 'Nuevas herramientas' : 'New tools'}</h2>
-    </div>
-
-    <div class="directory-grid">
-      {extraTools.map((tool) => (
-        <a
-          class="tool-link-card featured-tool"
-          href={tool.path}
-          data-tool-card
-          data-tool-path={tool.path}
-          data-category={tool.category}
-          data-search={`${tool.title} ${tool.description} ${tool.path} ${tool.icon} ${tool.search} ${tool.category}`.toLowerCase()}
-        >
-          <button class="favorite-button" type="button" data-favorite-toggle aria-label={favoriteCopy.add} aria-pressed="false">☆</button>
-          <div class="tool-icon">{tool.icon}</div>
-          <div>
-            <strong>{tool.title}</strong>
-            <small>{tool.description}</small>
-          </div>
-        </a>
-      ))}
-    </div>
-  </section>
-
   {categories.map((category) => (
     <section class="category-section" data-category-section={category.title}>
       <div class="category-header">
@@ -176,20 +79,23 @@ const totalTools = categories.reduce((total, category) => total + category.items
       </div>
 
       <div class="directory-grid">
-        {category.items.map((tool) => (
+        {category.items.map((tool, index) => (
           <a
-            class="tool-link-card"
+            class={`tool-link-card ${index < 3 ? 'featured-tool' : ''}`}
             href={tool.path}
             data-tool-card
             data-tool-path={tool.path}
             data-category={category.title}
-            data-search={`${tool.title} ${tool.description} ${tool.path} ${tool.icon} ${category.title}`.toLowerCase()}
+            data-search={`${tool.title} ${tool.description} ${tool.path} ${tool.icon} ${tool.search ?? ''} ${category.title} ${tool.privacyLabel} ${tool.apiProvider ?? ''}`.toLowerCase()}
           >
             <button class="favorite-button" type="button" data-favorite-toggle aria-label={favoriteCopy.add} aria-pressed="false">☆</button>
             <div class="tool-icon">{tool.icon}</div>
-            <div>
+            <div class="tool-card-content">
               <strong>{tool.title}</strong>
               <small>{tool.description}</small>
+              <span class={`privacy-badge privacy-badge-${tool.privacy}`}>
+                {tool.privacyLabel}{tool.apiProvider ? ` · ${privacyCopy.provider}: ${tool.apiProvider}` : ''}
+              </span>
             </div>
           </a>
         ))}
@@ -289,11 +195,9 @@ const totalTools = categories.reduce((total, category) => total + category.items
 
       sections.forEach((section) => {
         const hasVisibleCard = Boolean(section.querySelector('[data-tool-card]:not([hidden])'));
-        if (section === favoritesSection) {
-          section.hidden = !hasVisibleCard;
-        } else {
-          section.hidden = !hasVisibleCard;
-        }
+        section.hidden = section === favoritesSection
+          ? !hasVisibleCard || favoritesGrid.children.length === 0
+          : !hasVisibleCard;
       });
 
       toolsCount.textContent = formatCount(visible, total);
@@ -349,5 +253,5 @@ const totalTools = categories.reduce((total, category) => total + category.items
 </Layout>
 
 <style>
-  .hero{padding:clamp(3rem,8vw,6rem) 0 var(--space-8)}.search-panel{margin:var(--space-4) 0 var(--space-10);padding:clamp(1rem,3vw,1.5rem);border-radius:var(--radius-2xl);border:1px solid var(--color-border);background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-sm)}.search-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-4)}.search-heading h2{margin:0 0 var(--space-1);font-size:1.25rem}.search-heading p{margin:0;color:var(--color-text-muted)}input[type='search']{font-size:1rem}.category-filters{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-4)}.filter-button{min-height:2.55rem;border-radius:var(--radius-full);border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-muted);padding:.65rem .9rem;cursor:pointer;font:inherit;font-weight:800;transition:transform var(--transition-fast),background-color var(--transition-base),color var(--transition-base),border-color var(--transition-base)}.filter-button:hover{transform:translateY(-1px);border-color:var(--color-border-strong);color:var(--color-text)}.filter-button.active{background:var(--color-primary);color:#fff;border-color:transparent}[data-theme='dark'] .filter-button.active{color:#020617}.empty-state{padding:var(--space-5);border-radius:var(--radius-xl);border:1px dashed var(--color-border-strong);background:var(--color-surface);color:var(--color-text-muted);text-align:center}.category-section{margin-top:var(--space-12)}.category-section[hidden]{display:none}.favorites-section{order:-1}.category-header{margin-bottom:var(--space-4)}.category-header h2{margin:0}.favorites-header{display:flex;align-items:end;justify-content:space-between;gap:var(--space-4)}.favorites-header p{margin:0;color:var(--color-text-muted);font-size:.95rem}.directory-grid{display:grid;gap:var(--space-4);grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}.tool-link-card{position:relative;display:flex;gap:var(--space-4);padding:var(--space-5);padding-right:4.25rem;border-radius:var(--radius-2xl);border:1px solid var(--color-border);background:color-mix(in srgb,var(--color-surface) 94%,transparent);color:inherit;text-decoration:none;box-shadow:var(--shadow-xs);transition:transform var(--transition-base),border-color var(--transition-base),box-shadow var(--transition-base),background-color var(--transition-base)}.tool-link-card:hover{transform:translateY(-2px);border-color:var(--color-border-strong);box-shadow:var(--shadow-sm);color:inherit}.tool-link-card[hidden]{display:none}.featured-tool{background:linear-gradient(135deg,color-mix(in srgb,var(--color-primary-soft) 58%,var(--color-surface)),var(--color-surface));}.tool-link-card[data-favorite='true']{border-color:color-mix(in srgb,var(--color-primary) 55%,var(--color-border));box-shadow:var(--shadow-sm)}.favorite-button{position:absolute;top:1rem;right:1rem;z-index:2;width:2.35rem;height:2.35rem;border-radius:var(--radius-full);border:1px solid var(--color-border);background:color-mix(in srgb,var(--color-surface) 95%,transparent);color:var(--color-text-muted);font-size:1.2rem;line-height:1;display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow-xs);transition:transform var(--transition-fast),background-color var(--transition-base),color var(--transition-base),border-color var(--transition-base)}.favorite-button:hover{transform:scale(1.06);color:var(--color-primary);border-color:var(--color-primary)}.tool-link-card[data-favorite='true'] .favorite-button{background:var(--color-primary);color:#fff;border-color:transparent}.tool-icon{width:4rem;height:4rem;display:grid;place-items:center;border-radius:var(--radius-lg);background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:#fff;font-weight:900;font-size:.9rem;flex-shrink:0;box-shadow:var(--shadow-xs)}.tool-link-card strong{display:block;margin-bottom:var(--space-2);color:var(--color-text);line-height:1.3}.tool-link-card small{color:var(--color-text-muted);line-height:1.7}@media(max-width:640px){.hero{padding-top:var(--space-10)}.search-heading{flex-direction:column}#clearFilters,.filter-button{width:100%}.favorites-header{display:block}.favorites-header p{margin-top:var(--space-2)}.tool-link-card{padding:var(--space-4);padding-right:3.5rem}.favorite-button{top:.8rem;right:.8rem}}
+  .hero{padding:clamp(3rem,8vw,6rem) 0 var(--space-8)}.search-panel{margin:var(--space-4) 0 var(--space-10);padding:clamp(1rem,3vw,1.5rem);border-radius:var(--radius-2xl);border:1px solid var(--color-border);background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-sm)}.search-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-4)}.search-heading h2{margin:0 0 var(--space-1);font-size:1.25rem}.search-heading p{margin:0;color:var(--color-text-muted)}input[type='search']{font-size:1rem}.category-filters{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-4)}.filter-button{min-height:2.55rem;border-radius:var(--radius-full);border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-muted);padding:.65rem .9rem;cursor:pointer;font:inherit;font-weight:800;transition:transform var(--transition-fast),background-color var(--transition-base),color var(--transition-base),border-color var(--transition-base)}.filter-button:hover{transform:translateY(-1px);border-color:var(--color-border-strong);color:var(--color-text)}.filter-button.active{background:var(--color-primary);color:#fff;border-color:transparent}[data-theme='dark'] .filter-button.active{color:#020617}.empty-state{padding:var(--space-5);border-radius:var(--radius-xl);border:1px dashed var(--color-border-strong);background:var(--color-surface);color:var(--color-text-muted);text-align:center}.category-section{margin-top:var(--space-12)}.category-section[hidden]{display:none}.favorites-section{order:-1}.category-header{margin-bottom:var(--space-4)}.category-header h2{margin:0}.favorites-header{display:flex;align-items:end;justify-content:space-between;gap:var(--space-4)}.favorites-header p{margin:0;color:var(--color-text-muted);font-size:.95rem}.directory-grid{display:grid;gap:var(--space-4);grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}.tool-link-card{position:relative;display:flex;gap:var(--space-4);padding:var(--space-5);padding-right:4.25rem;border-radius:var(--radius-2xl);border:1px solid var(--color-border);background:color-mix(in srgb,var(--color-surface) 94%,transparent);color:inherit;text-decoration:none;box-shadow:var(--shadow-xs);transition:transform var(--transition-base),border-color var(--transition-base),box-shadow var(--transition-base),background-color var(--transition-base)}.tool-link-card:hover{transform:translateY(-2px);border-color:var(--color-border-strong);box-shadow:var(--shadow-sm);color:inherit}.tool-link-card[hidden]{display:none}.featured-tool{background:linear-gradient(135deg,color-mix(in srgb,var(--color-primary-soft) 58%,var(--color-surface)),var(--color-surface));}.tool-link-card[data-favorite='true']{border-color:color-mix(in srgb,var(--color-primary) 55%,var(--color-border));box-shadow:var(--shadow-sm)}.favorite-button{position:absolute;top:1rem;right:1rem;z-index:2;width:2.35rem;height:2.35rem;border-radius:var(--radius-full);border:1px solid var(--color-border);background:color-mix(in srgb,var(--color-surface) 95%,transparent);color:var(--color-text-muted);font-size:1.2rem;line-height:1;display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow-xs);transition:transform var(--transition-fast),background-color var(--transition-base),color var(--transition-base),border-color var(--transition-base)}.favorite-button:hover{transform:scale(1.06);color:var(--color-primary);border-color:var(--color-primary)}.tool-link-card[data-favorite='true'] .favorite-button{background:var(--color-primary);color:#fff;border-color:transparent}.tool-icon{width:4rem;height:4rem;display:grid;place-items:center;border-radius:var(--radius-lg);background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:#fff;font-weight:900;font-size:.9rem;flex-shrink:0;box-shadow:var(--shadow-xs)}.tool-card-content{min-width:0}.tool-link-card strong{display:block;margin-bottom:var(--space-2);color:var(--color-text);line-height:1.3}.tool-link-card small{display:block;color:var(--color-text-muted);line-height:1.7}.privacy-badge{display:inline-flex;width:fit-content;margin-top:var(--space-3);padding:.35rem .55rem;border-radius:var(--radius-full);border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-muted);font-size:.72rem;font-weight:900;line-height:1.1}.privacy-badge-local{border-color:color-mix(in srgb,var(--color-success) 35%,var(--color-border));color:var(--color-success)}.privacy-badge-external-api{border-color:color-mix(in srgb,var(--color-info) 35%,var(--color-border));color:var(--color-info)}@media(max-width:640px){.hero{padding-top:var(--space-10)}.search-heading{flex-direction:column}#clearFilters,.filter-button{width:100%}.favorites-header{display:block}.favorites-header p{margin-top:var(--space-2)}.tool-link-card{padding:var(--space-4);padding-right:3.5rem}.favorite-button{top:.8rem;right:.8rem}}
 </style>
