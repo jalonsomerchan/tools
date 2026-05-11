@@ -1,7 +1,6 @@
 import type { Lang } from '../i18n/ui';
 
 export type ToolPrivacy = 'local' | 'external-api';
-
 export type ToolCategoryId = 'development' | 'images' | 'internet' | 'writing' | 'finance';
 
 export type LocalizedToolText = {
@@ -21,680 +20,80 @@ export type ToolDefinition = {
 };
 
 export const toolCategoryLabels: Record<ToolCategoryId, Record<Lang, string>> = {
-  development: {
-    en: 'Development',
-    es: 'Desarrollo'
-  },
-  images: {
-    en: 'Images',
-    es: 'Imágenes'
-  },
-  internet: {
-    en: 'Internet & maps',
-    es: 'Internet y mapas'
-  },
-  writing: {
-    en: 'Text & writing',
-    es: 'Texto y escritura'
-  },
-  finance: {
-    en: 'Finance',
-    es: 'Finanzas'
-  }
+  development: { en: 'Development', es: 'Desarrollo' },
+  images: { en: 'Images', es: 'Imágenes' },
+  internet: { en: 'Internet & maps', es: 'Internet y mapas' },
+  writing: { en: 'Text & writing', es: 'Texto y escritura' },
+  finance: { en: 'Finance', es: 'Finanzas' }
 };
 
 export const privacyLabels: Record<ToolPrivacy, Record<Lang, string>> = {
-  local: {
-    en: '100% local',
-    es: '100% local'
-  },
-  'external-api': {
-    en: 'External API',
-    es: 'API externa'
-  }
+  local: { en: '100% local', es: '100% local' },
+  'external-api': { en: 'External API', es: 'API externa' }
 };
 
-export const tools: ToolDefinition[] = [
-  {
-    id: 'currency-converter',
-    slug: 'currency-converter',
-    category: 'finance',
-    icon: 'FX',
-    privacy: 'external-api',
-    apiProvider: 'Frankfurter',
-    search: 'currency converter divisas monedas frankfurter exchange rate cambio forex eur usd gbp',
-    text: {
-      en: {
-        title: 'Currency converter',
-        description: 'Convert amounts between currencies with Frankfurter, exchange date, swap action and copyable result.'
-      },
-      es: {
-        title: 'Conversor de divisas',
-        description: 'Convierte importes entre monedas con Frankfurter, fecha del cambio, inversión y copia del resultado.'
-      }
-    }
-  },
-  {
-    id: 'simple-postman',
-    slug: 'simple-postman',
-    category: 'development',
-    icon: 'HTTP',
-    privacy: 'external-api',
-    search: 'postman api http curl fetch request response headers auth bearer basic cors',
-    text: {
-      en: {
-        title: 'SimplePostman',
-        description: 'A reduced HTTP client to build requests, generate cURL and inspect responses in the browser.'
-      },
-      es: {
-        title: 'SimplePostman',
-        description: 'Cliente HTTP reducido para crear peticiones, generar cURL y ver respuestas desde el navegador.'
-      }
-    }
-  },
-  {
-    id: 'screenshot-enhancer',
-    slug: 'screenshot-enhancer',
-    category: 'images',
-    icon: 'SHOT',
-    privacy: 'local',
-    search: 'screenshot capture captura imagen fondos svg',
-    text: {
-      en: {
-        title: 'Screenshot enhancer',
-        description: 'Turn screenshots into polished images with backgrounds, colors and PNG, JPG, WebP or SVG exports.'
-      },
-      es: {
-        title: 'Mejorador de capturas',
-        description: 'Convierte capturas en imágenes profesionales con fondos, colores y exportación PNG, JPG, WebP o SVG.'
-      }
-    }
-  },
-  {
-    id: 'uuid-generator',
-    slug: 'uuid-generator',
-    category: 'development',
-    icon: 'UUID',
-    privacy: 'local',
-    search: 'uuid random key clave token crypto',
-    text: {
-      en: {
-        title: 'UUID and random key generator',
-        description: 'Generate UUID v4 values and random strings with Web Crypto, fully local in the browser.'
-      },
-      es: {
-        title: 'Generador de UUID y claves',
-        description: 'Genera UUID v4 y cadenas aleatorias con Web Crypto, todo local en el navegador.'
-      }
-    }
-  },
-  {
-    id: 'password-generator',
-    slug: 'password-generator',
-    category: 'development',
-    icon: 'PASS',
-    privacy: 'local',
-    search: 'password contraseña passphrase seguridad crypto',
-    text: {
-      en: {
-        title: 'Password and passphrase generator',
-        description: 'Create passwords and secure passphrases without storing data or making network calls.'
-      },
-      es: {
-        title: 'Generador de contraseñas',
-        description: 'Crea contraseñas y frases seguras sin guardar datos ni hacer llamadas de red.'
-      }
-    }
-  },
-  {
-    id: 'robots-sitemap-generator',
-    slug: 'robots-sitemap-generator',
-    category: 'internet',
-    icon: 'SEO',
-    privacy: 'local',
-    search: 'robots sitemap xml seo crawler rastreo',
-    text: {
-      en: {
-        title: 'Robots.txt and sitemap generator',
-        description: 'Create robots.txt and a basic XML sitemap from pasted URLs, without crawling or server requests.'
-      },
-      es: {
-        title: 'Generador de robots.txt y sitemap',
-        description: 'Crea robots.txt y un sitemap XML básico pegando URLs manualmente, sin rastrear ni consultar servidores.'
-      }
-    }
-  },
-  {
-    id: 'meta-tags-generator',
-    slug: 'meta-tags-generator',
-    category: 'internet',
-    icon: 'META',
-    privacy: 'local',
-    search: 'meta tags open graph twitter cards seo title description canonical',
-    text: {
-      en: {
-        title: 'Meta tags and Open Graph generator',
-        description: 'Generate title, description, canonical, Open Graph and Twitter Cards with a local preview.'
-      },
-      es: {
-        title: 'Generador de meta tags y Open Graph',
-        description: 'Genera title, description, canonical, Open Graph y Twitter Cards con vista previa local.'
-      }
-    }
-  },
-  {
-    id: 'app-icon-generator',
-    slug: 'app-icon-generator',
-    category: 'images',
-    icon: 'APP',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'App icon generator',
-        description: 'Create app icons with images, text, borders and local ZIP exports.'
-      },
-      es: {
-        title: 'Generador de iconos para apps',
-        description: 'Crea iconos para apps con imagen, texto, bordes y exportación ZIP local.'
-      }
-    }
-  },
-  {
-    id: 'base64',
-    slug: 'base64',
-    category: 'development',
-    icon: '64',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'Base64 encoder & decoder',
-        description: 'Encode plain text to Base64 and decode it locally in your browser.'
-      },
-      es: {
-        title: 'Codificador y decodificador Base64',
-        description: 'Codifica texto plano a Base64 y decodifícalo localmente en tu navegador.'
-      }
-    }
-  },
-  {
-    id: 'character-counter',
-    slug: 'character-counter',
-    category: 'writing',
-    icon: 'ABC',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'Character counter',
-        description: 'Count characters, words, sentences and repeated terms.'
-      },
-      es: {
-        title: 'Contador de caracteres',
-        description: 'Cuenta caracteres, palabras, frases y términos repetidos.'
-      }
-    }
-  },
-  {
-    id: 'code-formatter',
-    slug: 'code-formatter',
-    category: 'development',
-    icon: 'CODE',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'HTML/CSS/JS formatter',
-        description: 'Format and minify code snippets locally.'
-      },
-      es: {
-        title: 'Formateador HTML/CSS/JS',
-        description: 'Formatea y minifica fragmentos de código localmente.'
-      }
-    }
-  },
-  {
-    id: 'csv-converter',
-    slug: 'csv-converter',
-    category: 'development',
-    icon: 'CSV',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'CSV parser & converter',
-        description: 'Preview CSV and convert it to JSON, Markdown or HTML.'
-      },
-      es: {
-        title: 'Parser y conversor CSV',
-        description: 'Previsualiza CSV y conviértelo a JSON, Markdown o HTML.'
-      }
-    }
-  },
-  {
-    id: 'curl-builder',
-    slug: 'curl-builder',
-    category: 'development',
-    icon: 'API',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'cURL builder',
-        description: 'Generate HTTP requests and code snippets.'
-      },
-      es: {
-        title: 'Generador cURL',
-        description: 'Genera peticiones HTTP y fragmentos de código.'
-      }
-    }
-  },
-  {
-    id: 'css-color-converter',
-    slug: 'css-color-converter',
-    category: 'development',
-    icon: 'COLOR',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'CSS color converter',
-        description: 'Convert HEX, RGB, HSL, HWB and CSS color names.'
-      },
-      es: {
-        title: 'Convertidor de colores CSS',
-        description: 'Convierte HEX, RGB, HSL, HWB y nombres de color CSS.'
-      }
-    }
-  },
-  {
-    id: 'diff-checker',
-    slug: 'diff-checker',
-    category: 'development',
-    icon: 'DIFF',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'Diff checker',
-        description: 'Compare two texts quickly in your browser.'
-      },
-      es: {
-        title: 'Comparador diff',
-        description: 'Compara dos textos rápidamente en tu navegador.'
-      }
-    }
-  },
-  {
-    id: 'dns-lookup',
-    slug: 'dns-lookup',
-    category: 'internet',
-    icon: 'DNS',
-    privacy: 'external-api',
-    apiProvider: 'Google Public DNS',
-    text: {
-      en: {
-        title: 'DNS lookup',
-        description: 'Query DNS records with Google Public DNS.'
-      },
-      es: {
-        title: 'Consulta DNS',
-        description: 'Consulta registros DNS con Google Public DNS.'
-      }
-    }
-  },
-  {
-    id: 'favicon-generator',
-    slug: 'favicon-generator',
-    category: 'images',
-    icon: 'ICO',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'Favicon generator',
-        description: 'Create favicons from text or images.'
-      },
-      es: {
-        title: 'Generador de favicons',
-        description: 'Crea favicons a partir de texto o imágenes.'
-      }
-    }
-  },
-  {
-    id: 'geocoder',
-    slug: 'geocoder',
-    category: 'internet',
-    icon: 'MAP',
-    privacy: 'external-api',
-    apiProvider: 'OpenStreetMap Nominatim',
-    text: {
-      en: {
-        title: 'Address coordinates',
-        description: 'Find GPS coordinates from an address.'
-      },
-      es: {
-        title: 'Coordenadas de direcciones',
-        description: 'Obtén coordenadas GPS a partir de una dirección.'
-      }
-    }
-  },
-  {
-    id: 'image-compressor',
-    slug: 'image-compressor',
-    category: 'images',
-    icon: 'ZIP',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'Image compressor',
-        description: 'Reduce image file size locally.'
-      },
-      es: {
-        title: 'Compresor de imágenes',
-        description: 'Reduce el tamaño de imágenes localmente.'
-      }
-    }
-  },
-  {
-    id: 'image-converter',
-    slug: 'image-converter',
-    category: 'images',
-    icon: 'CONV',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'Image converter',
-        description: 'Convert between PNG, JPEG and WebP.'
-      },
-      es: {
-        title: 'Conversor de imágenes',
-        description: 'Convierte entre PNG, JPEG y WebP.'
-      }
-    }
-  },
-  {
-    id: 'image-info',
-    slug: 'image-info',
-    category: 'images',
-    icon: 'IMG',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'Image information',
-        description: 'Inspect image dimensions and metadata locally.'
-      },
-      es: {
-        title: 'Información de imágenes',
-        description: 'Consulta dimensiones y metadatos de imágenes localmente.'
-      }
-    }
-  },
-  {
-    id: 'ip-info',
-    slug: 'ip-info',
-    category: 'internet',
-    icon: 'IP',
-    privacy: 'external-api',
-    apiProvider: 'ipwho.is',
-    text: {
-      en: {
-        title: 'IP information',
-        description: 'Look up technical IP information.'
-      },
-      es: {
-        title: 'Información de IP',
-        description: 'Consulta información técnica sobre una IP.'
-      }
-    }
-  },
-  {
-    id: 'json-viewer',
-    slug: 'json-viewer',
-    category: 'development',
-    icon: '{}',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'JSON viewer & formatter',
-        description: 'View, validate and format JSON locally.'
-      },
-      es: {
-        title: 'Visor y formateador JSON',
-        description: 'Visualiza, valida y formatea JSON localmente.'
-      }
-    }
-  },
-  {
-    id: 'jwt-decoder',
-    slug: 'jwt-decoder',
-    category: 'development',
-    icon: 'JWT',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'JWT decoder',
-        description: 'Decode JWT tokens locally in your browser.'
-      },
-      es: {
-        title: 'Decodificador JWT',
-        description: 'Decodifica tokens JWT localmente en tu navegador.'
-      }
-    }
-  },
-  {
-    id: 'lorem-ipsum',
-    slug: 'lorem-ipsum',
-    category: 'writing',
-    icon: 'TXT',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'Lorem Ipsum generator',
-        description: 'Generate filler text by letters, paragraphs or pages.'
-      },
-      es: {
-        title: 'Generador de Lorem Ipsum',
-        description: 'Genera texto de relleno por letras, párrafos o páginas.'
-      }
-    }
-  },
-  {
-    id: 'markdown-preview',
-    slug: 'markdown-preview',
-    category: 'writing',
-    icon: 'MD',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'Markdown writer & preview',
-        description: 'Markdown editor with live preview.'
-      },
-      es: {
-        title: 'Editor y vista previa Markdown',
-        description: 'Editor Markdown con vista previa en vivo.'
-      }
-    }
-  },
-  {
-    id: 'md5',
-    slug: 'md5',
-    category: 'development',
-    icon: 'MD5',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'MD5 generator',
-        description: 'Generate MD5 hashes in the browser.'
-      },
-      es: {
-        title: 'Generador MD5',
-        description: 'Genera hashes MD5 en el navegador.'
-      }
-    }
-  },
-  {
-    id: 'photo-censor',
-    slug: 'photo-censor',
-    category: 'images',
-    icon: 'CEN',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'Photo censor',
-        description: 'Pixelate, blur or cover image areas locally.'
-      },
-      es: {
-        title: 'Censurador de fotos',
-        description: 'Pixela, difumina o tapa zonas de una imagen localmente.'
-      }
-    }
-  },
-  {
-    id: 'qr-code',
-    slug: 'qr-code',
-    category: 'images',
-    icon: 'QR',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'QR code generator & reader',
-        description: 'Generate QR codes and read local QR images.'
-      },
-      es: {
-        title: 'Generador y lector QR',
-        description: 'Genera códigos QR y lee imágenes QR locales.'
-      }
-    }
-  },
-  {
-    id: 'social-preview',
-    slug: 'social-preview',
-    category: 'internet',
-    icon: 'SOC',
-    privacy: 'external-api',
-    text: {
-      en: {
-        title: 'Social URL preview',
-        description: 'Check Open Graph and Twitter Cards.'
-      },
-      es: {
-        title: 'Vista previa social de URLs',
-        description: 'Comprueba Open Graph y Twitter Cards.'
-      }
-    }
-  },
-  {
-    id: 'sql-formatter',
-    slug: 'sql-formatter',
-    category: 'development',
-    icon: 'SQL',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'SQL formatter',
-        description: 'Format, minify and export SQL queries locally.'
-      },
-      es: {
-        title: 'Formateador SQL',
-        description: 'Formatea, minifica y exporta consultas SQL localmente.'
-      }
-    }
-  },
-  {
-    id: 'svg-placeholder',
-    slug: 'svg-placeholder',
-    category: 'images',
-    icon: 'SVG',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'SVG placeholder generator',
-        description: 'Create SVG placeholders and data URLs.'
-      },
-      es: {
-        title: 'Generador de placeholders SVG',
-        description: 'Crea placeholders SVG y data URLs.'
-      }
-    }
-  },
-  {
-    id: 'timestamp-converter',
-    slug: 'timestamp-converter',
-    category: 'development',
-    icon: 'TIME',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'Timestamp & timezone converter',
-        description: 'Convert Unix timestamps, ISO dates and time zones.'
-      },
-      es: {
-        title: 'Conversor de timestamps y zonas horarias',
-        description: 'Convierte timestamps Unix, fechas ISO y zonas horarias.'
-      }
-    }
-  },
-  {
-    id: 'url-encoder',
-    slug: 'url-encoder',
-    category: 'development',
-    icon: 'ENC',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'URL encoder & decoder',
-        description: 'Encode URLs and query parameters.'
-      },
-      es: {
-        title: 'Codificador y decodificador URL',
-        description: 'Codifica URLs y parámetros de consulta.'
-      }
-    }
-  },
-  {
-    id: 'url-inspector',
-    slug: 'url-inspector',
-    category: 'development',
-    icon: 'URL',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'URL inspector',
-        description: 'Analyze URLs for developers.'
-      },
-      es: {
-        title: 'Inspector de URLs',
-        description: 'Analiza URLs para desarrolladores.'
-      }
-    }
-  },
-  {
-    id: 'vat-calculator',
-    slug: 'vat-calculator',
-    category: 'finance',
-    icon: 'VAT',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'VAT calculator',
-        description: 'Calculate VAT from prices with or without tax.'
-      },
-      es: {
-        title: 'Calculadora de IVA',
-        description: 'Calcula el IVA a partir de precios con o sin impuesto.'
-      }
-    }
-  },
-  {
-    id: 'xml-formatter',
-    slug: 'xml-formatter',
-    category: 'development',
-    icon: 'XML',
-    privacy: 'local',
-    text: {
-      en: {
-        title: 'XML formatter & validator',
-        description: 'Format, validate and minify XML locally.'
-      },
-      es: {
-        title: 'Formateador y validador XML',
-        description: 'Formatea, valida y minifica XML localmente.'
-      }
-    }
+const tool = (
+  id: string,
+  category: ToolCategoryId,
+  icon: string,
+  privacy: ToolPrivacy,
+  enTitle: string,
+  enDescription: string,
+  esTitle: string,
+  esDescription: string,
+  options: Pick<ToolDefinition, 'apiProvider' | 'search'> = {}
+): ToolDefinition => ({
+  id,
+  slug: id,
+  category,
+  icon,
+  privacy,
+  ...options,
+  text: {
+    en: { title: enTitle, description: enDescription },
+    es: { title: esTitle, description: esDescription }
   }
+});
+
+export const tools: ToolDefinition[] = [
+  tool('currency-converter', 'finance', 'FX', 'external-api', 'Currency converter', 'Convert amounts between currencies with Frankfurter, exchange date, swap action and copyable result.', 'Conversor de divisas', 'Convierte importes entre monedas con Frankfurter, fecha del cambio, inversión y copia del resultado.', { apiProvider: 'Frankfurter', search: 'currency converter divisas monedas frankfurter exchange rate cambio forex eur usd gbp' }),
+  tool('simple-postman', 'development', 'HTTP', 'external-api', 'SimplePostman', 'A reduced HTTP client to build requests, generate cURL and inspect responses in the browser.', 'SimplePostman', 'Cliente HTTP reducido para crear peticiones, generar cURL y ver respuestas desde el navegador.', { search: 'postman api http curl fetch request response headers auth bearer basic cors' }),
+  tool('screenshot-enhancer', 'images', 'SHOT', 'local', 'Screenshot enhancer', 'Turn screenshots into polished images with backgrounds, colors and PNG, JPG, WebP or SVG exports.', 'Mejorador de capturas', 'Convierte capturas en imágenes profesionales con fondos, colores y exportación PNG, JPG, WebP o SVG.', { search: 'screenshot capture captura imagen fondos svg' }),
+  tool('uuid-generator', 'development', 'UUID', 'local', 'UUID and random key generator', 'Generate UUID v4 values and random strings with Web Crypto, fully local in the browser.', 'Generador de UUID y claves', 'Genera UUID v4 y cadenas aleatorias con Web Crypto, todo local en el navegador.', { search: 'uuid random key clave token crypto' }),
+  tool('password-generator', 'development', 'PASS', 'local', 'Password and passphrase generator', 'Create passwords and secure passphrases without storing data or making network calls.', 'Generador de contraseñas', 'Crea contraseñas y frases seguras sin guardar datos ni hacer llamadas de red.', { search: 'password contraseña passphrase seguridad crypto' }),
+  tool('robots-sitemap-generator', 'internet', 'SEO', 'local', 'Robots.txt and sitemap generator', 'Create robots.txt and a basic XML sitemap from pasted URLs, without crawling or server requests.', 'Generador de robots.txt y sitemap', 'Crea robots.txt y un sitemap XML básico pegando URLs manualmente, sin rastrear ni consultar servidores.', { search: 'robots sitemap xml seo crawler rastreo' }),
+  tool('meta-tags-generator', 'internet', 'META', 'local', 'Meta tags and Open Graph generator', 'Generate title, description, canonical, Open Graph and Twitter Cards with a local preview.', 'Generador de meta tags y Open Graph', 'Genera title, description, canonical, Open Graph y Twitter Cards con vista previa local.', { search: 'meta tags open graph twitter cards seo title description canonical' }),
+  tool('yaml-formatter', 'development', 'YAML', 'local', 'YAML formatter and validator', 'Validate, format and convert YAML and JSON locally in your browser.', 'Formateador y validador YAML', 'Valida, formatea y convierte YAML y JSON localmente en tu navegador.', { search: 'yaml yml formatter validator parser json convert convertir validar formatear' }),
+  tool('app-icon-generator', 'images', 'APP', 'local', 'App icon generator', 'Create app icons with images, text, borders and local ZIP exports.', 'Generador de iconos para apps', 'Crea iconos para apps con imagen, texto, bordes y exportación ZIP local.'),
+  tool('base64', 'development', '64', 'local', 'Base64 encoder & decoder', 'Encode plain text to Base64 and decode it locally in your browser.', 'Codificador y decodificador Base64', 'Codifica texto plano a Base64 y decodifícalo localmente en tu navegador.'),
+  tool('character-counter', 'writing', 'ABC', 'local', 'Character counter', 'Count characters, words, sentences and repeated terms.', 'Contador de caracteres', 'Cuenta caracteres, palabras, frases y términos repetidos.'),
+  tool('code-formatter', 'development', 'CODE', 'local', 'HTML/CSS/JS formatter', 'Format and minify code snippets locally.', 'Formateador HTML/CSS/JS', 'Formatea y minifica fragmentos de código localmente.'),
+  tool('csv-converter', 'development', 'CSV', 'local', 'CSV parser & converter', 'Preview CSV and convert it to JSON, Markdown or HTML.', 'Parser y conversor CSV', 'Previsualiza CSV y conviértelo a JSON, Markdown o HTML.'),
+  tool('curl-builder', 'development', 'API', 'local', 'cURL builder', 'Generate HTTP requests and code snippets.', 'Generador cURL', 'Genera peticiones HTTP y fragmentos de código.'),
+  tool('css-color-converter', 'development', 'COLOR', 'local', 'CSS color converter', 'Convert HEX, RGB, HSL, HWB and CSS color names.', 'Convertidor de colores CSS', 'Convierte HEX, RGB, HSL, HWB y nombres de color CSS.'),
+  tool('diff-checker', 'development', 'DIFF', 'local', 'Diff checker', 'Compare two texts quickly in your browser.', 'Comparador diff', 'Compara dos textos rápidamente en tu navegador.'),
+  tool('dns-lookup', 'internet', 'DNS', 'external-api', 'DNS lookup', 'Query DNS records with Google Public DNS.', 'Consulta DNS', 'Consulta registros DNS con Google Public DNS.', { apiProvider: 'Google Public DNS' }),
+  tool('favicon-generator', 'images', 'ICO', 'local', 'Favicon generator', 'Create favicons from text or images.', 'Generador de favicons', 'Crea favicons a partir de texto o imágenes.'),
+  tool('geocoder', 'internet', 'MAP', 'external-api', 'Address coordinates', 'Find GPS coordinates from an address.', 'Coordenadas de direcciones', 'Obtén coordenadas GPS a partir de una dirección.', { apiProvider: 'OpenStreetMap Nominatim' }),
+  tool('image-compressor', 'images', 'ZIP', 'local', 'Image compressor', 'Reduce image file size locally.', 'Compresor de imágenes', 'Reduce el tamaño de imágenes localmente.'),
+  tool('image-converter', 'images', 'CONV', 'local', 'Image converter', 'Convert between PNG, JPEG and WebP.', 'Conversor de imágenes', 'Convierte entre PNG, JPEG y WebP.'),
+  tool('image-info', 'images', 'IMG', 'local', 'Image information', 'Inspect image dimensions and metadata locally.', 'Información de imágenes', 'Consulta dimensiones y metadatos de imágenes localmente.'),
+  tool('ip-info', 'internet', 'IP', 'external-api', 'IP information', 'Look up technical IP information.', 'Información de IP', 'Consulta información técnica sobre una IP.', { apiProvider: 'ipwho.is' }),
+  tool('json-viewer', 'development', '{}', 'local', 'JSON viewer & formatter', 'View, validate and format JSON locally.', 'Visor y formateador JSON', 'Visualiza, valida y formatea JSON localmente.'),
+  tool('jwt-decoder', 'development', 'JWT', 'local', 'JWT decoder', 'Decode JWT tokens locally in your browser.', 'Decodificador JWT', 'Decodifica tokens JWT localmente en tu navegador.'),
+  tool('lorem-ipsum', 'writing', 'TXT', 'local', 'Lorem Ipsum generator', 'Generate filler text by letters, paragraphs or pages.', 'Generador de Lorem Ipsum', 'Genera texto de relleno por letras, párrafos o páginas.'),
+  tool('markdown-preview', 'writing', 'MD', 'local', 'Markdown writer & preview', 'Markdown editor with live preview.', 'Editor y vista previa Markdown', 'Editor Markdown con vista previa en vivo.'),
+  tool('md5', 'development', 'MD5', 'local', 'MD5 generator', 'Generate MD5 hashes in the browser.', 'Generador MD5', 'Genera hashes MD5 en el navegador.'),
+  tool('photo-censor', 'images', 'CEN', 'local', 'Photo censor', 'Pixelate, blur or cover image areas locally.', 'Censurador de fotos', 'Pixela, difumina o tapa zonas de una imagen localmente.'),
+  tool('qr-code', 'images', 'QR', 'local', 'QR code generator & reader', 'Generate QR codes and read local QR images.', 'Generador y lector QR', 'Genera códigos QR y lee imágenes QR locales.'),
+  tool('social-preview', 'internet', 'SOC', 'external-api', 'Social URL preview', 'Check Open Graph and Twitter Cards.', 'Vista previa social de URLs', 'Comprueba Open Graph y Twitter Cards.'),
+  tool('sql-formatter', 'development', 'SQL', 'local', 'SQL formatter', 'Format, minify and export SQL queries locally.', 'Formateador SQL', 'Formatea, minifica y exporta consultas SQL localmente.'),
+  tool('svg-placeholder', 'images', 'SVG', 'local', 'SVG placeholder generator', 'Create SVG placeholders and data URLs.', 'Generador de placeholders SVG', 'Crea placeholders SVG y data URLs.'),
+  tool('timestamp-converter', 'development', 'TIME', 'local', 'Timestamp & timezone converter', 'Convert Unix timestamps, ISO dates and time zones.', 'Conversor de timestamps y zonas horarias', 'Convierte timestamps Unix, fechas ISO y zonas horarias.'),
+  tool('url-encoder', 'development', 'ENC', 'local', 'URL encoder & decoder', 'Encode URLs and query parameters.', 'Codificador y decodificador URL', 'Codifica URLs y parámetros de consulta.'),
+  tool('url-inspector', 'development', 'URL', 'local', 'URL inspector', 'Analyze URLs for developers.', 'Inspector de URLs', 'Analiza URLs para desarrolladores.'),
+  tool('vat-calculator', 'finance', 'VAT', 'local', 'VAT calculator', 'Calculate VAT from prices with or without tax.', 'Calculadora de IVA', 'Calcula el IVA a partir de precios con o sin impuesto.'),
+  tool('xml-formatter', 'development', 'XML', 'local', 'XML formatter & validator', 'Format, validate and minify XML locally.', 'Formateador y validador XML', 'Formatea, valida y minifica XML localmente.')
 ];
 
 export type LocalizedTool = ToolDefinition & {
@@ -711,13 +110,13 @@ export type ToolCategoryGroup = {
   items: LocalizedTool[];
 };
 
-export const getLocalizedTools = (lang: Lang): LocalizedTool[] => tools.map((tool) => ({
-  ...tool,
-  title: tool.text[lang].title,
-  description: tool.text[lang].description,
-  categoryLabel: toolCategoryLabels[tool.category][lang],
-  privacyLabel: privacyLabels[tool.privacy][lang],
-  path: `/${tool.slug}/`
+export const getLocalizedTools = (lang: Lang): LocalizedTool[] => tools.map((item) => ({
+  ...item,
+  title: item.text[lang].title,
+  description: item.text[lang].description,
+  categoryLabel: toolCategoryLabels[item.category][lang],
+  privacyLabel: privacyLabels[item.privacy][lang],
+  path: `/${item.slug}/`
 }));
 
 export const getToolsByCategory = (lang: Lang): ToolCategoryGroup[] => {
@@ -726,7 +125,7 @@ export const getToolsByCategory = (lang: Lang): ToolCategoryGroup[] => {
     .map((categoryId) => ({
       id: categoryId,
       title: toolCategoryLabels[categoryId][lang],
-      items: localizedTools.filter((tool) => tool.category === categoryId)
+      items: localizedTools.filter((item) => item.category === categoryId)
     }))
     .filter((category) => category.items.length > 0);
 };
