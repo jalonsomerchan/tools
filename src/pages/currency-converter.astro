@@ -1,0 +1,619 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Conversor de divisas';
+const description = 'Convierte importes entre monedas con una API pública sin clave, mostrando proveedor, fecha del cambio y aviso de privacidad.';
+---
+
+<Layout title={title} description={description} path="/currency-converter/" translated={false}>
+  <section class="currency-page">
+    <div class="eyebrow">API pública · sin backend</div>
+
+    <h1>{title}</h1>
+
+    <p class="hero-text">
+      Convierte importes entre monedas usando Frankfurter desde el navegador. La herramienta cachea tipos recientes en sessionStorage y solo envía moneda origen, moneda destino e importe.
+    </p>
+
+    <section class="tool-card" aria-labelledby="converterTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="converterTitle">Datos de conversión</h2>
+          <p>El proveedor es intercambiable en el código. Ahora se usa Frankfurter porque funciona desde navegador sin API key.</p>
+        </div>
+      </div>
+
+      <div class="converter-grid">
+        <div class="field amount-field">
+          <label for="amountInput">Importe origen</label>
+          <input id="amountInput" type="text" inputmode="decimal" value="100" placeholder="Ej. 100,00" autocomplete="off" />
+        </div>
+
+        <div class="field">
+          <label for="fromCurrency">Moneda origen</label>
+          <select id="fromCurrency"></select>
+        </div>
+
+        <button class="swap-button" id="swapBtn" type="button" aria-label="Invertir monedas" title="Invertir monedas">⇄</button>
+
+        <div class="field">
+          <label for="toCurrency">Moneda destino</label>
+          <select id="toCurrency"></select>
+        </div>
+      </div>
+
+      <div class="toolbar" aria-label="Acciones de conversión">
+        <button class="primary" id="convertBtn" type="button">Convertir</button>
+        <button id="copyBtn" type="button">Copiar resultado</button>
+        <button id="clearBtn" type="button">Limpiar</button>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">Preparando conversor.</p>
+    </section>
+
+    <section class="results-section" aria-labelledby="resultsTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="resultsTitle">Resultado</h2>
+          <p id="summaryText">Introduce un importe y elige monedas para convertir.</p>
+        </div>
+      </div>
+
+      <div class="result-highlight" id="resultHighlight">
+        <span>Resultado</span>
+        <strong id="resultValue">—</strong>
+        <small id="rateDetails">Sin conversión todavía.</small>
+      </div>
+
+      <div class="results-grid" id="metaGrid"></div>
+    </section>
+
+    <section class="tool-card extra-section" aria-labelledby="frequentTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="frequentTitle">Conversiones frecuentes</h2>
+          <p>Atajos útiles para cambiar rápidamente el par de divisas.</p>
+        </div>
+      </div>
+      <div class="quick-grid" id="frequentGrid"></div>
+    </section>
+
+    <section class="privacy-note" aria-labelledby="privacyTitle">
+      <h2 id="privacyTitle">Privacidad y disponibilidad</h2>
+      <p>
+        Esta conversión consulta una API externa pública. No se envían datos personales: solo el importe y los códigos de moneda seleccionados. Si el proveedor cambia sus condiciones o falla la red, verás un error claro.
+      </p>
+    </section>
+  </section>
+
+  <style>
+    .currency-page { padding: 4rem 0; }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h2 { margin: 0 0 .35rem; font-size: 1.35rem; }
+
+    .section-heading p,
+    .status,
+    .privacy-note p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .converter-grid {
+      display: grid;
+      grid-template-columns: minmax(180px, 1.2fr) minmax(180px, 1fr) auto minmax(180px, 1fr);
+      gap: 1rem;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      margin-bottom: .55rem;
+      font-weight: 800;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border-strong);
+      background: var(--color-surface);
+      color: var(--color-text);
+      padding: 1rem;
+      font: inherit;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .swap-button {
+      width: 3.35rem;
+      height: 3.35rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text);
+      cursor: pointer;
+      font-size: 1.4rem;
+      font-weight: 900;
+      box-shadow: var(--shadow-xs);
+      transition: transform var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+    }
+
+    .swap-button:hover {
+      transform: translateY(-1px) rotate(180deg);
+      border-color: var(--color-primary);
+      background: var(--color-primary-soft);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text);
+      padding: .9rem 1rem;
+      cursor: pointer;
+      font-weight: 850;
+      transition: transform var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: var(--color-primary);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: var(--shadow-brand);
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: .65;
+    }
+
+    .status { margin-top: 1rem; }
+    .status.success { color: var(--color-success); }
+    .status.error { color: var(--color-danger); }
+
+    .results-section,
+    .extra-section,
+    .privacy-note {
+      margin-top: 1.5rem;
+    }
+
+    .results-section,
+    .privacy-note {
+      padding: 1.5rem;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-raised);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .result-highlight {
+      display: grid;
+      gap: .5rem;
+      padding: clamp(1.25rem, 4vw, 2rem);
+      border-radius: var(--radius-2xl);
+      background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary-soft) 70%, var(--color-surface)), var(--color-surface));
+      border: 1px solid color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
+    }
+
+    .result-highlight span,
+    .result-highlight small,
+    .result-card span,
+    .quick-card span {
+      color: var(--color-text-muted);
+      line-height: 1.4;
+    }
+
+    .result-highlight strong {
+      color: var(--color-text);
+      font-size: clamp(2rem, 6vw, 4rem);
+      line-height: 1;
+      overflow-wrap: anywhere;
+    }
+
+    .results-grid,
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .result-card,
+    .quick-card {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+      padding: 1rem;
+    }
+
+    .result-card strong,
+    .quick-card strong {
+      display: block;
+      color: var(--color-text);
+      font-size: 1.25rem;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .quick-card {
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .quick-card:hover {
+      border-color: var(--color-primary);
+      transform: translateY(-1px);
+    }
+
+    .privacy-note h2 { margin-top: 0; }
+
+    @media (max-width: 860px) {
+      .converter-grid { grid-template-columns: 1fr; }
+      .swap-button { width: 100%; }
+      .section-heading { flex-direction: column; }
+    }
+
+    @media (max-width: 560px) {
+      .currency-page { padding: 2.5rem 0; }
+      button { width: 100%; }
+    }
+  </style>
+
+  <script>
+    type RateResponse = {
+      amount: number;
+      base: string;
+      date: string;
+      rates: Record<string, number>;
+    };
+
+    type CurrencyMap = Record<string, string>;
+
+    type RateProvider = {
+      id: string;
+      name: string;
+      listCurrencies: () => Promise<CurrencyMap>;
+      convert: (amount: number, from: string, to: string) => Promise<RateResponse>;
+    };
+
+    const amountInput = document.getElementById('amountInput') as HTMLInputElement;
+    const fromCurrency = document.getElementById('fromCurrency') as HTMLSelectElement;
+    const toCurrency = document.getElementById('toCurrency') as HTMLSelectElement;
+    const swapBtn = document.getElementById('swapBtn') as HTMLButtonElement;
+    const convertBtn = document.getElementById('convertBtn') as HTMLButtonElement;
+    const copyBtn = document.getElementById('copyBtn') as HTMLButtonElement;
+    const clearBtn = document.getElementById('clearBtn') as HTMLButtonElement;
+    const status = document.getElementById('status') as HTMLParagraphElement;
+    const summaryText = document.getElementById('summaryText') as HTMLParagraphElement;
+    const resultValue = document.getElementById('resultValue') as HTMLElement;
+    const rateDetails = document.getElementById('rateDetails') as HTMLElement;
+    const metaGrid = document.getElementById('metaGrid') as HTMLDivElement;
+    const frequentGrid = document.getElementById('frequentGrid') as HTMLDivElement;
+
+    const cachePrefix = 'alon-tools-currency-converter:';
+    const cacheTtlMs = 1000 * 60 * 30;
+    const frequentPairs = [
+      ['EUR', 'USD'],
+      ['USD', 'EUR'],
+      ['EUR', 'GBP'],
+      ['GBP', 'EUR'],
+      ['EUR', 'CHF'],
+      ['EUR', 'JPY']
+    ];
+
+    const fallbackCurrencies: CurrencyMap = {
+      AUD: 'Australian Dollar',
+      BGN: 'Bulgarian Lev',
+      BRL: 'Brazilian Real',
+      CAD: 'Canadian Dollar',
+      CHF: 'Swiss Franc',
+      CNY: 'Chinese Renminbi Yuan',
+      CZK: 'Czech Koruna',
+      DKK: 'Danish Krone',
+      EUR: 'Euro',
+      GBP: 'British Pound',
+      HKD: 'Hong Kong Dollar',
+      HUF: 'Hungarian Forint',
+      IDR: 'Indonesian Rupiah',
+      ILS: 'Israeli New Sheqel',
+      INR: 'Indian Rupee',
+      ISK: 'Icelandic Króna',
+      JPY: 'Japanese Yen',
+      KRW: 'South Korean Won',
+      MXN: 'Mexican Peso',
+      MYR: 'Malaysian Ringgit',
+      NOK: 'Norwegian Krone',
+      NZD: 'New Zealand Dollar',
+      PHP: 'Philippine Peso',
+      PLN: 'Polish Złoty',
+      RON: 'Romanian Leu',
+      SEK: 'Swedish Krona',
+      SGD: 'Singapore Dollar',
+      THB: 'Thai Baht',
+      TRY: 'Turkish Lira',
+      USD: 'United States Dollar',
+      ZAR: 'South African Rand'
+    };
+
+    const readCache = <T,>(key: string): T | null => {
+      try {
+        const raw = sessionStorage.getItem(`${cachePrefix}${key}`);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as { savedAt: number; value: T };
+        if (!parsed.savedAt || Date.now() - parsed.savedAt > cacheTtlMs) return null;
+        return parsed.value;
+      } catch {
+        return null;
+      }
+    };
+
+    const writeCache = (key: string, value: unknown) => {
+      try {
+        sessionStorage.setItem(`${cachePrefix}${key}`, JSON.stringify({ savedAt: Date.now(), value }));
+      } catch {
+        // sessionStorage can be disabled; conversion still works without cache.
+      }
+    };
+
+    const frankfurterProvider: RateProvider = {
+      id: 'frankfurter',
+      name: 'Frankfurter',
+      async listCurrencies() {
+        const cached = readCache<CurrencyMap>('currencies');
+        if (cached) return cached;
+
+        const response = await fetch('https://api.frankfurter.app/currencies');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const currencies = await response.json() as CurrencyMap;
+        writeCache('currencies', currencies);
+        return currencies;
+      },
+      async convert(amount, from, to) {
+        if (from === to) {
+          return { amount, base: from, date: new Date().toISOString().slice(0, 10), rates: { [to]: amount } };
+        }
+
+        const cacheKey = `rate:${amount}:${from}:${to}`;
+        const cached = readCache<RateResponse>(cacheKey);
+        if (cached) return cached;
+
+        const url = new URL('https://api.frankfurter.app/latest');
+        url.searchParams.set('amount', String(amount));
+        url.searchParams.set('from', from);
+        url.searchParams.set('to', to);
+
+        const response = await fetch(url.toString());
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json() as RateResponse;
+        writeCache(cacheKey, data);
+        return data;
+      }
+    };
+
+    const provider = frankfurterProvider;
+    let currencies: CurrencyMap = fallbackCurrencies;
+    let lastResultText = '';
+    let debounceTimer = 0;
+
+    const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => {
+      status.textContent = message;
+      status.classList.toggle('success', type === 'success');
+      status.classList.toggle('error', type === 'error');
+    };
+
+    const parseAmount = (value: string) => {
+      const trimmed = value.trim().replace(/\s/g, '');
+      const normalized = trimmed.includes(',') && trimmed.includes('.')
+        ? trimmed.replace(/\./g, '').replace(',', '.')
+        : trimmed.replace(',', '.');
+      const amount = Number(normalized);
+      return Number.isFinite(amount) ? amount : NaN;
+    };
+
+    const formatCurrency = (value: number, currency: string) => new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: Math.abs(value) >= 1000 ? 2 : 4
+    }).format(value);
+
+    const formatNumber = (value: number) => new Intl.NumberFormat(undefined, {
+      maximumFractionDigits: 8
+    }).format(value);
+
+    const createMetaCard = (label: string, value: string) => {
+      const card = document.createElement('div');
+      card.className = 'result-card';
+      const span = document.createElement('span');
+      span.textContent = label;
+      const strong = document.createElement('strong');
+      strong.textContent = value;
+      card.append(span, strong);
+      return card;
+    };
+
+    const fillCurrencySelect = (select: HTMLSelectElement, selected: string) => {
+      const options = Object.entries(currencies)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([code, name]) => {
+          const option = document.createElement('option');
+          option.value = code;
+          option.textContent = `${code} · ${name}`;
+          option.selected = code === selected;
+          return option;
+        });
+      select.replaceChildren(...options);
+    };
+
+    const renderFrequentPairs = () => {
+      frequentGrid.replaceChildren(...frequentPairs.map(([from, to]) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'quick-card';
+        const label = document.createElement('span');
+        label.textContent = `${currencies[from] || from} → ${currencies[to] || to}`;
+        const strong = document.createElement('strong');
+        strong.textContent = `${from} → ${to}`;
+        button.append(label, strong);
+        button.addEventListener('click', () => {
+          fromCurrency.value = from;
+          toCurrency.value = to;
+          convert();
+        });
+        return button;
+      }));
+    };
+
+    const setBusy = (busy: boolean) => {
+      convertBtn.disabled = busy;
+      swapBtn.disabled = busy;
+      convertBtn.textContent = busy ? 'Convirtiendo…' : 'Convertir';
+    };
+
+    const renderResult = (amount: number, data: RateResponse, from: string, to: string) => {
+      const converted = from === to ? amount : data.rates[to];
+      const rate = amount === 0 ? 0 : converted / amount;
+      const formattedSource = formatCurrency(amount, from);
+      const formattedTarget = formatCurrency(converted, to);
+
+      resultValue.textContent = formattedTarget;
+      rateDetails.textContent = `1 ${from} = ${formatNumber(rate)} ${to}`;
+      summaryText.textContent = `${formattedSource} equivalen a ${formattedTarget}.`;
+      metaGrid.replaceChildren(
+        createMetaCard('Proveedor', provider.name),
+        createMetaCard('Fecha del cambio', data.date || 'No disponible'),
+        createMetaCard('Moneda origen', from),
+        createMetaCard('Moneda destino', to)
+      );
+
+      lastResultText = [
+        'Conversión de divisas',
+        `Importe origen: ${formattedSource}`,
+        `Resultado: ${formattedTarget}`,
+        `Tipo: 1 ${from} = ${formatNumber(rate)} ${to}`,
+        `Proveedor: ${provider.name}`,
+        `Fecha del cambio: ${data.date || 'No disponible'}`
+      ].join('\n');
+    };
+
+    const convert = async () => {
+      const amount = parseAmount(amountInput.value);
+      const from = fromCurrency.value;
+      const to = toCurrency.value;
+
+      if (!Number.isFinite(amount)) {
+        setStatus('Introduce un importe válido.', 'error');
+        return;
+      }
+
+      if (amount < 0) {
+        setStatus('Introduce un importe igual o mayor que 0.', 'error');
+        return;
+      }
+
+      if (!from || !to) {
+        setStatus('Selecciona moneda origen y destino.', 'error');
+        return;
+      }
+
+      setBusy(true);
+      setStatus('Consultando tipo de cambio…');
+
+      try {
+        const data = await provider.convert(amount, from, to);
+        renderResult(amount, data, from, to);
+        setStatus(`Conversión realizada con ${provider.name}.`, 'success');
+      } catch (error) {
+        console.error(error);
+        setStatus(`No se pudo consultar ${provider.name}. Revisa la conexión o inténtalo de nuevo.`, 'error');
+      } finally {
+        setBusy(false);
+      }
+    };
+
+    const debouncedConvert = () => {
+      window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(convert, 350);
+    };
+
+    const init = async () => {
+      fillCurrencySelect(fromCurrency, 'EUR');
+      fillCurrencySelect(toCurrency, 'USD');
+      renderFrequentPairs();
+
+      try {
+        currencies = await provider.listCurrencies();
+        fillCurrencySelect(fromCurrency, fromCurrency.value || 'EUR');
+        fillCurrencySelect(toCurrency, toCurrency.value || 'USD');
+        renderFrequentPairs();
+        setStatus(`Monedas cargadas desde ${provider.name}.`, 'success');
+      } catch (error) {
+        console.error(error);
+        setStatus(`No se pudieron cargar las monedas desde ${provider.name}; se usa una lista local básica.`, 'error');
+      }
+
+      convert();
+    };
+
+    convertBtn.addEventListener('click', convert);
+    amountInput.addEventListener('input', debouncedConvert);
+    fromCurrency.addEventListener('change', convert);
+    toCurrency.addEventListener('change', convert);
+
+    [amountInput, fromCurrency, toCurrency].forEach((element) => {
+      element.addEventListener('keydown', (event) => {
+        if ((event as KeyboardEvent).key === 'Enter') convert();
+      });
+    });
+
+    swapBtn.addEventListener('click', () => {
+      const previousFrom = fromCurrency.value;
+      fromCurrency.value = toCurrency.value;
+      toCurrency.value = previousFrom;
+      convert();
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      if (!lastResultText) await convert();
+      try {
+        await navigator.clipboard.writeText(lastResultText);
+        setStatus('Resultado copiado.', 'success');
+      } catch {
+        setStatus('No se pudo copiar el resultado.', 'error');
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      amountInput.value = '';
+      fromCurrency.value = 'EUR';
+      toCurrency.value = 'USD';
+      resultValue.textContent = '—';
+      rateDetails.textContent = 'Sin conversión todavía.';
+      summaryText.textContent = 'Introduce un importe y elige monedas para convertir.';
+      metaGrid.replaceChildren();
+      lastResultText = '';
+      setStatus('Campos limpiados.', 'success');
+      amountInput.focus();
+    });
+
+    init();
+  </script>
+</Layout>
