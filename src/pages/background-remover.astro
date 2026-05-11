@@ -1,0 +1,391 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl } from '../i18n/ui';
+
+const lang = getLangFromUrl(Astro.url);
+const copy = {
+  en: {
+    title: 'Image background remover',
+    description: 'Remove the background from an image locally in your browser with Transformers.js.',
+    eyebrow: 'AI in your browser · local image',
+    hero: 'Upload an image and remove its background with an AI model running in the browser. The image stays on your device; only the model is downloaded the first time.',
+    uploadTitle: 'Upload image',
+    uploadText: 'Drag and drop an image or choose a PNG, JPG, JPEG or WebP file.',
+    choose: 'Choose image',
+    remove: 'Remove background',
+    download: 'Download PNG',
+    clear: 'Clear',
+    original: 'Original',
+    result: 'Transparent result',
+    noImage: 'Upload an image to start.',
+    loadingModel: 'Loading AI model. The first time can take a little longer because the browser downloads the model.',
+    processing: 'Removing background locally...',
+    ready: 'Ready.',
+    done: 'Background removed. You can download the transparent PNG.',
+    invalidFile: 'Choose a PNG, JPG, JPEG or WebP image.',
+    tooLarge: 'The image is too large. Use an image under 10 MB.',
+    copyPrivacyTitle: 'Privacy and model download',
+    copyPrivacyText: 'The image is processed in your browser and is not uploaded to a server. The first run downloads briaai/RMBG-1.4 through Transformers.js and the browser may cache it.',
+    model: 'Model: briaai/RMBG-1.4',
+    downloadError: 'There is no processed image to download yet.',
+    processError: 'Could not remove the background in this browser. Try a smaller image or a browser with WebGPU/WebAssembly support.',
+    cleared: 'Tool cleared.',
+    progress: 'Model download progress'
+  },
+  es: {
+    title: 'Quitar fondo de una imagen',
+    description: 'Elimina el fondo de una imagen localmente en el navegador con Transformers.js.',
+    eyebrow: 'IA en tu navegador · imagen local',
+    hero: 'Sube una imagen y elimina su fondo con un modelo de IA ejecutándose en el navegador. La imagen se queda en tu dispositivo; solo se descarga el modelo la primera vez.',
+    uploadTitle: 'Subir imagen',
+    uploadText: 'Arrastra una imagen o elige un archivo PNG, JPG, JPEG o WebP.',
+    choose: 'Elegir imagen',
+    remove: 'Quitar fondo',
+    download: 'Descargar PNG',
+    clear: 'Limpiar',
+    original: 'Original',
+    result: 'Resultado transparente',
+    noImage: 'Sube una imagen para empezar.',
+    loadingModel: 'Cargando el modelo de IA. La primera vez puede tardar algo más porque el navegador descarga el modelo.',
+    processing: 'Quitando fondo localmente...',
+    ready: 'Listo.',
+    done: 'Fondo eliminado. Ya puedes descargar el PNG transparente.',
+    invalidFile: 'Elige una imagen PNG, JPG, JPEG o WebP.',
+    tooLarge: 'La imagen es demasiado grande. Usa una imagen de menos de 10 MB.',
+    copyPrivacyTitle: 'Privacidad y descarga del modelo',
+    copyPrivacyText: 'La imagen se procesa en tu navegador y no se sube a ningún servidor. La primera ejecución descarga briaai/RMBG-1.4 mediante Transformers.js y el navegador puede cachearlo.',
+    model: 'Modelo: briaai/RMBG-1.4',
+    downloadError: 'Todavía no hay una imagen procesada para descargar.',
+    processError: 'No se pudo quitar el fondo en este navegador. Prueba con una imagen más pequeña o con un navegador compatible con WebGPU/WebAssembly.',
+    cleared: 'Herramienta limpiada.',
+    progress: 'Progreso de descarga del modelo'
+  }
+}[lang];
+---
+
+<Layout title={copy.title} description={copy.description} lang={lang} path="/background-remover/" translated={true}>
+  <section class="bg-remover-page">
+    <div class="eyebrow">{copy.eyebrow}</div>
+    <h1>{copy.title}</h1>
+    <p class="hero-text">{copy.hero}</p>
+
+    <section class="tool-card remover-tool" aria-labelledby="removerTitle">
+      <div class="tool-header">
+        <div>
+          <h2 id="removerTitle">{copy.uploadTitle}</h2>
+          <p>{copy.uploadText}</p>
+        </div>
+        <span class="model-badge">{copy.model}</span>
+      </div>
+
+      <label class="dropzone" id="dropzone" for="imageInput">
+        <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" />
+        <span>{copy.choose}</span>
+        <small>{copy.uploadText}</small>
+      </label>
+
+      <div class="toolbar" aria-label="Background remover actions">
+        <button class="primary" id="removeBtn" type="button">{copy.remove}</button>
+        <button id="downloadBtn" type="button">{copy.download}</button>
+        <button id="clearBtn" type="button">{copy.clear}</button>
+      </div>
+
+      <div class="progress-wrap" id="progressWrap" hidden>
+        <div class="progress-meta">
+          <span>{copy.progress}</span>
+          <strong id="progressText">0%</strong>
+        </div>
+        <progress id="progressBar" max="100" value="0"></progress>
+      </div>
+
+      <div class="notice" role="note">
+        <strong>{copy.copyPrivacyTitle}</strong>
+        <span>{copy.copyPrivacyText}</span>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">{copy.noImage}</p>
+
+      <div class="preview-grid">
+        <figure class="preview-card">
+          <figcaption>{copy.original}</figcaption>
+          <div class="preview-frame">
+            <img id="originalPreview" alt="" />
+            <span id="originalPlaceholder">{copy.original}</span>
+          </div>
+        </figure>
+
+        <figure class="preview-card">
+          <figcaption>{copy.result}</figcaption>
+          <div class="preview-frame transparent-frame">
+            <canvas id="resultCanvas"></canvas>
+            <span id="resultPlaceholder">{copy.result}</span>
+          </div>
+        </figure>
+      </div>
+    </section>
+  </section>
+
+  <script type="application/json" id="bgRemoverCopy" set:html={JSON.stringify(copy)}></script>
+
+  <style>
+    .bg-remover-page{padding:clamp(2rem,6vw,4rem) 0}.remover-tool{display:grid;gap:var(--space-4)}.tool-header{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4)}.tool-header h2{margin:0 0 var(--space-2);font-size:clamp(1.25rem,2vw,1.6rem)}.tool-header p,.status,.notice{margin:0;color:var(--color-text-muted,var(--muted));line-height:1.7}.model-badge{display:inline-flex;white-space:nowrap;border:1px solid color-mix(in srgb,var(--color-primary,var(--primary)) 35%,var(--color-border,var(--border)));border-radius:var(--radius-full,999px);padding:.55rem .75rem;background:var(--color-primary-soft,rgba(34,211,238,.12));color:var(--color-text);font-weight:900;font-size:.82rem}.dropzone{display:grid;place-items:center;gap:.45rem;min-height:180px;border:1px dashed var(--color-border-strong,var(--border));border-radius:var(--radius-2xl,24px);background:color-mix(in srgb,var(--color-surface,#020617) 88%,transparent);cursor:pointer;text-align:center;padding:1.5rem;transition:border-color var(--transition-fast),background-color var(--transition-fast),transform var(--transition-fast)}.dropzone:hover,.dropzone.dragover{border-color:var(--color-primary,var(--primary));background:var(--color-primary-soft,rgba(34,211,238,.1));transform:translateY(-1px)}.dropzone input{position:absolute;inline-size:1px;block-size:1px;opacity:0;pointer-events:none}.dropzone span{font-weight:950;color:var(--color-text);font-size:1.15rem}.dropzone small{color:var(--color-text-muted,var(--muted));line-height:1.6}.toolbar{display:flex;gap:var(--space-2);flex-wrap:wrap}button{border-radius:var(--radius-lg,14px);border:1px solid var(--color-border,var(--border));background:var(--color-surface,#020617);color:var(--color-text,#fff);padding:.85rem 1rem;font:inherit;font-weight:850;cursor:pointer;transition:transform var(--transition-fast),border-color var(--transition-fast),opacity var(--transition-fast)}button:hover:not(:disabled){transform:translateY(-1px);border-color:var(--color-primary,var(--primary))}button.primary{background:var(--color-primary,var(--primary));color:#020617;border-color:transparent}button:disabled{opacity:.62;cursor:wait}.notice{display:grid;gap:.25rem;padding:1rem;border:1px solid var(--color-border,var(--border));border-radius:var(--radius-xl,18px);background:color-mix(in srgb,var(--color-surface,#020617) 92%,transparent)}.notice strong{color:var(--color-text)}.status.success{color:#86efac}.status.error{color:#fca5a5;white-space:pre-wrap}.progress-wrap{display:grid;gap:.45rem}.progress-meta{display:flex;justify-content:space-between;gap:1rem;color:var(--color-text-muted,var(--muted));font-weight:800}.progress-meta strong{color:var(--color-text)}progress{width:100%;height:.85rem;border:0;border-radius:999px;overflow:hidden;background:var(--color-surface,#020617)}progress::-webkit-progress-bar{background:var(--color-surface,#020617);border-radius:999px}progress::-webkit-progress-value{background:var(--color-primary,var(--primary));border-radius:999px}progress::-moz-progress-bar{background:var(--color-primary,var(--primary));border-radius:999px}.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)}.preview-card{margin:0;display:grid;gap:.65rem}.preview-card figcaption{font-weight:900;color:var(--color-text-muted,var(--muted))}.preview-frame{position:relative;display:grid;place-items:center;min-height:360px;border:1px solid var(--color-border,var(--border));border-radius:var(--radius-2xl,24px);background:#020617;overflow:hidden}.transparent-frame{background-color:#111827;background-image:linear-gradient(45deg,rgba(255,255,255,.08) 25%,transparent 25%),linear-gradient(-45deg,rgba(255,255,255,.08) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,rgba(255,255,255,.08) 75%),linear-gradient(-45deg,transparent 75%,rgba(255,255,255,.08) 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}img,canvas{max-width:100%;max-height:520px;display:none}img.visible,canvas.visible{display:block}.preview-frame span{color:var(--color-text-muted,var(--muted));font-weight:800;text-align:center;padding:1rem}.preview-frame span.hidden{display:none}@media(max-width:900px){.tool-header,.preview-grid{grid-template-columns:1fr;display:grid}.model-badge{white-space:normal}.toolbar button{width:100%}.preview-frame{min-height:260px}}
+  </style>
+
+  <script>
+    import { pipeline, env } from '@huggingface/transformers';
+
+    type Segmenter = (input: string | HTMLImageElement) => Promise<unknown>;
+    type RawMask = { data?: Uint8ClampedArray | Uint8Array | Float32Array; width?: number; height?: number; channels?: number; toCanvas?: () => HTMLCanvasElement };
+
+    const copy = JSON.parse(document.getElementById('bgRemoverCopy')?.textContent || '{}') as Record<string, string>;
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    const MODEL_ID = 'briaai/RMBG-1.4';
+
+    env.allowLocalModels = false;
+    env.allowRemoteModels = true;
+
+    const imageInput = document.getElementById('imageInput') as HTMLInputElement;
+    const dropzone = document.getElementById('dropzone') as HTMLLabelElement;
+    const removeBtn = document.getElementById('removeBtn') as HTMLButtonElement;
+    const downloadBtn = document.getElementById('downloadBtn') as HTMLButtonElement;
+    const clearBtn = document.getElementById('clearBtn') as HTMLButtonElement;
+    const originalPreview = document.getElementById('originalPreview') as HTMLImageElement;
+    const originalPlaceholder = document.getElementById('originalPlaceholder') as HTMLSpanElement;
+    const resultCanvas = document.getElementById('resultCanvas') as HTMLCanvasElement;
+    const resultPlaceholder = document.getElementById('resultPlaceholder') as HTMLSpanElement;
+    const status = document.getElementById('status') as HTMLParagraphElement;
+    const progressWrap = document.getElementById('progressWrap') as HTMLDivElement;
+    const progressBar = document.getElementById('progressBar') as HTMLProgressElement;
+    const progressText = document.getElementById('progressText') as HTMLElement;
+
+    let selectedFile: File | null = null;
+    let selectedUrl = '';
+    let segmenterPromise: Promise<Segmenter> | null = null;
+    let hasResult = false;
+
+    const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => {
+      status.textContent = message;
+      status.classList.toggle('success', type === 'success');
+      status.classList.toggle('error', type === 'error');
+    };
+
+    const setBusy = (busy: boolean) => {
+      removeBtn.disabled = busy;
+      imageInput.disabled = busy;
+      removeBtn.textContent = busy ? copy.processing : copy.remove;
+    };
+
+    const setProgress = (progress: number) => {
+      const value = Math.max(0, Math.min(100, Math.round(progress)));
+      progressWrap.hidden = value <= 0 || value >= 100;
+      progressBar.value = value;
+      progressText.textContent = `${value}%`;
+    };
+
+    const resetResult = () => {
+      hasResult = false;
+      resultCanvas.classList.remove('visible');
+      resultPlaceholder.classList.remove('hidden');
+      const context = resultCanvas.getContext('2d');
+      context?.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
+    };
+
+    const loadImageFile = (file: File) => {
+      if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+        setStatus(copy.invalidFile, 'error');
+        return;
+      }
+
+      if (file.size > MAX_FILE_SIZE) {
+        setStatus(copy.tooLarge, 'error');
+        return;
+      }
+
+      selectedFile = file;
+      if (selectedUrl) URL.revokeObjectURL(selectedUrl);
+      selectedUrl = URL.createObjectURL(file);
+      originalPreview.src = selectedUrl;
+      originalPreview.classList.add('visible');
+      originalPlaceholder.classList.add('hidden');
+      resetResult();
+      setStatus(copy.ready, 'success');
+    };
+
+    const getSegmenter = async () => {
+      if (!segmenterPromise) {
+        setStatus(copy.loadingModel);
+        segmenterPromise = pipeline('image-segmentation', MODEL_ID, {
+          progress_callback: (event: { status?: string; progress?: number }) => {
+            if (typeof event.progress === 'number') setProgress(event.progress);
+          }
+        }) as Promise<Segmenter>;
+      }
+      return segmenterPromise;
+    };
+
+    const waitForImage = (image: HTMLImageElement) => new Promise<void>((resolve, reject) => {
+      if (image.complete && image.naturalWidth > 0) resolve();
+      else {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error('Image load failed'));
+      }
+    });
+
+    const getMaskFromOutput = (output: unknown): RawMask | null => {
+      if (!output) return null;
+      if (Array.isArray(output)) {
+        const firstWithMask = output.find((item) => item?.mask) || output[0];
+        return (firstWithMask?.mask || firstWithMask) as RawMask;
+      }
+      const objectOutput = output as { mask?: RawMask; masks?: RawMask[] };
+      return objectOutput.mask || objectOutput.masks?.[0] || output as RawMask;
+    };
+
+    const drawMaskToCanvas = (mask: RawMask, width: number, height: number) => {
+      if (typeof mask.toCanvas === 'function') {
+        const canvas = mask.toCanvas();
+        const resized = document.createElement('canvas');
+        resized.width = width;
+        resized.height = height;
+        const ctx = resized.getContext('2d', { willReadFrequently: true });
+        if (!ctx) throw new Error('Canvas context unavailable');
+        ctx.drawImage(canvas, 0, 0, width, height);
+        return ctx.getImageData(0, 0, width, height).data;
+      }
+
+      if (!mask.data || !mask.width || !mask.height) throw new Error('Unsupported mask output');
+
+      const source = document.createElement('canvas');
+      source.width = mask.width;
+      source.height = mask.height;
+      const sourceCtx = source.getContext('2d', { willReadFrequently: true });
+      if (!sourceCtx) throw new Error('Canvas context unavailable');
+
+      const channels = mask.channels || (mask.data.length / (mask.width * mask.height));
+      const maskImage = sourceCtx.createImageData(mask.width, mask.height);
+      for (let i = 0; i < mask.width * mask.height; i += 1) {
+        const value = channels >= 4
+          ? mask.data[i * channels + 3]
+          : channels >= 3
+            ? (Number(mask.data[i * channels]) + Number(mask.data[i * channels + 1]) + Number(mask.data[i * channels + 2])) / 3
+            : Number(mask.data[i]);
+        const alpha = value <= 1 ? value * 255 : value;
+        maskImage.data[i * 4] = alpha;
+        maskImage.data[i * 4 + 1] = alpha;
+        maskImage.data[i * 4 + 2] = alpha;
+        maskImage.data[i * 4 + 3] = 255;
+      }
+      sourceCtx.putImageData(maskImage, 0, 0);
+
+      const resized = document.createElement('canvas');
+      resized.width = width;
+      resized.height = height;
+      const resizedCtx = resized.getContext('2d', { willReadFrequently: true });
+      if (!resizedCtx) throw new Error('Canvas context unavailable');
+      resizedCtx.drawImage(source, 0, 0, width, height);
+      return resizedCtx.getImageData(0, 0, width, height).data;
+    };
+
+    const applyMask = (image: HTMLImageElement, mask: RawMask) => {
+      const width = image.naturalWidth;
+      const height = image.naturalHeight;
+      resultCanvas.width = width;
+      resultCanvas.height = height;
+
+      const context = resultCanvas.getContext('2d', { willReadFrequently: true });
+      if (!context) throw new Error('Canvas context unavailable');
+
+      context.clearRect(0, 0, width, height);
+      context.drawImage(image, 0, 0, width, height);
+      const imageData = context.getImageData(0, 0, width, height);
+      const maskData = drawMaskToCanvas(mask, width, height);
+
+      for (let i = 0; i < width * height; i += 1) {
+        imageData.data[i * 4 + 3] = maskData[i * 4];
+      }
+
+      context.putImageData(imageData, 0, 0);
+      resultCanvas.classList.add('visible');
+      resultPlaceholder.classList.add('hidden');
+      hasResult = true;
+    };
+
+    const removeBackground = async () => {
+      if (!selectedFile || !selectedUrl) {
+        setStatus(copy.noImage, 'error');
+        return;
+      }
+
+      try {
+        setBusy(true);
+        setProgress(1);
+        await waitForImage(originalPreview);
+        const segmenter = await getSegmenter();
+        setProgress(100);
+        setStatus(copy.processing);
+        const output = await segmenter(selectedUrl);
+        const mask = getMaskFromOutput(output);
+        if (!mask) throw new Error('No mask returned');
+        applyMask(originalPreview, mask);
+        setStatus(copy.done, 'success');
+      } catch (error) {
+        console.error(error);
+        setStatus(copy.processError, 'error');
+      } finally {
+        setBusy(false);
+        setProgress(100);
+      }
+    };
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files?.[0];
+      if (file) loadImageFile(file);
+    });
+
+    ['dragenter', 'dragover'].forEach((eventName) => {
+      dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach((eventName) => {
+      dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (event) => {
+      const file = event.dataTransfer?.files?.[0];
+      if (file) loadImageFile(file);
+    });
+
+    removeBtn.addEventListener('click', removeBackground);
+
+    downloadBtn.addEventListener('click', () => {
+      if (!hasResult) {
+        setStatus(copy.downloadError, 'error');
+        return;
+      }
+      const link = document.createElement('a');
+      link.download = 'image-without-background.png';
+      link.href = resultCanvas.toDataURL('image/png');
+      document.body.append(link);
+      link.click();
+      link.remove();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      selectedFile = null;
+      if (selectedUrl) URL.revokeObjectURL(selectedUrl);
+      selectedUrl = '';
+      imageInput.value = '';
+      originalPreview.removeAttribute('src');
+      originalPreview.classList.remove('visible');
+      originalPlaceholder.classList.remove('hidden');
+      resetResult();
+      setStatus(copy.cleared);
+    });
+  </script>
+</Layout>
