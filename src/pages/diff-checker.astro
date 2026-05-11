@@ -1,229 +1,478 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl } from '../i18n/ui';
 
-const title = 'Diff checker';
+const lang = getLangFromUrl(Astro.url);
+const copy = {
+  en: {
+    title: 'Visual text diff checker',
+    description: 'Compare two texts locally with line and word-level visual differences.',
+    eyebrow: '100% local',
+    hero: 'Paste an original and a modified version to see added, removed and changed lines. Everything runs in your browser and your text never leaves your device.',
+    original: 'Original text',
+    modified: 'Modified text',
+    originalPlaceholder: 'Paste the original text here...',
+    modifiedPlaceholder: 'Paste the modified text here...',
+    compare: 'Compare texts',
+    swap: 'Swap',
+    copySummary: 'Copy summary',
+    exportTxt: 'Export .txt',
+    exportPatch: 'Export .patch',
+    clear: 'Clear',
+    ignoreCase: 'Ignore case',
+    ignoreWhitespace: 'Ignore whitespace',
+    wordDiff: 'Show word-level changes',
+    limits: 'Maximum recommended size: 300 KB per text.',
+    results: 'Diff result',
+    added: 'Added',
+    removed: 'Removed',
+    changed: 'Changed',
+    unchanged: 'Unchanged',
+    summary: 'Summary',
+    lines: 'Lines',
+    chars: 'Characters',
+    size: 'Size',
+    ready: 'Ready.',
+    comparing: 'Comparing texts...',
+    compared: 'Comparison ready.',
+    identical: 'No differences found.',
+    tooLarge: 'The content is too large. Reduce each text below 300 KB to avoid blocking the browser.',
+    copied: 'Summary copied.',
+    copyError: 'Could not copy. The summary is selected so you can copy it manually.',
+    noResult: 'Compare texts before exporting or copying.',
+    downloaded: 'Diff downloaded.',
+    cleared: 'Content cleared.',
+    empty: 'The visual diff will appear here.',
+    localNoticeTitle: 'Privacy',
+    localNoticeText: 'This tool does not make network requests and does not execute the text you paste.'
+  },
+  es: {
+    title: 'Comparador visual de textos',
+    description: 'Compara dos textos localmente con diferencias visuales por línea y palabra.',
+    eyebrow: '100% local',
+    hero: 'Pega una versión original y una modificada para ver líneas añadidas, eliminadas y cambiadas. Todo se ejecuta en tu navegador y el texto no sale de tu dispositivo.',
+    original: 'Texto original',
+    modified: 'Texto modificado',
+    originalPlaceholder: 'Pega aquí el texto original...',
+    modifiedPlaceholder: 'Pega aquí el texto modificado...',
+    compare: 'Comparar textos',
+    swap: 'Intercambiar',
+    copySummary: 'Copiar resumen',
+    exportTxt: 'Exportar .txt',
+    exportPatch: 'Exportar .patch',
+    clear: 'Limpiar',
+    ignoreCase: 'Ignorar mayúsculas/minúsculas',
+    ignoreWhitespace: 'Ignorar espacios en blanco',
+    wordDiff: 'Mostrar cambios por palabra',
+    limits: 'Tamaño máximo recomendado: 300 KB por texto.',
+    results: 'Resultado del diff',
+    added: 'Añadidas',
+    removed: 'Eliminadas',
+    changed: 'Modificadas',
+    unchanged: 'Sin cambios',
+    summary: 'Resumen',
+    lines: 'Líneas',
+    chars: 'Caracteres',
+    size: 'Tamaño',
+    ready: 'Listo.',
+    comparing: 'Comparando textos...',
+    compared: 'Comparación lista.',
+    identical: 'No se han encontrado diferencias.',
+    tooLarge: 'El contenido es demasiado grande. Reduce cada texto por debajo de 300 KB para evitar bloquear el navegador.',
+    copied: 'Resumen copiado.',
+    copyError: 'No se pudo copiar. El resumen queda seleccionado para que lo copies manualmente.',
+    noResult: 'Compara los textos antes de exportar o copiar.',
+    downloaded: 'Diff descargado.',
+    cleared: 'Contenido eliminado.',
+    empty: 'Aquí aparecerá el diff visual.',
+    localNoticeTitle: 'Privacidad',
+    localNoticeText: 'Esta herramienta no hace llamadas de red y no ejecuta el texto que pegues.'
+  }
+}[lang];
 ---
 
-<Layout title={title}>
-  <section style="padding: 4rem 0;">
-    <div class="eyebrow">Alon Tools</div>
+<Layout title={copy.title} description={copy.description} lang={lang} path="/diff-checker/" translated={true}>
+  <section class="diff-page">
+    <div class="eyebrow">{copy.eyebrow}</div>
+    <h1>{copy.title}</h1>
+    <p class="hero-text">{copy.hero}</p>
 
-    <h1>{title}</h1>
+    <section class="tool-card diff-tool" aria-labelledby="diffToolTitle">
+      <div class="tool-header">
+        <div>
+          <h2 id="diffToolTitle">{copy.results}</h2>
+          <p>{copy.limits}</p>
+        </div>
+      </div>
 
-    <p class="hero-text">
-      Compara dos textos y visualiza rápidamente diferencias, líneas añadidas y eliminadas.
-    </p>
+      <div class="options-grid" aria-label="Diff options">
+        <label class="check-option">
+          <input id="ignoreCase" type="checkbox" />
+          <span>{copy.ignoreCase}</span>
+        </label>
+        <label class="check-option">
+          <input id="ignoreWhitespace" type="checkbox" />
+          <span>{copy.ignoreWhitespace}</span>
+        </label>
+        <label class="check-option">
+          <input id="wordDiff" type="checkbox" checked />
+          <span>{copy.wordDiff}</span>
+        </label>
+      </div>
 
-    <section class="tool-card">
-      <div class="toolbar">
-        <button class="primary" id="compareBtn">Comparar textos</button>
-        <button id="swapBtn">Intercambiar</button>
-        <button id="clearBtn">Limpiar</button>
+      <div class="toolbar" aria-label="Diff actions">
+        <button class="primary" id="compareBtn" type="button">{copy.compare}</button>
+        <button id="swapBtn" type="button">{copy.swap}</button>
+        <button id="copyBtn" type="button">{copy.copySummary}</button>
+        <button id="exportTxtBtn" type="button">{copy.exportTxt}</button>
+        <button id="exportPatchBtn" type="button">{copy.exportPatch}</button>
+        <button id="clearBtn" type="button">{copy.clear}</button>
+      </div>
+
+      <div class="notice" role="note">
+        <strong>{copy.localNoticeTitle}</strong>
+        <span>{copy.localNoticeText}</span>
       </div>
 
       <div class="editor-grid">
-        <div class="editor-panel">
-          <span>Texto original</span>
-          <textarea id="leftInput" placeholder="Pega aquí el texto original..."></textarea>
-        </div>
+        <label class="editor-panel" for="leftInput">
+          <span>{copy.original}</span>
+          <textarea id="leftInput" spellcheck="false" placeholder={copy.originalPlaceholder}></textarea>
+        </label>
 
-        <div class="editor-panel">
-          <span>Texto modificado</span>
-          <textarea id="rightInput" placeholder="Pega aquí el texto modificado..."></textarea>
-        </div>
+        <label class="editor-panel" for="rightInput">
+          <span>{copy.modified}</span>
+          <textarea id="rightInput" spellcheck="false" placeholder={copy.modifiedPlaceholder}></textarea>
+        </label>
       </div>
 
-      <div class="results-panel">
-        <div class="legend">
-          <div><span class="dot added"></span> Añadido</div>
-          <div><span class="dot removed"></span> Eliminado</div>
-          <div><span class="dot unchanged"></span> Sin cambios</div>
-        </div>
-
-        <pre id="diffOutput">Aquí aparecerán las diferencias.</pre>
+      <div class="stats-grid" aria-label="Text statistics">
+        <output class="stat-card" id="leftStats">{copy.original}: 0 {copy.lines}</output>
+        <output class="stat-card" id="rightStats">{copy.modified}: 0 {copy.lines}</output>
+        <output class="stat-card" id="diffStats">{copy.summary}: —</output>
       </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">{copy.ready}</p>
+
+      <section class="results-panel" aria-labelledby="visualDiffTitle">
+        <div class="results-header">
+          <h2 id="visualDiffTitle">{copy.results}</h2>
+          <div class="legend" aria-label="Diff legend">
+            <span><i class="dot added"></i>{copy.added}</span>
+            <span><i class="dot removed"></i>{copy.removed}</span>
+            <span><i class="dot changed"></i>{copy.changed}</span>
+            <span><i class="dot unchanged"></i>{copy.unchanged}</span>
+          </div>
+        </div>
+        <div class="diff-output" id="diffOutput" tabindex="0">{copy.empty}</div>
+      </section>
     </section>
   </section>
 
+  <script type="application/json" id="diffCopy" set:html={JSON.stringify(copy)}></script>
+
   <style>
-    .toolbar {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-
-    button {
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: #020617;
-      color: white;
-      padding: 1rem;
-      cursor: pointer;
-      font: inherit;
-    }
-
-    button.primary {
-      background: var(--primary);
-      color: black;
-      border: none;
-      font-weight: 700;
-    }
-
-    .editor-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
-      gap: 1rem;
-    }
-
-    .editor-panel {
-      display: flex;
-      flex-direction: column;
-      gap: .5rem;
-    }
-
-    .editor-panel span {
-      color: var(--muted);
-      font-size: .92rem;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 360px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      background: #020617;
-      color: white;
-      padding: 1rem;
-      font-family: ui-monospace, monospace;
-      line-height: 1.6;
-      resize: vertical;
-    }
-
-    .results-panel {
-      margin-top: 1.5rem;
-      border-radius: 24px;
-      border: 1px solid var(--border);
-      background: rgba(2,6,23,.55);
-      overflow: hidden;
-    }
-
-    .legend {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      padding: 1rem;
-      border-bottom: 1px solid var(--border);
-      color: var(--muted);
-      font-size: .92rem;
-    }
-
-    .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 999px;
-      display: inline-block;
-      margin-right: .4rem;
-    }
-
-    .dot.added {
-      background: #22c55e;
-    }
-
-    .dot.removed {
-      background: #ef4444;
-    }
-
-    .dot.unchanged {
-      background: #64748b;
-    }
-
-    pre {
-      margin: 0;
-      padding: 1rem;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-      line-height: 1.7;
-      font-family: ui-monospace, monospace;
-    }
-
-    .line {
-      display: block;
-      padding: .2rem .5rem;
-      border-radius: 8px;
-    }
-
-    .line.added {
-      background: rgba(34,197,94,.15);
-      color: #86efac;
-    }
-
-    .line.removed {
-      background: rgba(239,68,68,.15);
-      color: #fca5a5;
-    }
-
-    .line.unchanged {
-      color: #cbd5e1;
-    }
+    .diff-page{padding:clamp(2rem,6vw,4rem) 0}.diff-tool{display:grid;gap:var(--space-4)}.tool-header{display:flex;justify-content:space-between;gap:var(--space-4);align-items:flex-start}.tool-header h2{margin:0 0 var(--space-2);font-size:clamp(1.25rem,2vw,1.6rem)}.tool-header p,.status,.notice{margin:0;color:var(--color-text-muted,var(--muted));line-height:1.7}.options-grid{display:flex;gap:var(--space-2);flex-wrap:wrap}.check-option{display:flex;align-items:center;gap:.55rem;border:1px solid var(--color-border,var(--border));border-radius:var(--radius-full,999px);background:color-mix(in srgb,var(--color-surface,#020617) 92%,transparent);padding:.7rem .9rem;color:var(--color-text-muted,var(--muted));font-weight:800;cursor:pointer}.check-option input{width:1.1rem;height:1.1rem;accent-color:var(--color-primary,var(--primary))}.toolbar{display:flex;gap:var(--space-2);flex-wrap:wrap}button{border-radius:var(--radius-lg,14px);border:1px solid var(--color-border,var(--border));background:var(--color-surface,#020617);color:var(--color-text,#fff);padding:.85rem 1rem;font:inherit;font-weight:800;cursor:pointer;transition:transform var(--transition-fast),border-color var(--transition-fast)}button:hover:not(:disabled){transform:translateY(-1px);border-color:var(--color-primary,var(--primary))}button.primary{background:var(--color-primary,var(--primary));color:#020617;border-color:transparent}.notice{display:grid;gap:.25rem;padding:1rem;border:1px solid var(--color-border,var(--border));border-radius:var(--radius-xl,18px);background:color-mix(in srgb,var(--color-surface,#020617) 92%,transparent)}.notice strong{color:var(--color-text)}.editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}.editor-panel{display:grid;gap:.55rem;color:var(--color-text-muted,var(--muted));font-weight:800}textarea{width:100%;min-height:340px;border-radius:var(--radius-xl,18px);border:1px solid var(--color-border,var(--border));background:#020617;color:#e5e7eb;padding:1rem;font:500 .95rem/1.65 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;resize:vertical;tab-size:2;white-space:pre;overflow:auto}.stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3)}.stat-card{border:1px solid var(--color-border,var(--border));border-radius:var(--radius-lg,14px);background:color-mix(in srgb,var(--color-surface,#020617) 92%,transparent);color:var(--color-text-muted,var(--muted));padding:.85rem 1rem;font-weight:800}.status.success{color:#86efac}.status.error{color:#fca5a5;white-space:pre-wrap}.results-panel{border-radius:var(--radius-2xl,24px);border:1px solid var(--color-border,var(--border));background:rgba(2,6,23,.55);overflow:hidden}.results-header{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap;padding:1rem;border-bottom:1px solid var(--color-border,var(--border))}.results-header h2{margin:0;font-size:1rem}.legend{display:flex;gap:.85rem;flex-wrap:wrap;color:var(--color-text-muted,var(--muted));font-size:.9rem}.legend span{display:inline-flex;align-items:center;gap:.35rem}.dot{width:.75rem;height:.75rem;border-radius:999px;display:inline-block}.dot.added{background:#22c55e}.dot.removed{background:#ef4444}.dot.changed{background:#f59e0b}.dot.unchanged{background:#64748b}.diff-output{max-height:720px;overflow:auto;padding:.75rem;font:500 .92rem/1.55 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;color:#cbd5e1}.diff-row{display:grid;grid-template-columns:4.5rem 2rem 1fr;gap:.5rem;align-items:start;padding:.2rem .45rem;border-radius:.7rem;white-space:pre-wrap;word-break:break-word}.diff-row + .diff-row{margin-top:.15rem}.diff-row.added{background:rgba(34,197,94,.13);color:#bbf7d0}.diff-row.removed{background:rgba(239,68,68,.13);color:#fecaca}.diff-row.changed{background:rgba(245,158,11,.14);color:#fde68a}.diff-row.unchanged{color:#cbd5e1}.line-number{color:#94a3b8;user-select:none}.line-prefix{font-weight:900;user-select:none}.word-added{background:rgba(34,197,94,.35);border-radius:.3rem;padding:.08rem .15rem}.word-removed{background:rgba(239,68,68,.35);border-radius:.3rem;padding:.08rem .15rem;text-decoration:line-through}.empty-diff{padding:1rem;color:var(--color-text-muted,var(--muted))}@media(max-width:900px){.editor-grid,.stats-grid{grid-template-columns:1fr}.results-header{align-items:flex-start}button,.check-option{width:100%;justify-content:center}.diff-output{padding:.5rem}.diff-row{grid-template-columns:3.4rem 1.4rem 1fr;font-size:.84rem}textarea{min-height:260px}}
   </style>
 
   <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const left = document.getElementById('leftInput');
-      const right = document.getElementById('rightInput');
-      const output = document.getElementById('diffOutput');
+    type DiffStatus = 'added' | 'removed' | 'changed' | 'unchanged';
+    type DiffRow = { type: DiffStatus; leftNumber?: number; rightNumber?: number; left?: string; right?: string; text?: string };
 
-      const escapeHtml = (text) =>
-        text
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
+    const copy = JSON.parse(document.getElementById('diffCopy')?.textContent || '{}') as Record<string, string>;
+    const MAX_TEXT_BYTES = 300 * 1024;
 
-      const renderDiff = () => {
-        const leftLines = left.value.split('\n');
-        const rightLines = right.value.split('\n');
+    const leftInput = document.getElementById('leftInput') as HTMLTextAreaElement;
+    const rightInput = document.getElementById('rightInput') as HTMLTextAreaElement;
+    const ignoreCase = document.getElementById('ignoreCase') as HTMLInputElement;
+    const ignoreWhitespace = document.getElementById('ignoreWhitespace') as HTMLInputElement;
+    const wordDiff = document.getElementById('wordDiff') as HTMLInputElement;
+    const compareBtn = document.getElementById('compareBtn') as HTMLButtonElement;
+    const swapBtn = document.getElementById('swapBtn') as HTMLButtonElement;
+    const copyBtn = document.getElementById('copyBtn') as HTMLButtonElement;
+    const exportTxtBtn = document.getElementById('exportTxtBtn') as HTMLButtonElement;
+    const exportPatchBtn = document.getElementById('exportPatchBtn') as HTMLButtonElement;
+    const clearBtn = document.getElementById('clearBtn') as HTMLButtonElement;
+    const output = document.getElementById('diffOutput') as HTMLDivElement;
+    const status = document.getElementById('status') as HTMLParagraphElement;
+    const leftStats = document.getElementById('leftStats') as HTMLOutputElement;
+    const rightStats = document.getElementById('rightStats') as HTMLOutputElement;
+    const diffStats = document.getElementById('diffStats') as HTMLOutputElement;
 
-        const max = Math.max(leftLines.length, rightLines.length);
+    let latestRows: DiffRow[] = [];
+    let latestSummary = '';
+    let latestPatch = '';
 
-        let html = '';
+    const setStatus = (message: string, type: 'default' | 'success' | 'error' = 'default') => {
+      status.textContent = message;
+      status.classList.toggle('success', type === 'success');
+      status.classList.toggle('error', type === 'error');
+    };
 
-        for (let i = 0; i < max; i++) {
-          const a = leftLines[i] ?? '';
-          const b = rightLines[i] ?? '';
+    const byteSize = (value: string) => new Blob([value]).size;
+    const formatBytes = (bytes: number) => bytes < 1024 ? `${bytes} B` : bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+    const lineCount = (value: string) => value ? value.split('\n').length : 0;
 
-          if (a === b) {
-            html += `<span class="line unchanged">  ${escapeHtml(a)}</span>`;
-            continue;
-          }
+    const updateStats = () => {
+      const leftBytes = byteSize(leftInput.value);
+      const rightBytes = byteSize(rightInput.value);
+      leftStats.textContent = `${copy.original}: ${lineCount(leftInput.value)} ${copy.lines}, ${leftInput.value.length} ${copy.chars}, ${formatBytes(leftBytes)}`;
+      rightStats.textContent = `${copy.modified}: ${lineCount(rightInput.value)} ${copy.lines}, ${rightInput.value.length} ${copy.chars}, ${formatBytes(rightBytes)}`;
+    };
 
-          if (a) {
-            html += `<span class="line removed">- ${escapeHtml(a)}</span>`;
-          }
+    const normalizeLine = (value: string) => {
+      let result = value;
+      if (ignoreWhitespace.checked) result = result.replace(/\s+/g, ' ').trim();
+      if (ignoreCase.checked) result = result.toLocaleLowerCase();
+      return result;
+    };
 
-          if (b) {
-            html += `<span class="line added">+ ${escapeHtml(b)}</span>`;
-          }
+    const escapeHtml = (value: string) => value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+    const buildLcsTable = (left: string[], right: string[]) => {
+      const rows = left.length + 1;
+      const cols = right.length + 1;
+      const table = Array.from({ length: rows }, () => new Uint16Array(cols));
+
+      for (let i = left.length - 1; i >= 0; i -= 1) {
+        for (let j = right.length - 1; j >= 0; j -= 1) {
+          table[i][j] = left[i] === right[j]
+            ? table[i + 1][j + 1] + 1
+            : Math.max(table[i + 1][j], table[i][j + 1]);
+        }
+      }
+
+      return table;
+    };
+
+    const diffLines = (leftLines: string[], rightLines: string[]) => {
+      const normalizedLeft = leftLines.map(normalizeLine);
+      const normalizedRight = rightLines.map(normalizeLine);
+      const table = buildLcsTable(normalizedLeft, normalizedRight);
+      const rows: DiffRow[] = [];
+      let i = 0;
+      let j = 0;
+
+      while (i < leftLines.length && j < rightLines.length) {
+        if (normalizedLeft[i] === normalizedRight[j]) {
+          rows.push({ type: 'unchanged', leftNumber: i + 1, rightNumber: j + 1, text: leftLines[i] });
+          i += 1;
+          j += 1;
+        } else if (table[i + 1][j] >= table[i][j + 1]) {
+          rows.push({ type: 'removed', leftNumber: i + 1, left: leftLines[i] });
+          i += 1;
+        } else {
+          rows.push({ type: 'added', rightNumber: j + 1, right: rightLines[j] });
+          j += 1;
+        }
+      }
+
+      while (i < leftLines.length) rows.push({ type: 'removed', leftNumber: i + 1, left: leftLines[i++] });
+      while (j < rightLines.length) rows.push({ type: 'added', rightNumber: j + 1, right: rightLines[j++] });
+
+      return mergeChangedRows(rows);
+    };
+
+    const similarity = (left: string, right: string) => {
+      const a = normalizeLine(left);
+      const b = normalizeLine(right);
+      if (!a && !b) return 1;
+      if (!a || !b) return 0;
+      let matches = 0;
+      const length = Math.min(a.length, b.length);
+      for (let i = 0; i < length; i += 1) if (a[i] === b[i]) matches += 1;
+      return matches / Math.max(a.length, b.length);
+    };
+
+    const mergeChangedRows = (rows: DiffRow[]) => {
+      const merged: DiffRow[] = [];
+      for (let i = 0; i < rows.length; i += 1) {
+        const current = rows[i];
+        const next = rows[i + 1];
+        if (current.type === 'removed' && next?.type === 'added' && similarity(current.left || '', next.right || '') >= 0.2) {
+          merged.push({ type: 'changed', leftNumber: current.leftNumber, rightNumber: next.rightNumber, left: current.left, right: next.right });
+          i += 1;
+        } else {
+          merged.push(current);
+        }
+      }
+      return merged;
+    };
+
+    const tokenizeWords = (value: string) => value.match(/\s+|[^\s]+/g) || [];
+
+    const renderWordDiff = (left: string, right: string) => {
+      const leftWords = tokenizeWords(left);
+      const rightWords = tokenizeWords(right);
+      const normalizedLeft = leftWords.map(normalizeLine);
+      const normalizedRight = rightWords.map(normalizeLine);
+      const table = buildLcsTable(normalizedLeft, normalizedRight);
+      let i = 0;
+      let j = 0;
+      let leftHtml = '';
+      let rightHtml = '';
+
+      while (i < leftWords.length && j < rightWords.length) {
+        if (normalizedLeft[i] === normalizedRight[j]) {
+          leftHtml += escapeHtml(leftWords[i]);
+          rightHtml += escapeHtml(rightWords[j]);
+          i += 1;
+          j += 1;
+        } else if (table[i + 1][j] >= table[i][j + 1]) {
+          leftHtml += `<span class="word-removed">${escapeHtml(leftWords[i])}</span>`;
+          i += 1;
+        } else {
+          rightHtml += `<span class="word-added">${escapeHtml(rightWords[j])}</span>`;
+          j += 1;
+        }
+      }
+
+      while (i < leftWords.length) leftHtml += `<span class="word-removed">${escapeHtml(leftWords[i++])}</span>`;
+      while (j < rightWords.length) rightHtml += `<span class="word-added">${escapeHtml(rightWords[j++])}</span>`;
+
+      return { leftHtml, rightHtml };
+    };
+
+    const renderRows = (rows: DiffRow[]) => {
+      if (!rows.length || rows.every((row) => row.type === 'unchanged')) {
+        output.innerHTML = `<div class="empty-diff">${escapeHtml(copy.identical)}</div>`;
+        return;
+      }
+
+      output.innerHTML = rows.map((row) => {
+        if (row.type === 'changed') {
+          const words = wordDiff.checked ? renderWordDiff(row.left || '', row.right || '') : null;
+          return [
+            `<div class="diff-row changed"><span class="line-number">-${row.leftNumber ?? ''}</span><span class="line-prefix">~</span><span>${words ? words.leftHtml : escapeHtml(row.left || '')}</span></div>`,
+            `<div class="diff-row changed"><span class="line-number">+${row.rightNumber ?? ''}</span><span class="line-prefix">~</span><span>${words ? words.rightHtml : escapeHtml(row.right || '')}</span></div>`
+          ].join('');
         }
 
-        output.innerHTML = html || 'No hay diferencias.';
-      };
+        const lineNumber = row.type === 'added' ? `+${row.rightNumber ?? ''}` : row.type === 'removed' ? `-${row.leftNumber ?? ''}` : `${row.leftNumber ?? ''}`;
+        const prefix = row.type === 'added' ? '+' : row.type === 'removed' ? '-' : ' ';
+        const text = row.type === 'added' ? row.right : row.type === 'removed' ? row.left : row.text;
+        return `<div class="diff-row ${row.type}"><span class="line-number">${lineNumber}</span><span class="line-prefix">${prefix}</span><span>${escapeHtml(text || '')}</span></div>`;
+      }).join('');
+    };
 
-      document.getElementById('compareBtn').onclick = renderDiff;
+    const buildSummary = (rows: DiffRow[]) => {
+      const added = rows.filter((row) => row.type === 'added').length;
+      const removed = rows.filter((row) => row.type === 'removed').length;
+      const changed = rows.filter((row) => row.type === 'changed').length;
+      const unchanged = rows.filter((row) => row.type === 'unchanged').length;
+      return { added, removed, changed, unchanged };
+    };
 
-      document.getElementById('swapBtn').onclick = () => {
-        const temp = left.value;
-        left.value = right.value;
-        right.value = temp;
-        renderDiff();
-      };
+    const buildPatch = (rows: DiffRow[]) => {
+      const lines = ['--- original.txt', '+++ modified.txt'];
+      rows.forEach((row) => {
+        if (row.type === 'unchanged') lines.push(` ${row.text ?? ''}`);
+        if (row.type === 'removed') lines.push(`-${row.left ?? ''}`);
+        if (row.type === 'added') lines.push(`+${row.right ?? ''}`);
+        if (row.type === 'changed') {
+          lines.push(`-${row.left ?? ''}`);
+          lines.push(`+${row.right ?? ''}`);
+        }
+      });
+      return `${lines.join('\n')}\n`;
+    };
 
-      document.getElementById('clearBtn').onclick = () => {
-        left.value = '';
-        right.value = '';
-        output.textContent = 'Aquí aparecerán las diferencias.';
-      };
+    const runComparison = async () => {
+      if (byteSize(leftInput.value) > MAX_TEXT_BYTES || byteSize(rightInput.value) > MAX_TEXT_BYTES) {
+        setStatus(copy.tooLarge, 'error');
+        return;
+      }
+
+      compareBtn.disabled = true;
+      setStatus(copy.comparing);
+
+      window.setTimeout(() => {
+        const leftLines = leftInput.value.split('\n');
+        const rightLines = rightInput.value.split('\n');
+        latestRows = diffLines(leftLines, rightLines);
+        const summary = buildSummary(latestRows);
+        latestSummary = `${copy.summary}: ${copy.added}: ${summary.added}, ${copy.removed}: ${summary.removed}, ${copy.changed}: ${summary.changed}, ${copy.unchanged}: ${summary.unchanged}`;
+        latestPatch = buildPatch(latestRows);
+        diffStats.textContent = latestSummary;
+        renderRows(latestRows);
+        setStatus(summary.added || summary.removed || summary.changed ? copy.compared : copy.identical, 'success');
+        compareBtn.disabled = false;
+      }, 0);
+    };
+
+    const download = (extension: 'txt' | 'patch') => {
+      if (!latestRows.length) {
+        setStatus(copy.noResult, 'error');
+        return;
+      }
+      const body = extension === 'patch'
+        ? latestPatch
+        : `${latestSummary}\n\n${latestPatch}`;
+      const blob = new Blob([body], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `text-diff.${extension}`;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setStatus(copy.downloaded, 'success');
+    };
+
+    compareBtn.addEventListener('click', runComparison);
+    [ignoreCase, ignoreWhitespace, wordDiff].forEach((element) => element.addEventListener('change', () => {
+      if (leftInput.value || rightInput.value) runComparison();
+    }));
+    [leftInput, rightInput].forEach((element) => element.addEventListener('input', updateStats));
+
+    swapBtn.addEventListener('click', () => {
+      const previous = leftInput.value;
+      leftInput.value = rightInput.value;
+      rightInput.value = previous;
+      updateStats();
+      runComparison();
     });
+
+    copyBtn.addEventListener('click', async () => {
+      if (!latestSummary) {
+        setStatus(copy.noResult, 'error');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(`${latestSummary}\n\n${latestPatch}`);
+        setStatus(copy.copied, 'success');
+      } catch {
+        output.focus();
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(output);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        setStatus(copy.copyError, 'error');
+      }
+    });
+
+    exportTxtBtn.addEventListener('click', () => download('txt'));
+    exportPatchBtn.addEventListener('click', () => download('patch'));
+
+    clearBtn.addEventListener('click', () => {
+      leftInput.value = '';
+      rightInput.value = '';
+      latestRows = [];
+      latestSummary = '';
+      latestPatch = '';
+      output.textContent = copy.empty;
+      diffStats.textContent = `${copy.summary}: —`;
+      updateStats();
+      setStatus(copy.cleared);
+      leftInput.focus();
+    });
+
+    updateStats();
   </script>
 </Layout>
