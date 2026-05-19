@@ -1,4 +1,4 @@
-# AGENTS.md
+# agents.md
 
 ## Regla principal
 
@@ -79,7 +79,7 @@ Formato recomendado:
 
 Trabaja en este repositorio: [añade aquí la URL del repositorio].
 
-Resuelve esta issue manteniendo todas las condiciones descritas en `AGENTS.md`: ficheros pequeños, arquitectura modular de juego, Canvas responsive, `requestAnimationFrame`, separación entre `update` y `render`, controles móviles/teclado, accesibilidad, rendimiento, compatibilidad con raíz/subruta y checks útiles.
+Resuelve esta issue manteniendo todas las condiciones descritas en `agents.md`: ficheros pequeños, arquitectura modular de juego, Canvas responsive, `requestAnimationFrame`, separación entre `update` y `render`, controles móviles/teclado, accesibilidad, rendimiento, compatibilidad con raíz/subruta y checks útiles.
 
 [Describe aquí la tarea concreta, comportamiento esperado, escenas afectadas, assets necesarios y criterios de aceptación.]
 

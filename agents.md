@@ -1,4 +1,4 @@
-# AGENTS.md
+# agents.md
 
 ## Regla principal
 
