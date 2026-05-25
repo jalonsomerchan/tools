@@ -1,0 +1,251 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl } from '../i18n/ui';
+
+const lang = getLangFromUrl(Astro.url);
+const es = lang === 'es';
+const title = es ? 'Comparador JSON' : 'JSON compare';
+const description = es
+  ? 'Compara dos JSON localmente en tu navegador y detecta claves añadidas, eliminadas y modificadas sin subir datos.'
+  : 'Compare two JSON documents locally in your browser and detect added, removed and changed paths without uploads.';
+const ui = {
+  eyebrow: '100% local',
+  hero: es
+    ? 'Pega dos documentos JSON, compáralos por rutas y revisa diferencias de objetos, arrays y valores sin enviar nada a servidores.'
+    : 'Paste two JSON documents, compare them by path and review object, array and value differences without sending anything to servers.',
+  left: es ? 'JSON original' : 'Original JSON',
+  right: es ? 'JSON modificado' : 'Changed JSON',
+  result: es ? 'Resultado de la comparación' : 'Comparison result',
+  options: es ? 'Opciones' : 'Options',
+  sortKeys: es ? 'Ordenar claves de objetos antes de comparar' : 'Sort object keys before comparing',
+  includeEqual: es ? 'Mostrar rutas sin cambios' : 'Show unchanged paths',
+  actions: {
+    compare: es ? 'Comparar JSON' : 'Compare JSON',
+    format: es ? 'Formatear ambos' : 'Format both',
+    sample: es ? 'Ejemplo' : 'Sample',
+    clear: es ? 'Limpiar' : 'Clear',
+    copy: es ? 'Copiar informe' : 'Copy report'
+  },
+  stats: {
+    added: es ? 'Añadidos' : 'Added',
+    removed: es ? 'Eliminados' : 'Removed',
+    changed: es ? 'Modificados' : 'Changed',
+    equal: es ? 'Iguales' : 'Equal'
+  },
+  table: {
+    status: es ? 'Estado' : 'Status',
+    path: es ? 'Ruta' : 'Path',
+    original: es ? 'Original' : 'Original',
+    changed: es ? 'Modificado' : 'Changed'
+  },
+  placeholders: {
+    left: es ? 'Pega aquí el JSON original...' : 'Paste the original JSON here...',
+    right: es ? 'Pega aquí el JSON modificado...' : 'Paste the changed JSON here...'
+  },
+  messages: {
+    ready: es ? 'Listo para comparar.' : 'Ready to compare.',
+    pasteBoth: es ? 'Pega los dos JSON antes de comparar.' : 'Paste both JSON documents before comparing.',
+    invalidLeft: es ? 'El JSON original no es válido.' : 'The original JSON is invalid.',
+    invalidRight: es ? 'El JSON modificado no es válido.' : 'The changed JSON is invalid.',
+    compared: es ? 'Comparación actualizada.' : 'Comparison updated.',
+    formatted: es ? 'Ambos JSON se han formateado.' : 'Both JSON documents were formatted.',
+    copied: es ? 'Informe copiado al portapapeles.' : 'Report copied to clipboard.',
+    copyError: es ? 'No se pudo copiar. El informe queda seleccionado.' : 'Could not copy. The report has been selected.',
+    cleared: es ? 'Contenido eliminado.' : 'Content cleared.',
+    sample: es ? 'Ejemplo cargado.' : 'Sample loaded.',
+    noDiff: es ? 'No hay diferencias.' : 'No differences found.'
+  }
+};
+---
+
+<Layout title={title} description={description} lang={lang} path="/json-compare/" translated={true}>
+  <section class="json-compare-page">
+    <div class="eyebrow">{ui.eyebrow}</div>
+    <h1>{title}</h1>
+    <p class="hero-text">{ui.hero}</p>
+
+    <section class="tool-card compare-tool" aria-label={title}>
+      <div class="toolbar" aria-label={ui.options}>
+        <label class="option"><input id="sortKeys" type="checkbox" checked /> <span>{ui.sortKeys}</span></label>
+        <label class="option"><input id="includeEqual" type="checkbox" /> <span>{ui.includeEqual}</span></label>
+        <div class="actions">
+          <button id="compareBtn" type="button" class="primary-action">{ui.actions.compare}</button>
+          <button id="formatBtn" type="button">{ui.actions.format}</button>
+          <button id="sampleBtn" type="button">{ui.actions.sample}</button>
+          <button id="copyBtn" type="button">{ui.actions.copy}</button>
+          <button id="clearBtn" type="button">{ui.actions.clear}</button>
+        </div>
+      </div>
+
+      <div class="editor-grid">
+        <label class="editor-pane" for="leftInput">
+          <span>{ui.left}</span>
+          <textarea id="leftInput" spellcheck="false" placeholder={ui.placeholders.left}></textarea>
+        </label>
+        <label class="editor-pane" for="rightInput">
+          <span>{ui.right}</span>
+          <textarea id="rightInput" spellcheck="false" placeholder={ui.placeholders.right}></textarea>
+        </label>
+      </div>
+
+      <section class="result-panel" aria-labelledby="resultTitle">
+        <div class="result-heading">
+          <h2 id="resultTitle">{ui.result}</h2>
+          <p id="status" role="status" aria-live="polite">{ui.messages.ready}</p>
+        </div>
+
+        <dl class="summary-grid" aria-label={ui.result}>
+          <div class="summary-added"><dt>{ui.stats.added}</dt><dd id="addedCount">0</dd></div>
+          <div class="summary-removed"><dt>{ui.stats.removed}</dt><dd id="removedCount">0</dd></div>
+          <div class="summary-changed"><dt>{ui.stats.changed}</dt><dd id="changedCount">0</dd></div>
+          <div><dt>{ui.stats.equal}</dt><dd id="equalCount">0</dd></div>
+        </dl>
+
+        <div class="diff-table-wrap">
+          <table class="diff-table">
+            <thead>
+              <tr>
+                <th>{ui.table.status}</th>
+                <th>{ui.table.path}</th>
+                <th>{ui.table.original}</th>
+                <th>{ui.table.changed}</th>
+              </tr>
+            </thead>
+            <tbody id="diffBody">
+              <tr><td colspan="4" class="empty-cell">{ui.messages.ready}</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <textarea id="reportOutput" class="report-output" readonly spellcheck="false" aria-label={ui.actions.copy}></textarea>
+      </section>
+    </section>
+  </section>
+
+  <style>
+    .json-compare-page{padding:clamp(2.5rem,6vw,4rem) 0}.compare-tool{padding:clamp(1rem,3vw,1.35rem);margin-top:2rem}.toolbar{display:grid;grid-template-columns:1fr;gap:var(--space-3);padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-xl);background:color-mix(in srgb,var(--color-surface) 92%,transparent);box-shadow:var(--shadow-xs)}.option{display:flex;align-items:center;gap:.55rem;color:var(--color-text-muted);font-weight:800}.option input{width:1.05rem;height:1.05rem;accent-color:var(--color-primary)}.actions{display:flex;flex-wrap:wrap;gap:.5rem}.actions button{min-height:2.55rem;border-radius:var(--radius-full);border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);padding:.65rem .9rem;cursor:pointer;font-weight:900;box-shadow:var(--shadow-xs);transition:transform var(--transition-fast),border-color var(--transition-base),background-color var(--transition-base)}.actions button:hover{transform:translateY(-1px);border-color:var(--color-border-strong)}.actions .primary-action{background:var(--color-primary);border-color:transparent;color:#fff}[data-theme='dark'] .actions .primary-action{color:#020617}.editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);margin-top:var(--space-4)}.editor-pane{display:flex;min-width:0;flex-direction:column;overflow:hidden;border:1px solid var(--color-border);border-radius:var(--radius-xl);background:#111827;box-shadow:var(--shadow-xs)}.editor-pane span{display:flex;align-items:center;min-height:2.75rem;padding:.55rem .8rem;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:#fff;font-weight:950}.editor-pane textarea{width:100%;min-height:420px;resize:vertical;border:0;background:#111827;color:#e5e7eb;padding:1rem;font-family:var(--font-mono);font-size:.94rem;line-height:1.55;tab-size:2}.editor-pane textarea[data-invalid='true']{outline:2px solid rgba(252,165,165,.65);outline-offset:-2px}.result-panel{margin-top:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-xl);background:var(--color-surface);overflow:hidden}.result-heading{display:flex;justify-content:space-between;gap:var(--space-4);align-items:flex-start;padding:var(--space-4);border-bottom:1px solid var(--color-border)}.result-heading h2{margin:0;font-size:1.2rem}.result-heading p{margin:0;color:var(--color-text-muted);white-space:pre-wrap}.summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem;margin:0;padding:var(--space-4);border-bottom:1px solid var(--color-border)}.summary-grid div{display:flex;justify-content:space-between;gap:.75rem;padding:.8rem;border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface-soft)}.summary-grid dt{color:var(--color-text-muted);font-weight:850}.summary-grid dd{margin:0;color:var(--color-text);font-weight:950}.summary-added{border-color:color-mix(in srgb,var(--color-success) 35%,var(--color-border))!important}.summary-removed{border-color:color-mix(in srgb,var(--color-danger) 35%,var(--color-border))!important}.summary-changed{border-color:color-mix(in srgb,var(--color-warning) 35%,var(--color-border))!important}.diff-table-wrap{max-height:520px;overflow:auto;background:#111827}.diff-table{width:100%;border-collapse:collapse;min-width:860px;font-family:var(--font-mono);font-size:.9rem}.diff-table th,.diff-table td{padding:.65rem .75rem;border-bottom:1px solid rgba(255,255,255,.12);text-align:left;vertical-align:top}.diff-table th{position:sticky;top:0;z-index:1;background:#1f2937;color:#dbeafe}.diff-table td{color:#e5e7eb}.empty-cell{text-align:center!important;color:#9ca3af!important;font-family:var(--font-sans)}.badge{display:inline-flex;align-items:center;border-radius:var(--radius-full);padding:.18rem .55rem;font-family:var(--font-sans);font-weight:950;font-size:.78rem}.badge-added{background:rgba(34,197,94,.16);color:#86efac}.badge-removed{background:rgba(248,113,113,.16);color:#fca5a5}.badge-changed{background:rgba(251,191,36,.16);color:#fde68a}.badge-equal{background:rgba(148,163,184,.16);color:#cbd5e1}.value-cell{max-width:32rem;white-space:pre-wrap;word-break:break-word}.path-cell{color:#93c5fd!important;font-weight:850;white-space:nowrap}.report-output{position:absolute;inline-size:1px;block-size:1px;opacity:.01;pointer-events:none}@media(min-width:840px){.toolbar{grid-template-columns:repeat(2,max-content) 1fr;align-items:center}.actions{justify-content:flex-end}}@media(max-width:920px){.editor-grid{grid-template-columns:1fr}.editor-pane textarea{min-height:320px}.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.result-heading{display:block}.result-heading p{margin-top:.35rem}.actions button{flex:1 1 calc(50% - .5rem)}}@media(max-width:560px){.summary-grid{grid-template-columns:1fr}.actions button{flex-basis:100%}.compare-tool{margin-inline:-.35rem}.diff-table{font-size:.84rem}}
+  </style>
+
+  <script define:vars={{ copy: ui }}>
+    window.addEventListener('DOMContentLoaded', () => {
+      const leftInput = document.getElementById('leftInput');
+      const rightInput = document.getElementById('rightInput');
+      const sortKeys = document.getElementById('sortKeys');
+      const includeEqual = document.getElementById('includeEqual');
+      const status = document.getElementById('status');
+      const diffBody = document.getElementById('diffBody');
+      const reportOutput = document.getElementById('reportOutput');
+      const counters = {
+        added: document.getElementById('addedCount'),
+        removed: document.getElementById('removedCount'),
+        changed: document.getElementById('changedCount'),
+        equal: document.getElementById('equalCount')
+      };
+      const sampleLeft = { app: 'Alon Tools', version: 1, settings: { theme: 'light', language: 'es', beta: false }, tools: [{ id: 'json-viewer', enabled: true }, { id: 'xml-formatter', enabled: true }] };
+      const sampleRight = { app: 'Alon Tools', version: 2, settings: { theme: 'dark', language: 'es' }, tools: [{ id: 'json-viewer', enabled: true }, { id: 'json-compare', enabled: true }], updatedAt: '2026-05-25' };
+      const setStatus = (message, error = false) => { status.textContent = message; status.style.color = error ? 'var(--color-danger)' : 'var(--color-text-muted)'; };
+      const getType = (value) => value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value;
+      const safeStringify = (value) => JSON.stringify(value, null, 2);
+      const normalize = (value) => {
+        if (!sortKeys.checked || value === null || typeof value !== 'object' || Array.isArray(value)) return Array.isArray(value) ? value.map(normalize) : value;
+        return Object.keys(value).sort((a, b) => a.localeCompare(b)).reduce((acc, key) => {
+          acc[key] = normalize(value[key]);
+          return acc;
+        }, {});
+      };
+      const keyToPath = (base, key) => typeof key === 'number'
+        ? `${base}[${key}]`
+        : /^[A-Za-z_$][\w$]*$/.test(key) ? `${base}.${key}` : `${base}[${JSON.stringify(key)}]`;
+      const flatten = (value, path = '$', map = new Map()) => {
+        map.set(path, { value, type: getType(value), text: safeStringify(value) });
+        if (Array.isArray(value)) value.forEach((item, index) => flatten(item, keyToPath(path, index), map));
+        else if (value && typeof value === 'object') Object.entries(value).forEach(([key, child]) => flatten(child, keyToPath(path, key), map));
+        return map;
+      };
+      const parseJson = (input, invalidMessage) => {
+        input.dataset.invalid = 'false';
+        try { return normalize(JSON.parse(input.value)); }
+        catch (error) { input.dataset.invalid = 'true'; throw new Error(`${invalidMessage}\n${error.message}`); }
+      };
+      const resetCounters = () => Object.values(counters).forEach((node) => { node.textContent = '0'; });
+      const renderEmpty = (message) => { diffBody.innerHTML = ''; const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 4; td.className = 'empty-cell'; td.textContent = message; tr.append(td); diffBody.append(tr); };
+      const makeBadge = (type) => { const span = document.createElement('span'); span.className = `badge badge-${type}`; span.textContent = type; return span; };
+      const formatValue = (entry) => entry ? entry.text : '—';
+      const compare = () => {
+        if (!leftInput.value.trim() || !rightInput.value.trim()) { setStatus(copy.messages.pasteBoth, true); return; }
+        let left;
+        let right;
+        try {
+          left = parseJson(leftInput, copy.messages.invalidLeft);
+          right = parseJson(rightInput, copy.messages.invalidRight);
+        } catch (error) {
+          setStatus(error.message, true);
+          return;
+        }
+        rightInput.dataset.invalid = 'false';
+        const leftMap = flatten(left);
+        const rightMap = flatten(right);
+        const paths = [...new Set([...leftMap.keys(), ...rightMap.keys()])].sort((a, b) => a.localeCompare(b));
+        const rows = [];
+        const counts = { added: 0, removed: 0, changed: 0, equal: 0 };
+        paths.forEach((path) => {
+          const leftEntry = leftMap.get(path);
+          const rightEntry = rightMap.get(path);
+          let type = 'equal';
+          if (!leftEntry) type = 'added';
+          else if (!rightEntry) type = 'removed';
+          else if (leftEntry.type !== rightEntry.type || leftEntry.text !== rightEntry.text) type = 'changed';
+          counts[type] += 1;
+          if (type !== 'equal' || includeEqual.checked) rows.push({ type, path, left: leftEntry, right: rightEntry });
+        });
+        Object.entries(counts).forEach(([key, value]) => { counters[key].textContent = String(value); });
+        diffBody.innerHTML = '';
+        if (!rows.length) renderEmpty(copy.messages.noDiff);
+        rows.slice(0, 600).forEach((row) => {
+          const tr = document.createElement('tr');
+          const statusCell = document.createElement('td');
+          const pathCell = document.createElement('td');
+          const leftCell = document.createElement('td');
+          const rightCell = document.createElement('td');
+          pathCell.className = 'path-cell';
+          leftCell.className = 'value-cell';
+          rightCell.className = 'value-cell';
+          statusCell.append(makeBadge(row.type));
+          pathCell.textContent = row.path;
+          leftCell.textContent = formatValue(row.left);
+          rightCell.textContent = formatValue(row.right);
+          tr.append(statusCell, pathCell, leftCell, rightCell);
+          diffBody.append(tr);
+        });
+        const report = [
+          `${copy.stats.added}: ${counts.added}`,
+          `${copy.stats.removed}: ${counts.removed}`,
+          `${copy.stats.changed}: ${counts.changed}`,
+          `${copy.stats.equal}: ${counts.equal}`,
+          '',
+          ...rows.map((row) => `[${row.type}] ${row.path}\n- ${formatValue(row.left)}\n+ ${formatValue(row.right)}`)
+        ].join('\n');
+        reportOutput.value = report;
+        setStatus(copy.messages.compared);
+      };
+      document.getElementById('compareBtn').onclick = compare;
+      document.getElementById('formatBtn').onclick = () => {
+        try {
+          if (leftInput.value.trim()) leftInput.value = safeStringify(normalize(JSON.parse(leftInput.value)));
+          if (rightInput.value.trim()) rightInput.value = safeStringify(normalize(JSON.parse(rightInput.value)));
+          leftInput.dataset.invalid = 'false'; rightInput.dataset.invalid = 'false';
+          setStatus(copy.messages.formatted);
+          compare();
+        } catch { setStatus(copy.messages.invalidLeft, true); }
+      };
+      document.getElementById('sampleBtn').onclick = () => { leftInput.value = safeStringify(sampleLeft); rightInput.value = safeStringify(sampleRight); setStatus(copy.messages.sample); compare(); };
+      document.getElementById('clearBtn').onclick = () => { leftInput.value = ''; rightInput.value = ''; reportOutput.value = ''; leftInput.dataset.invalid = 'false'; rightInput.dataset.invalid = 'false'; resetCounters(); renderEmpty(copy.messages.ready); setStatus(copy.messages.cleared); };
+      document.getElementById('copyBtn').onclick = async () => {
+        if (!reportOutput.value.trim()) compare();
+        try { await navigator.clipboard.writeText(reportOutput.value); setStatus(copy.messages.copied); }
+        catch { reportOutput.focus(); reportOutput.select(); setStatus(copy.messages.copyError, true); }
+      };
+      [sortKeys, includeEqual].forEach((input) => input.addEventListener('change', () => { if (leftInput.value.trim() && rightInput.value.trim()) compare(); }));
+      [leftInput, rightInput].forEach((input) => input.addEventListener('keydown', (event) => { if (event.key === 'Tab') { event.preventDefault(); input.setRangeText('  ', input.selectionStart, input.selectionEnd, 'end'); } }));
+    });
+  </script>
+</Layout>
