@@ -142,6 +142,23 @@ const menuLabel = t('nav.menu');
     max-width: calc(100vw - (var(--page-gutter) * 2));
   }
 
+  .json-compare-page .textarea-highlights,
+  .json-compare-page .textarea-highlights li,
+  .json-compare-page .textarea-highlights li * {
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+    text-shadow: none !important;
+    font-size: 0 !important;
+    user-select: none !important;
+  }
+
+  .json-compare-page .textarea-highlights li::marker,
+  .json-compare-page .textarea-highlights li::before,
+  .json-compare-page .textarea-highlights li::after {
+    content: '' !important;
+    color: transparent !important;
+  }
+
   main .tool-card,
   main .card {
     padding: clamp(1rem, 3vw, 1.5rem);
