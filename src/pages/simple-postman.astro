@@ -5,227 +5,116 @@ import { getLangFromUrl } from '../i18n/ui';
 const lang = getLangFromUrl(Astro.url);
 const es = lang === 'es';
 const title = 'SimplePostman';
-const description = es
-  ? 'Cliente HTTP ligero en el navegador para preparar peticiones, generar cURL y ver respuestas.'
-  : 'A lightweight browser HTTP client to prepare requests, generate cURL and inspect responses.';
-const copy = {
-  text: es ? 'Prueba APIs desde el navegador con método, URL, headers, auth, body, cURL y respuesta.' : 'Test APIs from the browser with method, URL, headers, auth, body, cURL and response.',
-  privacy: es ? 'Se ejecuta en tu navegador' : 'Runs in your browser',
-  cors: es ? 'Puede depender de CORS' : 'May depend on CORS',
-  method: es ? 'Método' : 'Method',
-  url: 'URL',
-  request: es ? 'Petición' : 'Request',
-  response: es ? 'Respuesta' : 'Response',
-  headers: 'Headers',
-  auth: 'Auth',
-  body: 'Body',
-  curl: 'cURL',
-  noAuth: es ? 'Sin auth' : 'No auth',
-  bearer: 'Bearer token',
-  basic: 'Basic auth',
-  noneBody: es ? 'Sin body' : 'No body',
-  bodyType: es ? 'Tipo de body' : 'Body type',
-  addHeader: es ? 'Añadir header' : 'Add header',
-  send: es ? 'Enviar' : 'Send',
-  sending: es ? 'Enviando...' : 'Sending...',
-  generateCurl: es ? 'Generar cURL' : 'Generate cURL',
-  copyCurl: es ? 'Copiar cURL' : 'Copy cURL',
-  copyResponse: es ? 'Copiar respuesta' : 'Copy response',
-  clear: es ? 'Limpiar' : 'Clear',
-  importCurl: es ? 'Importar cURL' : 'Import cURL',
-  parseCurl: es ? 'Leer cURL' : 'Parse cURL',
-  status: es ? 'Estado' : 'Status',
-  time: es ? 'Tiempo' : 'Time',
-  size: es ? 'Tamaño' : 'Size',
-  examples: es ? 'Ejemplos rápidos' : 'Quick examples',
-  examplesList: [
-    ['GET JSONPlaceholder', 'GET', 'https://jsonplaceholder.typicode.com/posts/1'],
-    ['GET GitHub', 'GET', 'https://api.github.com/repos/jalonsomerchan/tools'],
-    ['POST test', 'POST', 'https://jsonplaceholder.typicode.com/posts']
-  ],
-  tabs: { pretty: es ? 'bonito' : 'pretty', raw: 'raw', headers: 'headers' },
-  placeholders: {
-    url: 'https://jsonplaceholder.typicode.com/posts/1',
-    headerName: 'Content-Type',
-    headerValue: 'application/json',
-    token: es ? 'Pega aquí el token' : 'Paste token here',
-    username: es ? 'usuario' : 'username',
-    password: es ? 'contraseña' : 'password',
-    body: '{\n  "title": "Hola",\n  "body": "Probando SimplePostman"\n}',
-    curl: 'curl -X POST https://api.example.com/posts -H "Content-Type: application/json" -d \'{"title":"Hola"}\''
-  },
-  messages: {
-    ready: es ? 'Listo para preparar una petición.' : 'Ready to prepare a request.',
-    invalidUrl: es ? 'La URL debe empezar por http:// o https://.' : 'URL must start with http:// or https://.',
-    getBody: es ? 'GET y HEAD no envían body. Se ignorará el contenido.' : 'GET and HEAD do not send a body. Body will be ignored.',
-    invalidJson: es ? 'El body JSON no es válido.' : 'JSON body is not valid.',
-    done: es ? 'Petición completada.' : 'Request completed.',
-    fetchError: es ? 'No se pudo completar la petición. Puede ser CORS, red, certificado o URL.' : 'The request could not be completed. It may be caused by CORS, network, certificate or URL issues.',
-    curlCopied: es ? 'cURL copiado.' : 'cURL copied.',
-    responseCopied: es ? 'Respuesta copiada.' : 'Response copied.',
-    curlGenerated: es ? 'cURL generado.' : 'cURL generated.',
-    curlEmpty: es ? 'Pega primero un comando cURL.' : 'Paste a cURL command first.',
-    curlInvalid: es ? 'No parece un cURL válido.' : 'This does not look like a valid cURL.',
-    curlParsed: es ? 'cURL importado. Revisa la petición antes de enviar.' : 'cURL imported. Review the request before sending.',
-    cleared: es ? 'Contenido limpiado.' : 'Content cleared.'
-  }
+const description = es ? 'Cliente HTTP ligero para probar APIs desde el navegador.' : 'Lightweight HTTP client to test APIs from the browser.';
+const t = {
+  intro: es ? 'Prepara peticiones HTTP, genera cURL y revisa respuestas sin salir del navegador.' : 'Prepare HTTP requests, generate cURL and inspect responses without leaving the browser.',
+  method: es ? 'Método' : 'Method', url: 'URL', send: es ? 'Enviar' : 'Send', curl: 'cURL', request: es ? 'Petición' : 'Request', response: es ? 'Respuesta' : 'Response', headers: 'Headers', auth: 'Auth', body: 'Body', addHeader: es ? 'Añadir header' : 'Add header', clear: es ? 'Limpiar' : 'Clear', format: es ? 'Generar cURL' : 'Generate cURL', copy: es ? 'Copiar' : 'Copy', importCurl: es ? 'Importar cURL' : 'Import cURL', parseCurl: es ? 'Leer cURL' : 'Parse cURL', status: es ? 'Estado' : 'Status', time: es ? 'Tiempo' : 'Time', size: es ? 'Tamaño' : 'Size',
+  noAuth: es ? 'Sin auth' : 'No auth', bearer: 'Bearer token', basic: 'Basic auth', noBody: es ? 'Sin body' : 'No body', bodyType: es ? 'Tipo de body' : 'Body type',
+  ready: es ? 'Listo para preparar una petición.' : 'Ready to prepare a request.', invalidUrl: es ? 'La URL debe empezar por http:// o https://.' : 'URL must start with http:// or https://.', invalidJson: es ? 'El body JSON no es válido.' : 'JSON body is not valid.', done: es ? 'Petición completada.' : 'Request completed.', fetchError: es ? 'No se pudo completar la petición. Puede ser CORS o red.' : 'Request could not be completed. It may be CORS or network.', copied: es ? 'Copiado.' : 'Copied.', cleared: es ? 'Contenido limpiado.' : 'Cleared.', curlParsed: es ? 'cURL importado.' : 'cURL imported.',
+  bodyPlaceholder: '{\n  "title": "Hola",\n  "body": "Probando SimplePostman"\n}'
 };
 ---
 
 <Layout title={title} description={description} lang={lang} path="/simple-postman/" translated={true}>
-  <section class="postman-page">
+  <section class="sp-page">
     <h1>{title}</h1>
-    <p class="hero-text">{copy.text}</p>
+    <p class="hero-text">{t.intro}</p>
 
-    <div class="trust-row" aria-label="Tool notes">
-      <span>🧭 {copy.privacy}</span>
-      <span>🛡️ {copy.cors}</span>
-    </div>
-
-    <section class="tool-card postman-tool" aria-label={title}>
-      <div class="request-bar" aria-label="Request builder">
-        <label class="method-wrap">
-          <span>{copy.method}</span>
-          <select id="methodSelect" aria-label={copy.method}>
-            <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>HEAD</option><option>OPTIONS</option>
-          </select>
-        </label>
-        <label class="url-wrap">
-          <span>{copy.url}</span>
-          <input id="urlInput" type="url" placeholder={copy.placeholders.url} autocomplete="url" aria-label={copy.url} />
-        </label>
-        <button id="sendBtn" class="primary send-button" type="button"><span aria-hidden="true">🚀</span> <span>{copy.send}</span></button>
-        <button id="curlBtn" type="button"><span aria-hidden="true">⌘</span> <span>{copy.generateCurl}</span></button>
+    <section class="tool-card sp-tool" aria-label={title}>
+      <div class="topbar">
+        <label><span>{t.method}</span><select id="method"><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>HEAD</option><option>OPTIONS</option></select></label>
+        <label class="url"><span>{t.url}</span><input id="url" type="url" placeholder="https://jsonplaceholder.typicode.com/posts/1" /></label>
+        <button id="send" class="primary" type="button">🚀 {t.send}</button>
+        <button id="makeCurl" type="button">⌘ {t.format}</button>
       </div>
 
-      <div class="examples" aria-label={copy.examples}>
-        <strong>⚡ {copy.examples}</strong>
-        {copy.examplesList.map(([label, method, url]) => (
-          <button type="button" data-example-method={method} data-example-url={url}>{label}</button>
-        ))}
+      <div class="chips">
+        <button data-example="get" type="button">GET JSONPlaceholder</button>
+        <button data-example="github" type="button">GET GitHub</button>
+        <button data-example="post" type="button">POST test</button>
       </div>
 
-      <div class="main-grid">
-        <section class="column request-column" aria-labelledby="requestDataTitle">
-          <div class="column-head">
-            <div>
-              <h2 id="requestDataTitle">🧩 {copy.request}</h2>
-              <p>{es ? 'Solo Body queda abierto por defecto para escribir rápido.' : 'Only Body is open by default for quick editing.'}</p>
-            </div>
-            <button id="clearBtn" type="button" class="danger-light">🧹 {copy.clear}</button>
-          </div>
+      <div class="grid">
+        <section class="panel">
+          <div class="panel-head"><div><h2>🧩 {t.request}</h2><p>{es ? 'Headers y auth quedan recogidos. Body queda abierto.' : 'Headers and auth are collapsed. Body stays open.'}</p></div><button id="clear" class="danger" type="button">🧹 {t.clear}</button></div>
 
-          <div class="quick-presets" aria-label="Header presets">
-            <button type="button" data-preset="json">{} JSON</button>
-            <button type="button" data-preset="form">▤ {es ? 'Formulario' : 'Form'}</button>
-            <button type="button" data-preset="custom">＋ Header</button>
+          <div class="presets">
+            <button data-preset="json" type="button">{} JSON</button>
+            <button data-preset="form" type="button">▤ Form</button>
+            <button data-preset="header" type="button">＋ Header</button>
           </div>
 
           <details>
-            <summary>📋 {copy.headers}</summary>
-            <div id="headersList" class="headers-list"></div>
-            <button id="addHeaderBtn" class="secondary" type="button">＋ {copy.addHeader}</button>
+            <summary>📋 {t.headers}</summary>
+            <div id="headers" class="headers"></div>
+            <button id="addHeader" type="button">＋ {t.addHeader}</button>
           </details>
 
           <details>
-            <summary>🔐 {copy.auth}</summary>
+            <summary>🔐 {t.auth}</summary>
             <div class="auth-grid">
-              <label>{copy.auth}<select id="authType"><option value="none">{copy.noAuth}</option><option value="bearer">{copy.bearer}</option><option value="basic">{copy.basic}</option></select></label>
-              <label data-auth-field="bearer">Token<input id="bearerToken" type="password" placeholder={copy.placeholders.token} autocomplete="off" /></label>
-              <label data-auth-field="basic">{copy.placeholders.username}<input id="basicUser" type="text" placeholder={copy.placeholders.username} autocomplete="username" /></label>
-              <label data-auth-field="basic">{copy.placeholders.password}<input id="basicPass" type="password" placeholder={copy.placeholders.password} autocomplete="current-password" /></label>
+              <label>{t.auth}<select id="auth"><option value="none">{t.noAuth}</option><option value="bearer">{t.bearer}</option><option value="basic">{t.basic}</option></select></label>
+              <label data-auth-field="bearer">Token<input id="token" type="password" placeholder="Token" /></label>
+              <label data-auth-field="basic">User<input id="user" type="text" placeholder="user" /></label>
+              <label data-auth-field="basic">Password<input id="pass" type="password" placeholder="password" /></label>
             </div>
           </details>
 
           <details open>
-            <summary>✍️ {copy.body}</summary>
-            <label>{copy.bodyType}<select id="bodyType"><option value="none">{copy.noneBody}</option><option value="json" selected>JSON</option><option value="text">Text</option><option value="form">x-www-form-urlencoded</option></select></label>
-            <textarea id="bodyInput" spellcheck="false" placeholder={copy.placeholders.body}></textarea>
+            <summary>✍️ {t.body}</summary>
+            <label>{t.bodyType}<select id="bodyType"><option value="none">{t.noBody}</option><option value="json" selected>JSON</option><option value="text">Text</option><option value="form">x-www-form-urlencoded</option></select></label>
+            <textarea id="body" spellcheck="false" placeholder={t.bodyPlaceholder}></textarea>
           </details>
 
-          <details class="curl-box">
-            <summary>🧾 {copy.curl}</summary>
-            <label>{copy.importCurl}<textarea id="curlInput" class="code-area small" spellcheck="false" placeholder={copy.placeholders.curl}></textarea></label>
-            <div class="mini-actions">
-              <button id="parseCurlBtn" type="button">📥 {copy.parseCurl}</button>
-              <button id="copyCurlBtn" type="button">📋 {copy.copyCurl}</button>
-            </div>
-            <label>{copy.curl}<textarea id="curlOutput" class="code-area small" readonly spellcheck="false"></textarea></label>
+          <details>
+            <summary>🧾 {t.curl}</summary>
+            <textarea id="curlIn" class="code small" spellcheck="false" placeholder="curl -X GET https://api.example.com"></textarea>
+            <div class="actions"><button id="parseCurl" type="button">📥 {t.parseCurl}</button><button id="copyCurl" type="button">📋 {t.copy} cURL</button></div>
+            <textarea id="curlOut" class="code small" readonly spellcheck="false"></textarea>
           </details>
 
-          <ul id="warnings" class="warnings" aria-live="polite"></ul>
+          <ul id="warnings" class="warnings"></ul>
         </section>
 
-        <section class="column response-column" aria-labelledby="responseTitle">
-          <div class="column-head response-head">
-            <div>
-              <h2 id="responseTitle">📡 {copy.response}</h2>
-              <p id="statusText">{copy.messages.ready}</p>
-            </div>
-            <button id="copyResponseBtn" type="button">📋 {copy.copyResponse}</button>
-          </div>
-
-          <div class="metrics" aria-label="Response metrics">
-            <output id="statusMetric"><span>●</span> {copy.status}: —</output>
-            <output id="timeMetric">⏱️ {copy.time}: —</output>
-            <output id="sizeMetric">📦 {copy.size}: —</output>
-          </div>
-
-          <div class="tabs" role="tablist" aria-label="Response view">
-            <button class="tab active" type="button" data-view="pretty">✨ {copy.tabs.pretty}</button>
-            <button class="tab" type="button" data-view="raw">◇ {copy.tabs.raw}</button>
-            <button class="tab" type="button" data-view="headers">▦ {copy.tabs.headers}</button>
-          </div>
-          <pre id="responseView" class="response-view">{es ? 'La respuesta aparecerá aquí.' : 'The response will appear here.'}</pre>
+        <section class="panel">
+          <div class="panel-head"><div><h2>📡 {t.response}</h2><p id="statusText">{t.ready}</p></div><button id="copyResponse" type="button">📋 {t.copy}</button></div>
+          <div class="metrics"><output id="statusMetric">● {t.status}: —</output><output id="timeMetric">⏱️ {t.time}: —</output><output id="sizeMetric">📦 {t.size}: —</output></div>
+          <div class="tabs"><button class="tab active" data-view="pretty" type="button">✨ pretty</button><button class="tab" data-view="raw" type="button">◇ raw</button><button class="tab" data-view="headers" type="button">▦ headers</button></div>
+          <pre id="response" class="response">{es ? 'La respuesta aparecerá aquí.' : 'The response will appear here.'}</pre>
         </section>
       </div>
     </section>
   </section>
 
   <style>
-    .postman-page{padding:clamp(2rem,6vw,3.5rem) 0}.trust-row{display:flex;gap:.55rem;flex-wrap:wrap;margin:1rem 0 0}.trust-row span{display:inline-flex;align-items:center;gap:.35rem;border:1px solid var(--color-border);border-radius:999px;background:var(--color-surface);color:var(--color-text-muted);padding:.42rem .7rem;font-size:.88rem;font-weight:850}.postman-tool{padding:clamp(.8rem,2vw,1rem);margin-top:1.4rem;display:grid;gap:1rem}.request-bar{position:sticky;top:.75rem;z-index:5;display:grid;grid-template-columns:142px minmax(220px,1fr) max-content max-content;gap:.65rem;align-items:end;padding:.85rem;border:1px solid var(--color-border);border-radius:24px;background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-sm);backdrop-filter:blur(14px)}.method-wrap,.url-wrap{gap:.32rem}.method-wrap span,.url-wrap span{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-soft);font-weight:950}.examples{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;border:1px solid var(--color-border);border-radius:18px;background:var(--color-surface-soft);padding:.65rem}.examples strong{color:var(--color-text);font-size:.92rem}.main-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(390px,1fr);gap:1rem;align-items:start}.column{border:1px solid var(--color-border);border-radius:24px;background:color-mix(in srgb,var(--color-surface) 95%,transparent);box-shadow:var(--shadow-xs);padding:1rem;display:grid;gap:1rem;min-width:0}.column-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start}.column-head h2{margin:0 0 .2rem;font-size:1.22rem}.column-head p{margin:0;color:var(--color-text-muted);line-height:1.55}label{display:grid;gap:.4rem;color:var(--color-text-muted);font-weight:850}input,select,textarea{width:100%;border:1px solid var(--color-border);border-radius:14px;background:var(--color-surface);color:var(--color-text);padding:.78rem .9rem;font:inherit}select{cursor:pointer}textarea{min-height:170px;font-family:var(--font-mono);line-height:1.55;resize:vertical;tab-size:2}.code-area{background:#111827;color:#e5e7eb}.code-area.small{min-height:105px}.quick-presets,.mini-actions,.tabs{display:flex;flex-wrap:wrap;gap:.5rem}button{min-height:2.55rem;border-radius:999px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);padding:.58rem .86rem;font:inherit;font-weight:900;cursor:pointer;box-shadow:var(--shadow-xs);white-space:nowrap;transition:transform var(--transition-fast),border-color var(--transition-base),background-color var(--transition-base)}button:hover{transform:translateY(-1px);border-color:color-mix(in srgb,var(--color-primary) 55%,var(--color-border))}button.primary{background:var(--color-primary);color:#020617;border-color:transparent}.send-button{min-width:8rem}.danger-light{color:var(--color-danger)}.secondary{width:max-content}details{border:1px solid var(--color-border);border-radius:18px;padding:.85rem;background:var(--color-surface-soft)}summary{cursor:pointer;font-weight:950;color:var(--color-text)}details[open] summary{margin-bottom:.75rem}.headers-list{display:grid;gap:.7rem;margin-bottom:.8rem}.header-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 2.65rem;gap:.55rem;align-items:center}.header-row input{min-width:0}.header-row button{width:2.65rem;min-width:2.65rem;height:2.65rem;min-height:2.65rem;padding:0;border-radius:14px}.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}.metrics output{border:1px solid var(--color-border);border-radius:16px;background:var(--color-surface-soft);padding:.8rem;color:var(--color-text-muted);font-weight:900;line-height:1.35}.metrics output.is-ok{color:var(--color-success);border-color:color-mix(in srgb,var(--color-success) 35%,var(--color-border))}.metrics output.is-error{color:var(--color-danger);border-color:color-mix(in srgb,var(--color-danger) 35%,var(--color-border))}.tab.active{background:#111827;color:#fff;border-color:#111827}.response-view{min-height:620px;max-height:820px;overflow:auto;margin:0;border-radius:18px;background:#111827;color:#e5e7eb;padding:1rem;font:500 .92rem/1.6 var(--font-mono);white-space:pre-wrap;word-break:break-word}.warnings{display:grid;gap:.35rem;margin:0;padding-left:1.2rem;color:#f59e0b}.warnings:empty{display:none}.status-error{color:var(--color-danger)!important}.status-ok{color:var(--color-success)!important}[data-hidden=true]{display:none}@media(max-width:1080px){.request-bar{position:static;grid-template-columns:130px 1fr}.request-bar button{width:100%}.main-grid{grid-template-columns:1fr}.response-view{min-height:360px}.auth-grid,.metrics{grid-template-columns:1fr}}@media(max-width:640px){.request-bar{grid-template-columns:1fr}.header-row{grid-template-columns:1fr}.header-row button{width:100%;min-width:0}.quick-presets button,.mini-actions button,.tabs button,.examples button{flex:1 1 calc(50% - .5rem)}}
+    .sp-page{padding:clamp(2rem,6vw,3.5rem) 0}.sp-tool{margin-top:1.25rem;padding:1rem;display:grid;gap:1rem}.topbar{position:sticky;top:.75rem;z-index:5;display:grid;grid-template-columns:8.5rem minmax(0,1fr) max-content max-content;gap:.65rem;align-items:end;padding:.85rem;border:1px solid var(--color-border);border-radius:24px;background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-sm);backdrop-filter:blur(14px)}.topbar label{display:grid;gap:.25rem}.topbar span{font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-soft);font-weight:950}.chips,.presets,.actions,.tabs{display:flex;flex-wrap:wrap;gap:.5rem}.chips{padding:.65rem;border:1px solid var(--color-border);border-radius:18px;background:var(--color-surface-soft)}button{min-height:2.5rem;border:1px solid var(--color-border);border-radius:999px;background:var(--color-surface);color:var(--color-text);padding:.58rem .86rem;font:inherit;font-weight:900;cursor:pointer;box-shadow:var(--shadow-xs);white-space:nowrap}button:hover{border-color:color-mix(in srgb,var(--color-primary) 55%,var(--color-border));transform:translateY(-1px)}button.primary{background:var(--color-primary);border-color:transparent;color:#020617}.danger{color:var(--color-danger)}.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(390px,1fr);gap:1rem;align-items:start}.panel{display:grid;gap:1rem;min-width:0;padding:1rem;border:1px solid var(--color-border);border-radius:24px;background:color-mix(in srgb,var(--color-surface) 95%,transparent);box-shadow:var(--shadow-xs)}.panel-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start}.panel h2{margin:0 0 .2rem;font-size:1.18rem}.panel p{margin:0;color:var(--color-text-muted)}details{padding:.85rem;border:1px solid var(--color-border);border-radius:18px;background:var(--color-surface-soft)}summary{cursor:pointer;color:var(--color-text);font-weight:950}details[open] summary{margin-bottom:.75rem}label{display:grid;gap:.4rem;color:var(--color-text-muted);font-weight:850}input,select,textarea{width:100%;min-width:0;border:1px solid var(--color-border);border-radius:14px;background:var(--color-surface);color:var(--color-text);padding:.75rem .85rem;font:inherit}textarea{min-height:170px;font-family:var(--font-mono);line-height:1.55;resize:vertical}.code{background:#111827;color:#e5e7eb}.small{min-height:100px}.headers{display:grid;gap:.55rem;margin-bottom:.75rem}.header-row{display:grid!important;grid-template-columns:minmax(7rem,1fr) minmax(8rem,1.25fr) 2.6rem!important;gap:.5rem;align-items:center}.header-row input{height:2.6rem;min-height:2.6rem;padding:.52rem .7rem}.header-row button{width:2.6rem!important;min-width:2.6rem!important;height:2.6rem!important;min-height:2.6rem!important;padding:0!important;border-radius:12px}.auth-grid,.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.metrics output{padding:.8rem;border:1px solid var(--color-border);border-radius:16px;background:var(--color-surface-soft);color:var(--color-text-muted);font-weight:900}.metrics output.ok{color:var(--color-success);border-color:color-mix(in srgb,var(--color-success) 35%,var(--color-border))}.metrics output.err{color:var(--color-danger);border-color:color-mix(in srgb,var(--color-danger) 35%,var(--color-border))}.tab.active{background:#111827;color:#fff;border-color:#111827}.response{min-height:620px;max-height:820px;overflow:auto;margin:0;padding:1rem;border-radius:18px;background:#111827;color:#e5e7eb;font:500 .92rem/1.6 var(--font-mono);white-space:pre-wrap;word-break:break-word}.warnings{margin:0;padding-left:1.2rem;color:#f59e0b}.warnings:empty{display:none}[data-hidden=true]{display:none}.status-ok{color:var(--color-success)!important}.status-error{color:var(--color-danger)!important}@media(max-width:1080px){.topbar{position:static;grid-template-columns:8rem minmax(0,1fr)}.topbar button{width:100%}.grid{grid-template-columns:1fr}.response{min-height:360px}.metrics{grid-template-columns:1fr}}@media(max-width:640px){.topbar{grid-template-columns:1fr}.auth-grid{grid-template-columns:1fr}.header-row{grid-template-columns:minmax(5.5rem,.9fr) minmax(6.5rem,1.1fr) 2.4rem!important;gap:.35rem}.header-row input{font-size:.88rem;padding:.5rem}.header-row button{width:2.4rem!important;min-width:2.4rem!important}.chips button,.presets button,.actions button,.tabs button{flex:1 1 calc(50% - .5rem)}}
   </style>
 
-  <script define:vars={{ copy }}>
-    window.addEventListener('DOMContentLoaded', () => {
-      const $ = (id) => document.getElementById(id);
-      const methodSelect = $('methodSelect'), urlInput = $('urlInput'), headersList = $('headersList'), authType = $('authType'), bearerToken = $('bearerToken'), basicUser = $('basicUser'), basicPass = $('basicPass'), bodyType = $('bodyType'), bodyInput = $('bodyInput'), curlInput = $('curlInput'), curlOutput = $('curlOutput'), responseView = $('responseView'), statusText = $('statusText'), statusMetric = $('statusMetric'), timeMetric = $('timeMetric'), sizeMetric = $('sizeMetric'), warnings = $('warnings');
-      const tabs = Array.from(document.querySelectorAll('.tab'));
-      let currentResponse = { pretty: '', raw: '', headers: '' };
-      let currentView = 'pretty';
-      const setStatus = (message, type = '') => { statusText.textContent = message; statusText.classList.toggle('status-error', type === 'error'); statusText.classList.toggle('status-ok', type === 'ok'); };
-      const formatBytes = (bytes) => bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(2)} MB`;
-      const shellQuote = (value) => `'${String(value).replaceAll("'", "'\\''")}'`;
-      const addWarning = (message) => { const li = document.createElement('li'); li.textContent = message; warnings.append(li); };
-      const clearWarnings = () => warnings.replaceChildren();
-      const isValidUrl = (value) => { try { const url = new URL(value); return ['http:', 'https:'].includes(url.protocol); } catch { return false; } };
-      const addHeaderRow = (name = '', value = '') => { const row = document.createElement('div'); row.className = 'header-row'; row.innerHTML = `<input data-header-name placeholder="${copy.placeholders.headerName}"><input data-header-value placeholder="${copy.placeholders.headerValue}"><button type="button" aria-label="Remove header">×</button>`; row.querySelector('[data-header-name]').value = name; row.querySelector('[data-header-value]').value = value; row.querySelector('button').addEventListener('click', () => { row.remove(); generateCurl(); }); row.querySelectorAll('input').forEach((input) => input.addEventListener('input', generateCurl)); headersList.append(row); };
-      const readHeaders = () => Array.from(headersList.querySelectorAll('.header-row')).map((row) => ({ name: row.querySelector('[data-header-name]').value.trim(), value: row.querySelector('[data-header-value]').value.trim() })).filter((header) => header.name);
-      const setHeader = (name, value) => { const existing = Array.from(headersList.querySelectorAll('.header-row')).find((row) => row.querySelector('[data-header-name]').value.trim().toLowerCase() === name.toLowerCase()); if (existing) existing.querySelector('[data-header-value]').value = value; else addHeaderRow(name, value); };
-      const updateAuthVisibility = () => document.querySelectorAll('[data-auth-field]').forEach((field) => field.dataset.hidden = String(field.dataset.authField !== authType.value));
-      const getBody = () => { const method = methodSelect.value.toUpperCase(); if (method === 'GET' || method === 'HEAD' || bodyType.value === 'none') return undefined; if (bodyType.value === 'json') { const raw = bodyInput.value.trim(); if (!raw) return undefined; JSON.parse(raw); return raw; } if (bodyType.value === 'form') return new URLSearchParams(bodyInput.value).toString(); return bodyInput.value; };
-      const buildHeaders = () => { const headers = new Headers(); readHeaders().forEach(({ name, value }) => headers.set(name, value)); if (authType.value === 'bearer' && bearerToken.value.trim()) headers.set('Authorization', `Bearer ${bearerToken.value.trim()}`); if (authType.value === 'basic' && basicUser.value) headers.set('Authorization', `Basic ${btoa(`${basicUser.value}:${basicPass.value}`)}`); return headers; };
-      const validateRequest = () => { clearWarnings(); if (!isValidUrl(urlInput.value.trim())) { addWarning(copy.messages.invalidUrl); return false; } const method = methodSelect.value.toUpperCase(); if ((method === 'GET' || method === 'HEAD') && bodyInput.value.trim() && bodyType.value !== 'none') addWarning(copy.messages.getBody); if (bodyType.value === 'json' && bodyInput.value.trim() && method !== 'GET' && method !== 'HEAD') { try { JSON.parse(bodyInput.value); } catch { addWarning(copy.messages.invalidJson); return false; } } return true; };
-      const generateCurl = () => { const method = methodSelect.value.toUpperCase(); const parts = ['curl', '-X', method, shellQuote(urlInput.value.trim() || copy.placeholders.url)]; readHeaders().forEach(({ name, value }) => parts.push('-H', shellQuote(`${name}: ${value}`))); if (authType.value === 'bearer' && bearerToken.value.trim()) parts.push('-H', shellQuote(`Authorization: Bearer ${bearerToken.value.trim()}`)); if (authType.value === 'basic' && basicUser.value) parts.push('-u', shellQuote(`${basicUser.value}:${basicPass.value}`)); try { const body = getBody(); if (body !== undefined) parts.push('--data-raw', shellQuote(body)); } catch {} curlOutput.value = parts.join(' \\\n  '); validateRequest(); return curlOutput.value; };
-      const renderResponse = () => { tabs.forEach((tab) => tab.classList.toggle('active', tab.dataset.view === currentView)); responseView.textContent = currentResponse[currentView] || ''; };
-      const setMetricState = (ok) => { statusMetric.classList.toggle('is-ok', ok); statusMetric.classList.toggle('is-error', !ok); };
-      const sendRequest = async () => { if (!validateRequest()) { setStatus(copy.messages.invalidUrl, 'error'); return; } let body; try { body = getBody(); } catch { setStatus(copy.messages.invalidJson, 'error'); return; } const method = methodSelect.value.toUpperCase(); const init = { method, headers: buildHeaders(), mode: 'cors' }; if (body !== undefined) init.body = body; const sendBtn = $('sendBtn'); sendBtn.disabled = true; sendBtn.innerHTML = `<span aria-hidden="true">⏳</span> <span>${copy.sending}</span>`; setStatus(copy.messages.sending); const start = performance.now(); try { const response = await fetch(urlInput.value.trim(), init); const elapsed = Math.round(performance.now() - start); const raw = await response.text(); let pretty = raw; const contentType = response.headers.get('content-type') || ''; if (contentType.includes('application/json') || /^[\[{]/.test(raw.trim())) { try { pretty = JSON.stringify(JSON.parse(raw), null, 2); } catch {} } currentResponse = { pretty, raw, headers: Array.from(response.headers.entries()).map(([key, value]) => `${key}: ${value}`).join('\n') }; statusMetric.textContent = `${copy.status}: ${response.status} ${response.statusText}`; setMetricState(response.ok); timeMetric.textContent = `⏱️ ${copy.time}: ${elapsed} ms`; sizeMetric.textContent = `📦 ${copy.size}: ${formatBytes(new Blob([raw]).size)}`; currentView = 'pretty'; renderResponse(); setStatus(copy.messages.done, response.ok ? 'ok' : 'error'); } catch (error) { currentResponse = { pretty: `${copy.messages.fetchError}\n\n${error instanceof Error ? error.message : String(error)}`, raw: '', headers: '' }; currentView = 'pretty'; renderResponse(); statusMetric.textContent = `${copy.status}: —`; statusMetric.classList.remove('is-ok','is-error'); timeMetric.textContent = `⏱️ ${copy.time}: —`; sizeMetric.textContent = `📦 ${copy.size}: —`; addWarning(copy.messages.fetchError); setStatus(copy.messages.fetchError, 'error'); } finally { sendBtn.disabled = false; sendBtn.innerHTML = `<span aria-hidden="true">🚀</span> <span>${copy.send}</span>`; } };
-      const tokenizeCurl = (value) => { const tokens = []; let token = '', quote = '', escaped = false; for (const char of value.replace(/\\\n/g, ' ')) { if (escaped) { token += char; escaped = false; continue; } if (char === '\\') { escaped = true; continue; } if (quote) { if (char === quote) quote = ''; else token += char; continue; } if (char === '"' || char === "'") { quote = char; continue; } if (/\s/.test(char)) { if (token) { tokens.push(token); token = ''; } continue; } token += char; } if (token) tokens.push(token); return tokens; };
-      const importCurl = () => { clearWarnings(); const raw = curlInput.value.trim(); if (!raw) { addWarning(copy.messages.curlEmpty); setStatus(copy.messages.curlEmpty, 'error'); return; } const tokens = tokenizeCurl(raw); if (tokens[0] !== 'curl') { addWarning(copy.messages.curlInvalid); setStatus(copy.messages.curlInvalid, 'error'); return; } let foundUrl = '', method = 'GET', body = ''; headersList.replaceChildren(); authType.value = 'none'; for (let i = 1; i < tokens.length; i += 1) { const token = tokens[i], next = tokens[i + 1]; if ((token === '-X' || token === '--request') && next) { method = next.toUpperCase(); i += 1; continue; } if ((token === '-H' || token === '--header') && next) { const index = next.indexOf(':'); if (index > 0) addHeaderRow(next.slice(0, index).trim(), next.slice(index + 1).trim()); i += 1; continue; } if (['-d','--data','--data-raw','--data-binary','--data-ascii'].includes(token) && next !== undefined) { body = next; if (method === 'GET') method = 'POST'; i += 1; continue; } if ((token === '-u' || token === '--user') && next) { const [user, ...pass] = next.split(':'); authType.value = 'basic'; basicUser.value = user || ''; basicPass.value = pass.join(':'); i += 1; continue; } if (!token.startsWith('-') && isValidUrl(token)) foundUrl = token; } if (!foundUrl) { addWarning(copy.messages.curlInvalid); setStatus(copy.messages.curlInvalid, 'error'); return; } methodSelect.value = method; urlInput.value = foundUrl; bodyInput.value = body; bodyType.value = body ? (body.trim().startsWith('{') || body.trim().startsWith('[') ? 'json' : 'text') : 'none'; updateAuthVisibility(); generateCurl(); setStatus(copy.messages.curlParsed, 'ok'); };
-      document.querySelectorAll('[data-preset]').forEach((button) => button.addEventListener('click', () => { const preset = button.dataset.preset; if (preset === 'json') { setHeader('Accept', 'application/json'); setHeader('Content-Type', 'application/json'); bodyType.value = 'json'; } if (preset === 'form') { setHeader('Content-Type', 'application/x-www-form-urlencoded'); bodyType.value = 'form'; } if (preset === 'custom') addHeaderRow('', ''); generateCurl(); }));
-      document.querySelectorAll('[data-example-url]').forEach((button) => button.addEventListener('click', () => { methodSelect.value = button.dataset.exampleMethod; urlInput.value = button.dataset.exampleUrl; if (methodSelect.value === 'POST') { bodyType.value = 'json'; bodyInput.value = copy.placeholders.body; setHeader('Content-Type','application/json'); } generateCurl(); }));
-      $('addHeaderBtn').addEventListener('click', () => addHeaderRow('', ''));
-      $('sendBtn').addEventListener('click', sendRequest);
-      $('curlBtn').addEventListener('click', () => { generateCurl(); setStatus(copy.messages.curlGenerated, 'ok'); });
-      $('copyCurlBtn').addEventListener('click', async () => { await navigator.clipboard.writeText(generateCurl()); setStatus(copy.messages.curlCopied, 'ok'); });
-      $('copyResponseBtn').addEventListener('click', async () => { await navigator.clipboard.writeText(currentResponse[currentView] || responseView.textContent || ''); setStatus(copy.messages.responseCopied, 'ok'); });
-      $('parseCurlBtn').addEventListener('click', importCurl);
-      $('clearBtn').addEventListener('click', () => { urlInput.value = ''; bodyInput.value = ''; curlInput.value = ''; curlOutput.value = ''; headersList.replaceChildren(); addHeaderRow('Accept','application/json'); authType.value = 'none'; updateAuthVisibility(); clearWarnings(); currentResponse = { pretty: '', raw: '', headers: '' }; renderResponse(); responseView.textContent = ''; statusMetric.textContent = `● ${copy.status}: —`; statusMetric.classList.remove('is-ok','is-error'); timeMetric.textContent = `⏱️ ${copy.time}: —`; sizeMetric.textContent = `📦 ${copy.size}: —`; setStatus(copy.messages.cleared); });
-      [methodSelect, urlInput, authType, bearerToken, basicUser, basicPass, bodyType, bodyInput].forEach((element) => element.addEventListener('input', () => { updateAuthVisibility(); generateCurl(); }));
-      tabs.forEach((tab) => tab.addEventListener('click', () => { currentView = tab.dataset.view; renderResponse(); }));
-      addHeaderRow('Accept', 'application/json');
-      updateAuthVisibility();
-      generateCurl();
+  <script define:vars={{ t }}>
+    window.addEventListener('DOMContentLoaded',()=>{
+      const $=id=>document.getElementById(id), method=$('method'), url=$('url'), headers=$('headers'), auth=$('auth'), token=$('token'), user=$('user'), pass=$('pass'), bodyType=$('bodyType'), body=$('body'), curlIn=$('curlIn'), curlOut=$('curlOut'), response=$('response'), statusText=$('statusText'), statusMetric=$('statusMetric'), timeMetric=$('timeMetric'), sizeMetric=$('sizeMetric'), warnings=$('warnings');
+      let current={pretty:'',raw:'',headers:''}, view='pretty';
+      const status=(m,type='')=>{statusText.textContent=m;statusText.classList.toggle('status-ok',type==='ok');statusText.classList.toggle('status-error',type==='error')};
+      const warn=m=>{const li=document.createElement('li');li.textContent=m;warnings.append(li)};
+      const clearWarn=()=>warnings.replaceChildren();
+      const validUrl=v=>{try{const u=new URL(v);return ['http:','https:'].includes(u.protocol)}catch{return false}};
+      const bytes=n=>n<1024?`${n} B`:n<1048576?`${(n/1024).toFixed(1)} KB`:`${(n/1048576).toFixed(2)} MB`;
+      const quote=v=>`'${String(v).replaceAll("'","'\\''")}'`;
+      const addHeader=(name='',value='')=>{const row=document.createElement('div');row.className='header-row';row.innerHTML='<input data-name placeholder="Content-Type"><input data-value placeholder="application/json"><button type="button" aria-label="Remove">×</button>';row.querySelector('[data-name]').value=name;row.querySelector('[data-value]').value=value;row.querySelector('button').onclick=()=>{row.remove();makeCurl()};row.querySelectorAll('input').forEach(i=>i.oninput=makeCurl);headers.append(row)};
+      const readHeaders=()=>[...headers.querySelectorAll('.header-row')].map(r=>({name:r.querySelector('[data-name]').value.trim(),value:r.querySelector('[data-value]').value.trim()})).filter(h=>h.name);
+      const setHeader=(n,v)=>{const row=[...headers.querySelectorAll('.header-row')].find(r=>r.querySelector('[data-name]').value.trim().toLowerCase()===n.toLowerCase());row?row.querySelector('[data-value]').value=v:addHeader(n,v)};
+      const updateAuth=()=>document.querySelectorAll('[data-auth-field]').forEach(el=>el.dataset.hidden=String(el.dataset.authField!==auth.value));
+      const getBody=()=>{const m=method.value.toUpperCase();if(m==='GET'||m==='HEAD'||bodyType.value==='none')return undefined;if(bodyType.value==='json'){const raw=body.value.trim();if(!raw)return undefined;JSON.parse(raw);return raw}if(bodyType.value==='form')return new URLSearchParams(body.value).toString();return body.value};
+      const buildHeaders=()=>{const h=new Headers();readHeaders().forEach(x=>h.set(x.name,x.value));if(auth.value==='bearer'&&token.value.trim())h.set('Authorization',`Bearer ${token.value.trim()}`);if(auth.value==='basic'&&user.value)h.set('Authorization',`Basic ${btoa(`${user.value}:${pass.value}`)}`);return h};
+      const validate=()=>{clearWarn();if(!validUrl(url.value.trim())){warn(t.invalidUrl);return false}if(bodyType.value==='json'&&body.value.trim()&&!['GET','HEAD'].includes(method.value)){try{JSON.parse(body.value)}catch{warn(t.invalidJson);return false}}return true};
+      const makeCurl=()=>{const parts=['curl','-X',method.value,quote(url.value.trim()||'https://api.example.com')];readHeaders().forEach(h=>parts.push('-H',quote(`${h.name}: ${h.value}`)));if(auth.value==='bearer'&&token.value.trim())parts.push('-H',quote(`Authorization: Bearer ${token.value.trim()}`));if(auth.value==='basic'&&user.value)parts.push('-u',quote(`${user.value}:${pass.value}`));try{const b=getBody();if(b!==undefined)parts.push('--data-raw',quote(b))}catch{}curlOut.value=parts.join(' \\\n  ');validate();return curlOut.value};
+      const render=()=>{document.querySelectorAll('.tab').forEach(tab=>tab.classList.toggle('active',tab.dataset.view===view));response.textContent=current[view]||''};
+      const send=async()=>{if(!validate()){status(t.invalidUrl,'error');return}let payload;try{payload=getBody()}catch{status(t.invalidJson,'error');return}const btn=$('send');btn.disabled=true;btn.textContent='⏳ ...';const start=performance.now();try{const res=await fetch(url.value.trim(),{method:method.value,headers:buildHeaders(),body:payload,mode:'cors'});const raw=await res.text();let pretty=raw;if((res.headers.get('content-type')||'').includes('json')||/^[\[{]/.test(raw.trim()))try{pretty=JSON.stringify(JSON.parse(raw),null,2)}catch{}current={pretty,raw,headers:[...res.headers.entries()].map(([k,v])=>`${k}: ${v}`).join('\n')};view='pretty';render();statusMetric.textContent=`${t.status}: ${res.status} ${res.statusText}`;statusMetric.className=res.ok?'ok':'err';timeMetric.textContent=`⏱️ ${t.time}: ${Math.round(performance.now()-start)} ms`;sizeMetric.textContent=`📦 ${t.size}: ${bytes(new Blob([raw]).size)}`;status(t.done,res.ok?'ok':'error')}catch(e){current={pretty:`${t.fetchError}\n\n${e.message||e}`,raw:'',headers:''};view='pretty';render();warn(t.fetchError);status(t.fetchError,'error')}finally{btn.disabled=false;btn.textContent=`🚀 ${t.send}`}};
+      const parseCurl=()=>{const raw=curlIn.value.trim();if(!raw)return;const urlMatch=raw.match(/https?:\/\/[^\s'\"]+/);if(urlMatch)url.value=urlMatch[0];const methodMatch=raw.match(/(?:-X|--request)\s+([A-Z]+)/i);if(methodMatch)method.value=methodMatch[1].toUpperCase();headers.replaceChildren();[...raw.matchAll(/(?:-H|--header)\s+['\"]([^:'\"]+):\s*([^'\"]+)['\"]/g)].forEach(m=>addHeader(m[1],m[2]));const data=raw.match(/(?:-d|--data(?:-raw)?)\s+['\"]([^'\"]+)['\"]/);if(data){body.value=data[1];bodyType.value=data[1].trim().startsWith('{')?'json':'text';if(method.value==='GET')method.value='POST'}makeCurl();status(t.curlParsed,'ok')};
+      document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{if(b.dataset.preset==='json'){setHeader('Accept','application/json');setHeader('Content-Type','application/json');bodyType.value='json'}else if(b.dataset.preset==='form'){setHeader('Content-Type','application/x-www-form-urlencoded');bodyType.value='form'}else addHeader();makeCurl()});
+      document.querySelectorAll('[data-example]').forEach(b=>b.onclick=()=>{if(b.dataset.example==='get'){method.value='GET';url.value='https://jsonplaceholder.typicode.com/posts/1'}if(b.dataset.example==='github'){method.value='GET';url.value='https://api.github.com/repos/jalonsomerchan/tools'}if(b.dataset.example==='post'){method.value='POST';url.value='https://jsonplaceholder.typicode.com/posts';bodyType.value='json';body.value=t.bodyPlaceholder;setHeader('Content-Type','application/json')}makeCurl()});
+      $('addHeader').onclick=()=>addHeader();$('send').onclick=send;$('makeCurl').onclick=()=>{makeCurl();status('cURL generado','ok')};$('copyCurl').onclick=async()=>{await navigator.clipboard.writeText(makeCurl());status(t.copied,'ok')};$('copyResponse').onclick=async()=>{await navigator.clipboard.writeText(current[view]||response.textContent||'');status(t.copied,'ok')};$('parseCurl').onclick=parseCurl;$('clear').onclick=()=>{url.value='';body.value='';curlIn.value='';curlOut.value='';headers.replaceChildren();addHeader('Accept','application/json');current={pretty:'',raw:'',headers:''};render();response.textContent='';statusMetric.textContent=`● ${t.status}: —`;statusMetric.className='';timeMetric.textContent=`⏱️ ${t.time}: —`;sizeMetric.textContent=`📦 ${t.size}: —`;clearWarn();status(t.cleared)};
+      [method,url,auth,token,user,pass,bodyType,body].forEach(el=>el.addEventListener('input',()=>{updateAuth();makeCurl()}));document.querySelectorAll('.tab').forEach(tab=>tab.onclick=()=>{view=tab.dataset.view;render()});addHeader('Accept','application/json');updateAuth();makeCurl();
     });
   </script>
 </Layout>
