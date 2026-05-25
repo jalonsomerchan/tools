@@ -1,45 +1,49 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getLangFromUrl } from '../i18n/ui';
+
 const lang = getLangFromUrl(Astro.url);
 const es = lang === 'es';
 const title = 'SimplePostman';
 const description = es
-  ? 'Cliente HTTP reducido en el navegador para preparar peticiones, generar cURL y ver respuestas.'
-  : 'A reduced browser HTTP client to prepare requests, generate cURL and inspect responses.';
+  ? 'Cliente HTTP ligero en el navegador para preparar peticiones, generar cURL y ver respuestas.'
+  : 'A lightweight browser HTTP client to prepare requests, generate cURL and inspect responses.';
 const copy = {
-  eyebrow: es ? 'Herramienta frontend' : 'Frontend tool',
-  hero: es ? 'SimplePostman' : 'SimplePostman',
-  text: es ? 'Un Postman reducido para probar APIs desde el navegador: método, URL, headers, auth, body, cURL y respuesta en dos columnas.' : 'A reduced Postman-like client for testing APIs from the browser: method, URL, headers, auth, body, cURL and response in two columns.',
-  requestData: es ? 'Datos de la petición' : 'Request data',
-  response: es ? 'Respuesta' : 'Response',
+  eyebrow: es ? 'Cliente HTTP ligero' : 'Light HTTP client',
+  text: es ? 'Prueba APIs desde el navegador con una interfaz más clara: método, URL, headers, auth, body, cURL y respuesta.' : 'Test APIs from the browser with a clearer interface: method, URL, headers, auth, body, cURL and response.',
+  privacy: es ? 'Se ejecuta en tu navegador' : 'Runs in your browser',
+  cors: es ? 'Puede depender de CORS' : 'May depend on CORS',
   method: es ? 'Método' : 'Method',
   url: 'URL',
+  request: es ? 'Petición' : 'Request',
+  response: es ? 'Respuesta' : 'Response',
   headers: 'Headers',
   auth: 'Auth',
   body: 'Body',
-  bodyType: es ? 'Tipo de body' : 'Body type',
+  curl: 'cURL',
   noAuth: es ? 'Sin auth' : 'No auth',
   bearer: 'Bearer token',
   basic: 'Basic auth',
-  jsonPreset: 'JSON',
-  formPreset: es ? 'Formulario' : 'Form',
-  customPreset: es ? 'Header personalizado' : 'Custom header',
   noneBody: es ? 'Sin body' : 'No body',
-  jsonBody: 'JSON',
-  textBody: 'Text',
-  formBody: 'x-www-form-urlencoded',
+  bodyType: es ? 'Tipo de body' : 'Body type',
   addHeader: es ? 'Añadir header' : 'Add header',
-  send: es ? 'Enviar petición' : 'Send request',
+  send: es ? 'Enviar' : 'Send',
+  sending: es ? 'Enviando...' : 'Sending...',
   generateCurl: es ? 'Generar cURL' : 'Generate cURL',
   copyCurl: es ? 'Copiar cURL' : 'Copy cURL',
+  copyResponse: es ? 'Copiar respuesta' : 'Copy response',
   clear: es ? 'Limpiar' : 'Clear',
   importCurl: es ? 'Importar cURL' : 'Import cURL',
   parseCurl: es ? 'Leer cURL' : 'Parse cURL',
   status: es ? 'Estado' : 'Status',
   time: es ? 'Tiempo' : 'Time',
   size: es ? 'Tamaño' : 'Size',
-  curl: 'cURL',
+  examples: es ? 'Ejemplos rápidos' : 'Quick examples',
+  examplesList: [
+    ['GET JSONPlaceholder', 'GET', 'https://jsonplaceholder.typicode.com/posts/1'],
+    ['GET GitHub', 'GET', 'https://api.github.com/repos/jalonsomerchan/tools'],
+    ['POST test', 'POST', 'https://jsonplaceholder.typicode.com/posts']
+  ],
   tabs: { pretty: es ? 'bonito' : 'pretty', raw: 'raw', headers: 'headers' },
   placeholders: {
     url: 'https://jsonplaceholder.typicode.com/posts/1',
@@ -53,113 +57,101 @@ const copy = {
   },
   messages: {
     ready: es ? 'Listo para preparar una petición.' : 'Ready to prepare a request.',
-    invalidUrl: es ? 'La URL no es válida. Debe empezar por http:// o https://.' : 'Invalid URL. It must start with http:// or https://.',
-    getBody: es ? 'Aviso: GET/HEAD no envían body. Se ignorará el contenido.' : 'Warning: GET/HEAD do not send a body. Body content will be ignored.',
-    invalidJson: es ? 'El body JSON no es válido.' : 'The JSON body is not valid.',
-    sending: es ? 'Enviando petición...' : 'Sending request...',
+    invalidUrl: es ? 'La URL debe empezar por http:// o https://.' : 'URL must start with http:// or https://.',
+    getBody: es ? 'GET y HEAD no envían body. Se ignorará el contenido.' : 'GET and HEAD do not send a body. Body will be ignored.',
+    invalidJson: es ? 'El body JSON no es válido.' : 'JSON body is not valid.',
     done: es ? 'Petición completada.' : 'Request completed.',
-    fetchError: es ? 'No se pudo completar la petición. Puede ser un problema de CORS, red, certificado o URL.' : 'The request could not be completed. It may be caused by CORS, network, certificate or URL issues.',
+    fetchError: es ? 'No se pudo completar la petición. Puede ser CORS, red, certificado o URL.' : 'The request could not be completed. It may be caused by CORS, network, certificate or URL issues.',
     curlCopied: es ? 'cURL copiado.' : 'cURL copied.',
+    responseCopied: es ? 'Respuesta copiada.' : 'Response copied.',
     curlGenerated: es ? 'cURL generado.' : 'cURL generated.',
     curlEmpty: es ? 'Pega primero un comando cURL.' : 'Paste a cURL command first.',
-    curlInvalid: es ? 'No parece un cURL válido. Debe empezar por curl e incluir una URL.' : 'This does not look like a valid cURL. It must start with curl and include a URL.',
-    curlParsed: es ? 'cURL importado. Revisa headers, método y body antes de enviar.' : 'cURL imported. Review headers, method and body before sending.',
+    curlInvalid: es ? 'No parece un cURL válido.' : 'This does not look like a valid cURL.',
+    curlParsed: es ? 'cURL importado. Revisa la petición antes de enviar.' : 'cURL imported. Review the request before sending.',
     cleared: es ? 'Contenido limpiado.' : 'Content cleared.'
   }
 };
 ---
+
 <Layout title={title} description={description} lang={lang} path="/simple-postman/" translated={true}>
   <section class="postman-page">
-    <div class="eyebrow">{copy.eyebrow}</div>
-    <h1>{copy.hero}</h1>
+    <h1>{title}</h1>
     <p class="hero-text">{copy.text}</p>
+
+    <div class="trust-row" aria-label="Tool notes">
+      <span>🧭 {copy.privacy}</span>
+      <span>🛡️ {copy.cors}</span>
+    </div>
 
     <section class="tool-card postman-tool" aria-label={title}>
       <div class="request-bar" aria-label="Request builder">
-        <select id="methodSelect" aria-label={copy.method}>
-          <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>HEAD</option><option>OPTIONS</option>
-        </select>
-        <input id="urlInput" class="url-input" type="url" placeholder={copy.placeholders.url} autocomplete="url" aria-label={copy.url} />
-        <button id="sendBtn" class="primary" type="button">{copy.send}</button>
-        <button id="curlBtn" type="button">{copy.generateCurl}</button>
+        <label class="method-wrap">
+          <span>{copy.method}</span>
+          <select id="methodSelect" aria-label={copy.method}>
+            <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>HEAD</option><option>OPTIONS</option>
+          </select>
+        </label>
+        <label class="url-wrap">
+          <span>{copy.url}</span>
+          <input id="urlInput" type="url" placeholder={copy.placeholders.url} autocomplete="url" aria-label={copy.url} />
+        </label>
+        <button id="sendBtn" class="primary send-button" type="button"><span aria-hidden="true">🚀</span> <span>{copy.send}</span></button>
+        <button id="curlBtn" type="button"><span aria-hidden="true">⌘</span> <span>{copy.generateCurl}</span></button>
+      </div>
+
+      <div class="examples" aria-label={copy.examples}>
+        <strong>⚡ {copy.examples}</strong>
+        {copy.examplesList.map(([label, method, url]) => (
+          <button type="button" data-example-method={method} data-example-url={url}>{label}</button>
+        ))}
       </div>
 
       <div class="main-grid">
         <section class="column request-column" aria-labelledby="requestDataTitle">
           <div class="column-head">
             <div>
-              <h2 id="requestDataTitle">{copy.requestData}</h2>
-              <p>{es ? 'Headers, auth, body y cURL de la petición.' : 'Headers, auth, body and request cURL.'}</p>
+              <h2 id="requestDataTitle">🧩 {copy.request}</h2>
+              <p>{es ? 'Configura headers, auth, body e importa cURL.' : 'Configure headers, auth, body and import cURL.'}</p>
             </div>
-            <button id="clearBtn" type="button">{copy.clear}</button>
+            <button id="clearBtn" type="button" class="danger-light">🧹 {copy.clear}</button>
           </div>
 
           <div class="quick-presets" aria-label="Header presets">
-            <button type="button" data-preset="json">{copy.jsonPreset}</button>
-            <button type="button" data-preset="form">{copy.formPreset}</button>
-            <button type="button" data-preset="custom">+ {copy.customPreset}</button>
+            <button type="button" data-preset="json">{} JSON</button>
+            <button type="button" data-preset="form">▤ {es ? 'Formulario' : 'Form'}</button>
+            <button type="button" data-preset="custom">＋ Header</button>
           </div>
 
           <details open>
-            <summary>{copy.headers}</summary>
+            <summary>📋 {copy.headers}</summary>
             <div id="headersList" class="headers-list"></div>
-            <button id="addHeaderBtn" class="secondary" type="button">+ {copy.addHeader}</button>
+            <button id="addHeaderBtn" class="secondary" type="button">＋ {copy.addHeader}</button>
           </details>
 
           <details open>
-            <summary>{copy.auth}</summary>
+            <summary>🔐 {copy.auth}</summary>
             <div class="auth-grid">
-              <label>
-                {copy.auth}
-                <select id="authType">
-                  <option value="none">{copy.noAuth}</option>
-                  <option value="bearer">{copy.bearer}</option>
-                  <option value="basic">{copy.basic}</option>
-                </select>
-              </label>
-              <label data-auth-field="bearer">
-                Token
-                <input id="bearerToken" type="password" placeholder={copy.placeholders.token} autocomplete="off" />
-              </label>
-              <label data-auth-field="basic">
-                {copy.placeholders.username}
-                <input id="basicUser" type="text" placeholder={copy.placeholders.username} autocomplete="username" />
-              </label>
-              <label data-auth-field="basic">
-                {copy.placeholders.password}
-                <input id="basicPass" type="password" placeholder={copy.placeholders.password} autocomplete="current-password" />
-              </label>
+              <label>{copy.auth}<select id="authType"><option value="none">{copy.noAuth}</option><option value="bearer">{copy.bearer}</option><option value="basic">{copy.basic}</option></select></label>
+              <label data-auth-field="bearer">Token<input id="bearerToken" type="password" placeholder={copy.placeholders.token} autocomplete="off" /></label>
+              <label data-auth-field="basic">{copy.placeholders.username}<input id="basicUser" type="text" placeholder={copy.placeholders.username} autocomplete="username" /></label>
+              <label data-auth-field="basic">{copy.placeholders.password}<input id="basicPass" type="password" placeholder={copy.placeholders.password} autocomplete="current-password" /></label>
             </div>
           </details>
 
           <details open>
-            <summary>{copy.body}</summary>
-            <label>
-              {copy.bodyType}
-              <select id="bodyType">
-                <option value="none">{copy.noneBody}</option>
-                <option value="json" selected>{copy.jsonBody}</option>
-                <option value="text">{copy.textBody}</option>
-                <option value="form">{copy.formBody}</option>
-              </select>
-            </label>
+            <summary>✍️ {copy.body}</summary>
+            <label>{copy.bodyType}<select id="bodyType"><option value="none">{copy.noneBody}</option><option value="json" selected>JSON</option><option value="text">Text</option><option value="form">x-www-form-urlencoded</option></select></label>
             <textarea id="bodyInput" spellcheck="false" placeholder={copy.placeholders.body}></textarea>
           </details>
 
-          <details class="curl-box" open>
-            <summary>{copy.curl}</summary>
-            <label>
-              {copy.importCurl}
-              <textarea id="curlInput" class="code-area small" spellcheck="false" placeholder={copy.placeholders.curl}></textarea>
-            </label>
+          <details class="curl-box">
+            <summary>🧾 {copy.curl}</summary>
+            <label>{copy.importCurl}<textarea id="curlInput" class="code-area small" spellcheck="false" placeholder={copy.placeholders.curl}></textarea></label>
             <div class="mini-actions">
-              <button id="parseCurlBtn" type="button">{copy.parseCurl}</button>
-              <button id="copyCurlBtn" type="button">{copy.copyCurl}</button>
+              <button id="parseCurlBtn" type="button">📥 {copy.parseCurl}</button>
+              <button id="copyCurlBtn" type="button">📋 {copy.copyCurl}</button>
             </div>
-            <label>
-              {copy.curl}
-              <textarea id="curlOutput" class="code-area small" readonly spellcheck="false"></textarea>
-            </label>
+            <label>{copy.curl}<textarea id="curlOutput" class="code-area small" readonly spellcheck="false"></textarea></label>
           </details>
 
           <ul id="warnings" class="warnings" aria-live="polite"></ul>
@@ -168,240 +160,68 @@ const copy = {
         <section class="column response-column" aria-labelledby="responseTitle">
           <div class="column-head response-head">
             <div>
-              <h2 id="responseTitle">{copy.response}</h2>
+              <h2 id="responseTitle">📡 {copy.response}</h2>
               <p id="statusText">{copy.messages.ready}</p>
             </div>
+            <button id="copyResponseBtn" type="button">📋 {copy.copyResponse}</button>
           </div>
 
           <div class="metrics" aria-label="Response metrics">
-            <output id="statusMetric">{copy.status}: —</output>
-            <output id="timeMetric">{copy.time}: —</output>
-            <output id="sizeMetric">{copy.size}: —</output>
+            <output id="statusMetric"><span>●</span> {copy.status}: —</output>
+            <output id="timeMetric">⏱️ {copy.time}: —</output>
+            <output id="sizeMetric">📦 {copy.size}: —</output>
           </div>
 
           <div class="tabs" role="tablist" aria-label="Response view">
-            <button class="tab active" type="button" data-view="pretty">{copy.tabs.pretty}</button>
-            <button class="tab" type="button" data-view="raw">{copy.tabs.raw}</button>
-            <button class="tab" type="button" data-view="headers">{copy.tabs.headers}</button>
+            <button class="tab active" type="button" data-view="pretty">✨ {copy.tabs.pretty}</button>
+            <button class="tab" type="button" data-view="raw">◇ {copy.tabs.raw}</button>
+            <button class="tab" type="button" data-view="headers">▦ {copy.tabs.headers}</button>
           </div>
-          <pre id="responseView" class="response-view"></pre>
+          <pre id="responseView" class="response-view">{es ? 'La respuesta aparecerá aquí.' : 'The response will appear here.'}</pre>
         </section>
       </div>
     </section>
   </section>
 
   <style>
-    .postman-page{padding:clamp(2rem,6vw,4rem) 0}.postman-tool{padding:clamp(.75rem,2vw,1rem);margin-top:2rem;display:grid;gap:1rem}.request-bar{position:sticky;top:.75rem;z-index:5;display:grid;grid-template-columns:150px minmax(180px,1fr) max-content max-content;gap:.65rem;align-items:center;padding:.75rem;border:1px solid var(--color-border,var(--border));border-radius:22px;background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-sm);backdrop-filter:blur(14px)}.main-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(380px,1fr);gap:1rem;align-items:start}.column{border:1px solid var(--color-border,var(--border));border-radius:22px;background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-xs);padding:1rem;display:grid;gap:1rem;min-width:0}.column-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start}.column-head h2{margin:0 0 .2rem;font-size:1.25rem}.column-head p{margin:0;color:var(--color-text-muted,var(--muted));line-height:1.55}.url-input{font-size:1rem}label{display:grid;gap:.4rem;color:var(--color-text-muted,var(--muted));font-weight:850}input,select,textarea{width:100%;border:1px solid var(--color-border,var(--border));border-radius:14px;background:var(--color-surface);color:var(--color-text);padding:.78rem .9rem;font:inherit}textarea{min-height:180px;font-family:var(--font-mono);line-height:1.55;resize:vertical;tab-size:2}.code-area{background:#111827;color:#e5e7eb}.code-area.small{min-height:105px}.quick-presets,.mini-actions,.tabs{display:flex;flex-wrap:wrap;gap:.5rem}button{min-height:2.6rem;border-radius:999px;border:1px solid var(--color-border,var(--border));background:var(--color-surface);color:var(--color-text);padding:.6rem .9rem;font:inherit;font-weight:900;cursor:pointer;box-shadow:var(--shadow-xs);white-space:nowrap}button:hover{border-color:color-mix(in srgb,var(--color-primary,var(--primary)) 55%,var(--color-border,var(--border)))}button.primary{background:var(--color-primary,var(--primary));color:#020617;border-color:transparent}.secondary{width:max-content}details{border:1px solid var(--color-border,var(--border));border-radius:18px;padding:.85rem;background:var(--color-surface-soft,rgba(148,163,184,.08))}summary{cursor:pointer;font-weight:950;color:var(--color-text);margin-bottom:.75rem}.headers-list{display:grid;gap:.55rem;margin-bottom:.7rem}.header-row{display:grid;grid-template-columns:minmax(120px,.7fr) minmax(160px,1fr) auto;gap:.5rem}.header-row button{min-width:2.7rem}.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}.metrics output{border:1px solid var(--color-border,var(--border));border-radius:14px;background:var(--color-surface-soft,rgba(148,163,184,.08));padding:.75rem;color:var(--color-text-muted,var(--muted));font-weight:850}.tab.active{background:#111827;color:#fff;border-color:#111827}.response-view{min-height:620px;max-height:820px;overflow:auto;margin:0;border-radius:18px;background:#111827;color:#e5e7eb;padding:1rem;font:500 .92rem/1.6 var(--font-mono);white-space:pre-wrap;word-break:break-word}.warnings{display:grid;gap:.35rem;margin:0;padding-left:1.2rem;color:#f59e0b}.warnings:empty{display:none}.status-error{color:#fca5a5!important}.status-ok{color:#86efac!important}[data-hidden=true]{display:none}@media(max-width:1080px){.request-bar{position:static;grid-template-columns:130px 1fr}.request-bar button{width:100%}.main-grid{grid-template-columns:1fr}.response-view{min-height:360px}.auth-grid,.metrics{grid-template-columns:1fr}}@media(max-width:640px){.request-bar{grid-template-columns:1fr}.header-row{grid-template-columns:1fr}.header-row button{width:100%}.quick-presets button,.mini-actions button,.tabs button{flex:1 1 calc(50% - .5rem)}}
+    .postman-page{padding:clamp(2rem,6vw,3.5rem) 0}.trust-row{display:flex;gap:.55rem;flex-wrap:wrap;margin:1rem 0 0}.trust-row span{display:inline-flex;align-items:center;gap:.35rem;border:1px solid var(--color-border);border-radius:999px;background:var(--color-surface);color:var(--color-text-muted);padding:.42rem .7rem;font-size:.88rem;font-weight:850}.postman-tool{padding:clamp(.8rem,2vw,1rem);margin-top:1.4rem;display:grid;gap:1rem}.request-bar{position:sticky;top:.75rem;z-index:5;display:grid;grid-template-columns:142px minmax(220px,1fr) max-content max-content;gap:.65rem;align-items:end;padding:.85rem;border:1px solid var(--color-border);border-radius:24px;background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-sm);backdrop-filter:blur(14px)}.method-wrap,.url-wrap{gap:.32rem}.method-wrap span,.url-wrap span{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-soft);font-weight:950}.examples{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;border:1px solid var(--color-border);border-radius:18px;background:var(--color-surface-soft);padding:.65rem}.examples strong{color:var(--color-text);font-size:.92rem}.main-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(390px,1fr);gap:1rem;align-items:start}.column{border:1px solid var(--color-border);border-radius:24px;background:color-mix(in srgb,var(--color-surface) 95%,transparent);box-shadow:var(--shadow-xs);padding:1rem;display:grid;gap:1rem;min-width:0}.column-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start}.column-head h2{margin:0 0 .2rem;font-size:1.22rem}.column-head p{margin:0;color:var(--color-text-muted);line-height:1.55}label{display:grid;gap:.4rem;color:var(--color-text-muted);font-weight:850}input,select,textarea{width:100%;border:1px solid var(--color-border);border-radius:14px;background:var(--color-surface);color:var(--color-text);padding:.78rem .9rem;font:inherit}select{cursor:pointer}textarea{min-height:170px;font-family:var(--font-mono);line-height:1.55;resize:vertical;tab-size:2}.code-area{background:#111827;color:#e5e7eb}.code-area.small{min-height:105px}.quick-presets,.mini-actions,.tabs{display:flex;flex-wrap:wrap;gap:.5rem}button{min-height:2.55rem;border-radius:999px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);padding:.58rem .86rem;font:inherit;font-weight:900;cursor:pointer;box-shadow:var(--shadow-xs);white-space:nowrap;transition:transform var(--transition-fast),border-color var(--transition-base),background-color var(--transition-base)}button:hover{transform:translateY(-1px);border-color:color-mix(in srgb,var(--color-primary) 55%,var(--color-border))}button.primary{background:var(--color-primary);color:#020617;border-color:transparent}.send-button{min-width:8rem}.danger-light{color:var(--color-danger)}.secondary{width:max-content}details{border:1px solid var(--color-border);border-radius:18px;padding:.85rem;background:var(--color-surface-soft)}summary{cursor:pointer;font-weight:950;color:var(--color-text);margin-bottom:.75rem}.headers-list{display:grid;gap:.55rem;margin-bottom:.7rem}.header-row{display:grid;grid-template-columns:minmax(120px,.7fr) minmax(160px,1fr) auto;gap:.5rem}.header-row button{min-width:2.7rem}.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}.metrics output{border:1px solid var(--color-border);border-radius:16px;background:var(--color-surface-soft);padding:.8rem;color:var(--color-text-muted);font-weight:900;line-height:1.35}.metrics output.is-ok{color:var(--color-success);border-color:color-mix(in srgb,var(--color-success) 35%,var(--color-border))}.metrics output.is-error{color:var(--color-danger);border-color:color-mix(in srgb,var(--color-danger) 35%,var(--color-border))}.tab.active{background:#111827;color:#fff;border-color:#111827}.response-view{min-height:620px;max-height:820px;overflow:auto;margin:0;border-radius:18px;background:#111827;color:#e5e7eb;padding:1rem;font:500 .92rem/1.6 var(--font-mono);white-space:pre-wrap;word-break:break-word}.warnings{display:grid;gap:.35rem;margin:0;padding-left:1.2rem;color:#f59e0b}.warnings:empty{display:none}.status-error{color:var(--color-danger)!important}.status-ok{color:var(--color-success)!important}[data-hidden=true]{display:none}@media(max-width:1080px){.request-bar{position:static;grid-template-columns:130px 1fr}.request-bar button{width:100%}.main-grid{grid-template-columns:1fr}.response-view{min-height:360px}.auth-grid,.metrics{grid-template-columns:1fr}}@media(max-width:640px){.request-bar{grid-template-columns:1fr}.header-row{grid-template-columns:1fr}.header-row button{width:100%}.quick-presets button,.mini-actions button,.tabs button,.examples button{flex:1 1 calc(50% - .5rem)}}
   </style>
 
   <script define:vars={{ copy }}>
     window.addEventListener('DOMContentLoaded', () => {
       const $ = (id) => document.getElementById(id);
-      const methodSelect = $('methodSelect');
-      const urlInput = $('urlInput');
-      const headersList = $('headersList');
-      const authType = $('authType');
-      const bearerToken = $('bearerToken');
-      const basicUser = $('basicUser');
-      const basicPass = $('basicPass');
-      const bodyType = $('bodyType');
-      const bodyInput = $('bodyInput');
-      const curlInput = $('curlInput');
-      const curlOutput = $('curlOutput');
-      const responseView = $('responseView');
-      const statusText = $('statusText');
-      const statusMetric = $('statusMetric');
-      const timeMetric = $('timeMetric');
-      const sizeMetric = $('sizeMetric');
-      const warnings = $('warnings');
+      const methodSelect = $('methodSelect'), urlInput = $('urlInput'), headersList = $('headersList'), authType = $('authType'), bearerToken = $('bearerToken'), basicUser = $('basicUser'), basicPass = $('basicPass'), bodyType = $('bodyType'), bodyInput = $('bodyInput'), curlInput = $('curlInput'), curlOutput = $('curlOutput'), responseView = $('responseView'), statusText = $('statusText'), statusMetric = $('statusMetric'), timeMetric = $('timeMetric'), sizeMetric = $('sizeMetric'), warnings = $('warnings');
       const tabs = Array.from(document.querySelectorAll('.tab'));
       let currentResponse = { pretty: '', raw: '', headers: '' };
       let currentView = 'pretty';
-
-      const setStatus = (message, type = '') => {
-        statusText.textContent = message;
-        statusText.classList.toggle('status-error', type === 'error');
-        statusText.classList.toggle('status-ok', type === 'ok');
-      };
+      const setStatus = (message, type = '') => { statusText.textContent = message; statusText.classList.toggle('status-error', type === 'error'); statusText.classList.toggle('status-ok', type === 'ok'); };
       const formatBytes = (bytes) => bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(2)} MB`;
       const shellQuote = (value) => `'${String(value).replaceAll("'", "'\\''")}'`;
       const addWarning = (message) => { const li = document.createElement('li'); li.textContent = message; warnings.append(li); };
       const clearWarnings = () => warnings.replaceChildren();
       const isValidUrl = (value) => { try { const url = new URL(value); return ['http:', 'https:'].includes(url.protocol); } catch { return false; } };
-
-      const addHeaderRow = (name = '', value = '') => {
-        const row = document.createElement('div');
-        row.className = 'header-row';
-        row.innerHTML = `<input data-header-name placeholder="${copy.placeholders.headerName}"><input data-header-value placeholder="${copy.placeholders.headerValue}"><button type="button" aria-label="Remove header">×</button>`;
-        row.querySelector('[data-header-name]').value = name;
-        row.querySelector('[data-header-value]').value = value;
-        row.querySelector('button').addEventListener('click', () => { row.remove(); generateCurl(); });
-        row.querySelectorAll('input').forEach((input) => input.addEventListener('input', generateCurl));
-        headersList.append(row);
-      };
+      const addHeaderRow = (name = '', value = '') => { const row = document.createElement('div'); row.className = 'header-row'; row.innerHTML = `<input data-header-name placeholder="${copy.placeholders.headerName}"><input data-header-value placeholder="${copy.placeholders.headerValue}"><button type="button" aria-label="Remove header">×</button>`; row.querySelector('[data-header-name]').value = name; row.querySelector('[data-header-value]').value = value; row.querySelector('button').addEventListener('click', () => { row.remove(); generateCurl(); }); row.querySelectorAll('input').forEach((input) => input.addEventListener('input', generateCurl)); headersList.append(row); };
       const readHeaders = () => Array.from(headersList.querySelectorAll('.header-row')).map((row) => ({ name: row.querySelector('[data-header-name]').value.trim(), value: row.querySelector('[data-header-value]').value.trim() })).filter((header) => header.name);
-      const setHeader = (name, value) => {
-        const existing = Array.from(headersList.querySelectorAll('.header-row')).find((row) => row.querySelector('[data-header-name]').value.trim().toLowerCase() === name.toLowerCase());
-        if (existing) existing.querySelector('[data-header-value]').value = value;
-        else addHeaderRow(name, value);
-      };
+      const setHeader = (name, value) => { const existing = Array.from(headersList.querySelectorAll('.header-row')).find((row) => row.querySelector('[data-header-name]').value.trim().toLowerCase() === name.toLowerCase()); if (existing) existing.querySelector('[data-header-value]').value = value; else addHeaderRow(name, value); };
       const updateAuthVisibility = () => document.querySelectorAll('[data-auth-field]').forEach((field) => field.dataset.hidden = String(field.dataset.authField !== authType.value));
-
-      const getBody = () => {
-        const method = methodSelect.value.toUpperCase();
-        if (method === 'GET' || method === 'HEAD' || bodyType.value === 'none') return undefined;
-        if (bodyType.value === 'json') {
-          const raw = bodyInput.value.trim();
-          if (!raw) return undefined;
-          JSON.parse(raw);
-          return raw;
-        }
-        if (bodyType.value === 'form') return new URLSearchParams(bodyInput.value).toString();
-        return bodyInput.value;
-      };
-
-      const buildHeaders = () => {
-        const headers = new Headers();
-        readHeaders().forEach(({ name, value }) => headers.set(name, value));
-        if (authType.value === 'bearer' && bearerToken.value.trim()) headers.set('Authorization', `Bearer ${bearerToken.value.trim()}`);
-        if (authType.value === 'basic' && basicUser.value) headers.set('Authorization', `Basic ${btoa(`${basicUser.value}:${basicPass.value}`)}`);
-        return headers;
-      };
-
-      const validateRequest = () => {
-        clearWarnings();
-        if (!isValidUrl(urlInput.value.trim())) { addWarning(copy.messages.invalidUrl); return false; }
-        const method = methodSelect.value.toUpperCase();
-        if ((method === 'GET' || method === 'HEAD') && bodyInput.value.trim() && bodyType.value !== 'none') addWarning(copy.messages.getBody);
-        if (bodyType.value === 'json' && bodyInput.value.trim() && method !== 'GET' && method !== 'HEAD') {
-          try { JSON.parse(bodyInput.value); } catch { addWarning(copy.messages.invalidJson); return false; }
-        }
-        return true;
-      };
-
-      const generateCurl = () => {
-        const method = methodSelect.value.toUpperCase();
-        const parts = ['curl', '-X', method, shellQuote(urlInput.value.trim() || copy.placeholders.url)];
-        readHeaders().forEach(({ name, value }) => parts.push('-H', shellQuote(`${name}: ${value}`)));
-        if (authType.value === 'bearer' && bearerToken.value.trim()) parts.push('-H', shellQuote(`Authorization: Bearer ${bearerToken.value.trim()}`));
-        if (authType.value === 'basic' && basicUser.value) parts.push('-u', shellQuote(`${basicUser.value}:${basicPass.value}`));
-        try {
-          const body = getBody();
-          if (body !== undefined) parts.push('--data-raw', shellQuote(body));
-        } catch {}
-        curlOutput.value = parts.join(' \\\n  ');
-        validateRequest();
-        return curlOutput.value;
-      };
-
-      const renderResponse = () => {
-        tabs.forEach((tab) => tab.classList.toggle('active', tab.dataset.view === currentView));
-        responseView.textContent = currentResponse[currentView] || '';
-      };
-
-      const sendRequest = async () => {
-        if (!validateRequest()) { setStatus(copy.messages.invalidUrl, 'error'); return; }
-        let body;
-        try { body = getBody(); } catch { setStatus(copy.messages.invalidJson, 'error'); return; }
-        const method = methodSelect.value.toUpperCase();
-        const init = { method, headers: buildHeaders(), mode: 'cors' };
-        if (body !== undefined) init.body = body;
-        setStatus(copy.messages.sending);
-        const start = performance.now();
-        try {
-          const response = await fetch(urlInput.value.trim(), init);
-          const elapsed = Math.round(performance.now() - start);
-          const raw = await response.text();
-          let pretty = raw;
-          const contentType = response.headers.get('content-type') || '';
-          if (contentType.includes('application/json') || /^[\[{]/.test(raw.trim())) {
-            try { pretty = JSON.stringify(JSON.parse(raw), null, 2); } catch {}
-          }
-          currentResponse = {
-            pretty,
-            raw,
-            headers: Array.from(response.headers.entries()).map(([key, value]) => `${key}: ${value}`).join('\n')
-          };
-          statusMetric.textContent = `${copy.status}: ${response.status} ${response.statusText}`;
-          timeMetric.textContent = `${copy.time}: ${elapsed} ms`;
-          sizeMetric.textContent = `${copy.size}: ${formatBytes(new Blob([raw]).size)}`;
-          currentView = 'pretty';
-          renderResponse();
-          setStatus(copy.messages.done, response.ok ? 'ok' : 'error');
-        } catch (error) {
-          currentResponse = { pretty: `${copy.messages.fetchError}\n\n${error instanceof Error ? error.message : String(error)}`, raw: '', headers: '' };
-          currentView = 'pretty';
-          renderResponse();
-          statusMetric.textContent = `${copy.status}: —`;
-          timeMetric.textContent = `${copy.time}: —`;
-          sizeMetric.textContent = `${copy.size}: —`;
-          addWarning(copy.messages.fetchError);
-          setStatus(copy.messages.fetchError, 'error');
-        }
-      };
-
-      const tokenizeCurl = (value) => {
-        const tokens = [];
-        let token = '';
-        let quote = '';
-        let escaped = false;
-        for (const char of value.replace(/\\\n/g, ' ')) {
-          if (escaped) { token += char; escaped = false; continue; }
-          if (char === '\\') { escaped = true; continue; }
-          if (quote) { if (char === quote) quote = ''; else token += char; continue; }
-          if (char === '"' || char === "'") { quote = char; continue; }
-          if (/\s/.test(char)) { if (token) { tokens.push(token); token = ''; } continue; }
-          token += char;
-        }
-        if (token) tokens.push(token);
-        return tokens;
-      };
-
-      const importCurl = () => {
-        clearWarnings();
-        const raw = curlInput.value.trim();
-        if (!raw) { addWarning(copy.messages.curlEmpty); setStatus(copy.messages.curlEmpty, 'error'); return; }
-        const tokens = tokenizeCurl(raw);
-        if (tokens[0] !== 'curl') { addWarning(copy.messages.curlInvalid); setStatus(copy.messages.curlInvalid, 'error'); return; }
-        let foundUrl = '';
-        let method = 'GET';
-        let body = '';
-        headersList.replaceChildren();
-        authType.value = 'none';
-        for (let i = 1; i < tokens.length; i += 1) {
-          const token = tokens[i];
-          const next = tokens[i + 1];
-          if ((token === '-X' || token === '--request') && next) { method = next.toUpperCase(); i += 1; continue; }
-          if ((token === '-H' || token === '--header') && next) { const index = next.indexOf(':'); if (index > 0) addHeaderRow(next.slice(0, index).trim(), next.slice(index + 1).trim()); else addWarning(`${copy.headers}: ${next}`); i += 1; continue; }
-          if (['-d','--data','--data-raw','--data-binary','--data-ascii'].includes(token) && next !== undefined) { body = next; if (method === 'GET') method = 'POST'; i += 1; continue; }
-          if ((token === '-u' || token === '--user') && next) { const [user, ...pass] = next.split(':'); authType.value = 'basic'; basicUser.value = user || ''; basicPass.value = pass.join(':'); i += 1; continue; }
-          if (!token.startsWith('-') && isValidUrl(token)) foundUrl = token;
-        }
-        if (!foundUrl) { addWarning(copy.messages.curlInvalid); setStatus(copy.messages.curlInvalid, 'error'); return; }
-        methodSelect.value = method;
-        urlInput.value = foundUrl;
-        bodyInput.value = body;
-        bodyType.value = body ? (body.trim().startsWith('{') || body.trim().startsWith('[') ? 'json' : 'text') : 'none';
-        updateAuthVisibility();
-        generateCurl();
-        setStatus(copy.messages.curlParsed, 'ok');
-      };
-
-      document.querySelectorAll('[data-preset]').forEach((button) => button.addEventListener('click', () => {
-        const preset = button.dataset.preset;
-        if (preset === 'json') { setHeader('Accept', 'application/json'); setHeader('Content-Type', 'application/json'); bodyType.value = 'json'; }
-        if (preset === 'form') { setHeader('Content-Type', 'application/x-www-form-urlencoded'); bodyType.value = 'form'; }
-        if (preset === 'custom') addHeaderRow('', '');
-        generateCurl();
-      }));
+      const getBody = () => { const method = methodSelect.value.toUpperCase(); if (method === 'GET' || method === 'HEAD' || bodyType.value === 'none') return undefined; if (bodyType.value === 'json') { const raw = bodyInput.value.trim(); if (!raw) return undefined; JSON.parse(raw); return raw; } if (bodyType.value === 'form') return new URLSearchParams(bodyInput.value).toString(); return bodyInput.value; };
+      const buildHeaders = () => { const headers = new Headers(); readHeaders().forEach(({ name, value }) => headers.set(name, value)); if (authType.value === 'bearer' && bearerToken.value.trim()) headers.set('Authorization', `Bearer ${bearerToken.value.trim()}`); if (authType.value === 'basic' && basicUser.value) headers.set('Authorization', `Basic ${btoa(`${basicUser.value}:${basicPass.value}`)}`); return headers; };
+      const validateRequest = () => { clearWarnings(); if (!isValidUrl(urlInput.value.trim())) { addWarning(copy.messages.invalidUrl); return false; } const method = methodSelect.value.toUpperCase(); if ((method === 'GET' || method === 'HEAD') && bodyInput.value.trim() && bodyType.value !== 'none') addWarning(copy.messages.getBody); if (bodyType.value === 'json' && bodyInput.value.trim() && method !== 'GET' && method !== 'HEAD') { try { JSON.parse(bodyInput.value); } catch { addWarning(copy.messages.invalidJson); return false; } } return true; };
+      const generateCurl = () => { const method = methodSelect.value.toUpperCase(); const parts = ['curl', '-X', method, shellQuote(urlInput.value.trim() || copy.placeholders.url)]; readHeaders().forEach(({ name, value }) => parts.push('-H', shellQuote(`${name}: ${value}`))); if (authType.value === 'bearer' && bearerToken.value.trim()) parts.push('-H', shellQuote(`Authorization: Bearer ${bearerToken.value.trim()}`)); if (authType.value === 'basic' && basicUser.value) parts.push('-u', shellQuote(`${basicUser.value}:${basicPass.value}`)); try { const body = getBody(); if (body !== undefined) parts.push('--data-raw', shellQuote(body)); } catch {} curlOutput.value = parts.join(' \\\n  '); validateRequest(); return curlOutput.value; };
+      const renderResponse = () => { tabs.forEach((tab) => tab.classList.toggle('active', tab.dataset.view === currentView)); responseView.textContent = currentResponse[currentView] || ''; };
+      const setMetricState = (ok) => { statusMetric.classList.toggle('is-ok', ok); statusMetric.classList.toggle('is-error', !ok); };
+      const sendRequest = async () => { if (!validateRequest()) { setStatus(copy.messages.invalidUrl, 'error'); return; } let body; try { body = getBody(); } catch { setStatus(copy.messages.invalidJson, 'error'); return; } const method = methodSelect.value.toUpperCase(); const init = { method, headers: buildHeaders(), mode: 'cors' }; if (body !== undefined) init.body = body; const sendBtn = $('sendBtn'); sendBtn.disabled = true; sendBtn.innerHTML = `<span aria-hidden="true">⏳</span> <span>${copy.sending}</span>`; setStatus(copy.messages.sending); const start = performance.now(); try { const response = await fetch(urlInput.value.trim(), init); const elapsed = Math.round(performance.now() - start); const raw = await response.text(); let pretty = raw; const contentType = response.headers.get('content-type') || ''; if (contentType.includes('application/json') || /^[\[{]/.test(raw.trim())) { try { pretty = JSON.stringify(JSON.parse(raw), null, 2); } catch {} } currentResponse = { pretty, raw, headers: Array.from(response.headers.entries()).map(([key, value]) => `${key}: ${value}`).join('\n') }; statusMetric.textContent = `${copy.status}: ${response.status} ${response.statusText}`; setMetricState(response.ok); timeMetric.textContent = `⏱️ ${copy.time}: ${elapsed} ms`; sizeMetric.textContent = `📦 ${copy.size}: ${formatBytes(new Blob([raw]).size)}`; currentView = 'pretty'; renderResponse(); setStatus(copy.messages.done, response.ok ? 'ok' : 'error'); } catch (error) { currentResponse = { pretty: `${copy.messages.fetchError}\n\n${error instanceof Error ? error.message : String(error)}`, raw: '', headers: '' }; currentView = 'pretty'; renderResponse(); statusMetric.textContent = `${copy.status}: —`; statusMetric.classList.remove('is-ok','is-error'); timeMetric.textContent = `⏱️ ${copy.time}: —`; sizeMetric.textContent = `📦 ${copy.size}: —`; addWarning(copy.messages.fetchError); setStatus(copy.messages.fetchError, 'error'); } finally { sendBtn.disabled = false; sendBtn.innerHTML = `<span aria-hidden="true">🚀</span> <span>${copy.send}</span>`; } };
+      const tokenizeCurl = (value) => { const tokens = []; let token = '', quote = '', escaped = false; for (const char of value.replace(/\\\n/g, ' ')) { if (escaped) { token += char; escaped = false; continue; } if (char === '\\') { escaped = true; continue; } if (quote) { if (char === quote) quote = ''; else token += char; continue; } if (char === '"' || char === "'") { quote = char; continue; } if (/\s/.test(char)) { if (token) { tokens.push(token); token = ''; } continue; } token += char; } if (token) tokens.push(token); return tokens; };
+      const importCurl = () => { clearWarnings(); const raw = curlInput.value.trim(); if (!raw) { addWarning(copy.messages.curlEmpty); setStatus(copy.messages.curlEmpty, 'error'); return; } const tokens = tokenizeCurl(raw); if (tokens[0] !== 'curl') { addWarning(copy.messages.curlInvalid); setStatus(copy.messages.curlInvalid, 'error'); return; } let foundUrl = '', method = 'GET', body = ''; headersList.replaceChildren(); authType.value = 'none'; for (let i = 1; i < tokens.length; i += 1) { const token = tokens[i], next = tokens[i + 1]; if ((token === '-X' || token === '--request') && next) { method = next.toUpperCase(); i += 1; continue; } if ((token === '-H' || token === '--header') && next) { const index = next.indexOf(':'); if (index > 0) addHeaderRow(next.slice(0, index).trim(), next.slice(index + 1).trim()); i += 1; continue; } if (['-d','--data','--data-raw','--data-binary','--data-ascii'].includes(token) && next !== undefined) { body = next; if (method === 'GET') method = 'POST'; i += 1; continue; } if ((token === '-u' || token === '--user') && next) { const [user, ...pass] = next.split(':'); authType.value = 'basic'; basicUser.value = user || ''; basicPass.value = pass.join(':'); i += 1; continue; } if (!token.startsWith('-') && isValidUrl(token)) foundUrl = token; } if (!foundUrl) { addWarning(copy.messages.curlInvalid); setStatus(copy.messages.curlInvalid, 'error'); return; } methodSelect.value = method; urlInput.value = foundUrl; bodyInput.value = body; bodyType.value = body ? (body.trim().startsWith('{') || body.trim().startsWith('[') ? 'json' : 'text') : 'none'; updateAuthVisibility(); generateCurl(); setStatus(copy.messages.curlParsed, 'ok'); };
+      document.querySelectorAll('[data-preset]').forEach((button) => button.addEventListener('click', () => { const preset = button.dataset.preset; if (preset === 'json') { setHeader('Accept', 'application/json'); setHeader('Content-Type', 'application/json'); bodyType.value = 'json'; } if (preset === 'form') { setHeader('Content-Type', 'application/x-www-form-urlencoded'); bodyType.value = 'form'; } if (preset === 'custom') addHeaderRow('', ''); generateCurl(); }));
+      document.querySelectorAll('[data-example-url]').forEach((button) => button.addEventListener('click', () => { methodSelect.value = button.dataset.exampleMethod; urlInput.value = button.dataset.exampleUrl; if (methodSelect.value === 'POST') { bodyType.value = 'json'; bodyInput.value = copy.placeholders.body; setHeader('Content-Type','application/json'); } generateCurl(); }));
       $('addHeaderBtn').addEventListener('click', () => addHeaderRow('', ''));
       $('sendBtn').addEventListener('click', sendRequest);
       $('curlBtn').addEventListener('click', () => { generateCurl(); setStatus(copy.messages.curlGenerated, 'ok'); });
       $('copyCurlBtn').addEventListener('click', async () => { await navigator.clipboard.writeText(generateCurl()); setStatus(copy.messages.curlCopied, 'ok'); });
+      $('copyResponseBtn').addEventListener('click', async () => { await navigator.clipboard.writeText(currentResponse[currentView] || responseView.textContent || ''); setStatus(copy.messages.responseCopied, 'ok'); });
       $('parseCurlBtn').addEventListener('click', importCurl);
-      $('clearBtn').addEventListener('click', () => {
-        urlInput.value = ''; bodyInput.value = ''; curlInput.value = ''; curlOutput.value = ''; headersList.replaceChildren(); addHeaderRow('Accept','application/json'); authType.value = 'none'; updateAuthVisibility(); clearWarnings(); currentResponse = { pretty: '', raw: '', headers: '' }; renderResponse(); statusMetric.textContent = `${copy.status}: —`; timeMetric.textContent = `${copy.time}: —`; sizeMetric.textContent = `${copy.size}: —`; setStatus(copy.messages.cleared);
-      });
+      $('clearBtn').addEventListener('click', () => { urlInput.value = ''; bodyInput.value = ''; curlInput.value = ''; curlOutput.value = ''; headersList.replaceChildren(); addHeaderRow('Accept','application/json'); authType.value = 'none'; updateAuthVisibility(); clearWarnings(); currentResponse = { pretty: '', raw: '', headers: '' }; renderResponse(); responseView.textContent = ''; statusMetric.textContent = `● ${copy.status}: —`; statusMetric.classList.remove('is-ok','is-error'); timeMetric.textContent = `⏱️ ${copy.time}: —`; sizeMetric.textContent = `📦 ${copy.size}: —`; setStatus(copy.messages.cleared); });
       [methodSelect, urlInput, authType, bearerToken, basicUser, basicPass, bodyType, bodyInput].forEach((element) => element.addEventListener('input', () => { updateAuthVisibility(); generateCurl(); }));
       tabs.forEach((tab) => tab.addEventListener('click', () => { currentView = tab.dataset.view; renderResponse(); }));
       addHeaderRow('Accept', 'application/json');
