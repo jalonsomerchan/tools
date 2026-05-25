@@ -101,73 +101,190 @@ console.log('Hola');
       min-height: 620px;
       border-radius: 24px;
       border: 1px solid var(--border);
-      background: rgba(2,6,23,.55);
       padding: 1.2rem;
       overflow: auto;
     }
 
     textarea {
       resize: vertical;
-      color: white;
+      color: #f8fafc;
       font-family: ui-monospace, monospace;
       line-height: 1.7;
       background: #020617;
     }
 
     #preview {
-      color: #e2e8f0;
-      line-height: 1.8;
+      background: #ffffff;
+      color: #1f2937;
+      line-height: 1.75;
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, .035);
+    }
+
+    #preview :first-child {
+      margin-top: 0;
     }
 
     #preview h1,
     #preview h2,
     #preview h3 {
-      margin-top: 1.6rem;
-      margin-bottom: .8rem;
-      line-height: 1.2;
+      color: #111827;
+      margin-top: 1.35rem;
+      margin-bottom: .65rem;
+      line-height: 1.15;
+      letter-spacing: -.035em;
     }
 
-    #preview p {
-      color: #cbd5e1;
+    #preview h1 {
+      font-size: clamp(2rem, 4vw, 3.2rem);
+    }
+
+    #preview h2 {
+      font-size: clamp(1.45rem, 2.5vw, 2rem);
+    }
+
+    #preview h3 {
+      font-size: 1.25rem;
+    }
+
+    #preview p,
+    #preview li {
+      color: #374151;
+    }
+
+    #preview ul,
+    #preview ol {
+      color: #374151;
+      padding-left: 1.4rem;
+    }
+
+    #preview li::marker {
+      color: var(--primary);
     }
 
     #preview code {
-      background: rgba(148,163,184,.12);
-      padding: .2rem .4rem;
-      border-radius: 6px;
+      background: #f1f5f9;
+      color: #be123c;
+      padding: .18rem .38rem;
+      border-radius: 7px;
       font-family: ui-monospace, monospace;
+      font-size: .92em;
     }
 
     #preview pre {
-      background: #020617;
-      border: 1px solid var(--border);
+      background: #0f172a;
+      color: #e5e7eb;
+      border: 1px solid #1e293b;
       padding: 1rem;
       border-radius: 18px;
       overflow-x: auto;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    #preview pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      border-radius: 0;
     }
 
     #preview table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 1rem;
+      overflow: hidden;
+      border-radius: 14px;
     }
 
     #preview th,
     #preview td {
-      border: 1px solid var(--border);
+      border: 1px solid #dbe1ea;
       padding: .7rem;
       text-align: left;
+      color: #1f2937;
+    }
+
+    #preview th {
+      background: #f8fafc;
+      color: #111827;
+      font-weight: 900;
+    }
+
+    #preview tr:nth-child(even) td {
+      background: #fbfdff;
     }
 
     #preview blockquote {
       border-left: 4px solid var(--primary);
       margin-left: 0;
-      padding-left: 1rem;
-      color: var(--muted);
+      padding: .8rem 1rem;
+      border-radius: 0 14px 14px 0;
+      background: #fff7f5;
+      color: #4b5563;
     }
 
     #preview a {
-      color: var(--primary);
+      color: #dd3427;
+      font-weight: 800;
+    }
+
+    [data-theme='dark'] #preview {
+      background: #0f172a;
+      color: #e5e7eb;
+      border-color: #334155;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+
+    [data-theme='dark'] #preview h1,
+    [data-theme='dark'] #preview h2,
+    [data-theme='dark'] #preview h3 {
+      color: #f8fafc;
+    }
+
+    [data-theme='dark'] #preview p,
+    [data-theme='dark'] #preview li,
+    [data-theme='dark'] #preview ul,
+    [data-theme='dark'] #preview ol {
+      color: #cbd5e1;
+    }
+
+    [data-theme='dark'] #preview code {
+      background: rgba(148,163,184,.16);
+      color: #fda4af;
+    }
+
+    [data-theme='dark'] #preview pre {
+      background: #020617;
+      border-color: #334155;
+      color: #f8fafc;
+    }
+
+    [data-theme='dark'] #preview pre code {
+      background: transparent;
+      color: inherit;
+    }
+
+    [data-theme='dark'] #preview th,
+    [data-theme='dark'] #preview td {
+      border-color: #334155;
+      color: #e5e7eb;
+    }
+
+    [data-theme='dark'] #preview th {
+      background: #1e293b;
+      color: #f8fafc;
+    }
+
+    [data-theme='dark'] #preview tr:nth-child(even) td {
+      background: rgba(30,41,59,.5);
+    }
+
+    [data-theme='dark'] #preview blockquote {
+      background: rgba(249,115,22,.12);
+      color: #cbd5e1;
+    }
+
+    [data-theme='dark'] #preview a {
+      color: #fdba74;
     }
   </style>
 
