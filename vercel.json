@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/json-compare", "destination": "/json-compare-v2" },
+    { "source": "/json-compare/", "destination": "/json-compare-v2/" },
+    { "source": "/es/json-compare", "destination": "/json-compare-v2" },
+    { "source": "/es/json-compare/", "destination": "/json-compare-v2/" }
+  ]
+}
