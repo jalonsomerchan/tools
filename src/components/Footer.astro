@@ -50,6 +50,7 @@ const t = useTranslations(lang);
         if (!button || button.dataset.iconified === 'true') return;
         const label = button.textContent.trim() || button.getAttribute('aria-label') || id;
         button.dataset.iconified = 'true';
+        button.dataset.tooltip = label;
         button.classList.add('icon-button');
         button.setAttribute('aria-label', label);
         button.setAttribute('title', label);
@@ -98,6 +99,7 @@ const t = useTranslations(lang);
   }
 
   .json-tool .icon-button {
+    position: relative;
     width: 2.35rem;
     min-width: 2.35rem;
     min-height: 2.35rem;
@@ -115,6 +117,59 @@ const t = useTranslations(lang);
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
+  }
+
+  .json-tool .icon-button[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    z-index: 70;
+    left: 50%;
+    top: calc(100% + .55rem);
+    transform: translate(-50%, -.18rem);
+    opacity: 0;
+    pointer-events: none;
+    width: max-content;
+    max-width: 13rem;
+    padding: .42rem .6rem;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: .65rem;
+    background: #020617;
+    color: #f8fafc;
+    box-shadow: 0 14px 34px rgba(2,6,23,.34);
+    font-family: var(--font-sans);
+    font-size: .78rem;
+    font-weight: 900;
+    line-height: 1.15;
+    white-space: nowrap;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .json-tool .icon-button[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    z-index: 71;
+    left: 50%;
+    top: calc(100% + .28rem);
+    width: .55rem;
+    height: .55rem;
+    border-left: 1px solid rgba(255,255,255,.12);
+    border-top: 1px solid rgba(255,255,255,.12);
+    background: #020617;
+    transform: translateX(-50%) rotate(45deg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-fast);
+  }
+
+  .json-tool .icon-button[data-tooltip]:hover::after,
+  .json-tool .icon-button[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  .json-tool .icon-button[data-tooltip]:hover::before,
+  .json-tool .icon-button[data-tooltip]:focus-visible::before {
+    opacity: 1;
   }
 
   .json-tool .view-tab.icon-button {
