@@ -12,16 +12,22 @@ const ui = {
   eyebrow: '100% local',
   hero: es ? 'Sube una imagen, encuádrala arrastrando sobre el cuadrado, ajusta el zoom y descarga favicons e iconos para tu web.' : 'Upload one image, frame it by dragging inside the square, adjust zoom and download favicons and website icons.',
   upload: es ? 'Subir imagen' : 'Upload image',
+  drop: es ? 'Haz clic o arrastra aquí tu imagen' : 'Click or drag your image here',
+  dropActive: es ? 'Suelta la imagen para cargarla' : 'Drop the image to upload it',
   help: es ? 'PNG, JPG o WebP. La imagen no sale de tu navegador.' : 'PNG, JPG or WebP. The image stays in your browser.',
   zoom: es ? 'Zoom' : 'Zoom',
   bg: es ? 'Fondo blanco' : 'White background',
   center: es ? 'Centrar' : 'Center',
   generate: es ? 'Generar iconos' : 'Generate icons',
+  download: es ? 'Descargar' : 'Download',
+  downloadAll: es ? 'Descargar todos' : 'Download all',
   code: es ? 'Código para el head' : 'Head code',
-  ready: es ? 'Sube una imagen para empezar.' : 'Upload an image to start.',
+  ready: es ? 'Sube o arrastra una imagen para empezar.' : 'Upload or drag an image to start.',
   loaded: es ? 'Imagen cargada. Ajusta posición y zoom.' : 'Image loaded. Adjust position and zoom.',
   noImage: es ? 'Primero sube una imagen.' : 'Upload an image first.',
   done: es ? 'Iconos generados.' : 'Icons generated.',
+  allDone: es ? 'Descarga iniciada para todos los iconos.' : 'Download started for all icons.',
+  badFile: es ? 'El archivo debe ser una imagen PNG, JPG o WebP.' : 'The file must be a PNG, JPG or WebP image.',
   copied: es ? 'Código copiado.' : 'Code copied.',
   copyCode: es ? 'Copiar código' : 'Copy code',
   sizes: [['favicon-16x16.png',16],['favicon-32x32.png',32],['favicon-48x48.png',48],['apple-touch-icon.png',180],['android-chrome-192x192.png',192],['android-chrome-512x512.png',512]]
@@ -39,8 +45,8 @@ const ui = {
         <section class="settings-card">
           <h2>{ui.upload}</h2>
           <p>{ui.help}</p>
-          <label class="upload-zone" for="imageInput">
-            <strong>{ui.upload}</strong>
+          <label class="upload-zone" for="imageInput" id="uploadZone">
+            <strong id="uploadTitle">{ui.drop}</strong>
             <span>{ui.help}</span>
             <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" />
           </label>
@@ -50,6 +56,7 @@ const ui = {
           <div class="actions">
             <button id="centerBtn" type="button">{ui.center}</button>
             <button id="generateBtn" class="primary" type="button">{ui.generate}</button>
+            <button id="downloadAllBtn" class="secondary" type="button" disabled>{ui.downloadAll}</button>
           </div>
           <p id="status" class="status" role="status" aria-live="polite">{ui.ready}</p>
         </section>
@@ -62,7 +69,10 @@ const ui = {
       </div>
 
       <section class="result-card">
-        <h2>{es ? 'Iconos generados' : 'Generated icons'}</h2>
+        <div class="result-head">
+          <h2>{es ? 'Iconos generados' : 'Generated icons'}</h2>
+          <button id="downloadAllTopBtn" type="button" disabled>{ui.downloadAll}</button>
+        </div>
         <div id="iconsGrid" class="icons-grid"></div>
       </section>
 
@@ -74,13 +84,13 @@ const ui = {
   </section>
 
   <style>
-    .web-icons-page{padding:clamp(2.5rem,6vw,4rem) 0}.web-icons-tool{margin-top:2rem;padding:clamp(1rem,3vw,1.35rem)}.workspace{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(0,1.15fr);gap:var(--space-4)}.settings-card,.preview-card,.result-card,.code-card{border:1px solid var(--color-border);border-radius:var(--radius-xl);background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-xs);padding:var(--space-4)}h2{margin:0 0 .25rem;font-size:1.2rem}.settings-card p,.preview-card p{margin:.25rem 0 var(--space-4);color:var(--color-text-muted)}.upload-zone{display:grid;gap:.35rem;place-items:center;text-align:center;margin:var(--space-4) 0;padding:var(--space-6);border:1px dashed var(--color-border-strong);border-radius:var(--radius-xl);background:var(--color-surface-soft);cursor:pointer}.upload-zone:hover{border-color:var(--color-primary);background:color-mix(in srgb,var(--color-primary-soft) 32%,var(--color-surface-soft))}.upload-zone input{position:absolute;width:1px;height:1px;opacity:0}.upload-zone strong{color:var(--color-text)}.upload-zone span{color:var(--color-text-muted)}.control-label{display:block;margin-top:var(--space-4);font-weight:900}.check-label{display:flex;align-items:center;gap:.55rem;margin-top:var(--space-4);color:var(--color-text-muted);font-weight:800}.check-label input,#zoomRange{accent-color:var(--color-primary)}#zoomRange{width:100%}.actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:var(--space-5)}button{min-height:2.55rem;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface);color:var(--color-text);padding:.65rem .95rem;font-weight:900;cursor:pointer;box-shadow:var(--shadow-xs)}button:hover{border-color:var(--color-border-strong);transform:translateY(-1px)}button.primary{background:var(--color-primary);border-color:transparent;color:#fff}[data-theme='dark'] button.primary{color:#020617}.status{margin:var(--space-4) 0 0!important;white-space:pre-wrap}.canvas-frame{display:grid;place-items:center;padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-xl);background:repeating-conic-gradient(from 45deg,#e5e7eb 0% 25%,#f8fafc 0% 50%) 50%/28px 28px}[data-theme='dark'] .canvas-frame{background:repeating-conic-gradient(from 45deg,#1f2937 0% 25%,#111827 0% 50%) 50%/28px 28px}.canvas-frame canvas{width:min(100%,512px);height:auto;aspect-ratio:1;border-radius:22%;box-shadow:var(--shadow-md);touch-action:none;cursor:grab}.canvas-frame canvas:active{cursor:grabbing}.result-card,.code-card{margin-top:var(--space-4)}.icons-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:var(--space-3);margin-top:var(--space-4)}.icon-card{display:grid;gap:.55rem;justify-items:center;padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface-soft);text-align:center}.icon-card img{width:72px;height:72px;border-radius:18%;background:#fff}.icon-card strong{font-size:.9rem;word-break:break-word}.icon-card small{color:var(--color-text-muted)}.icon-card a{display:inline-flex;align-items:center;justify-content:center;min-height:2.25rem;border-radius:var(--radius-full);background:var(--color-primary);color:#fff;padding:.5rem .8rem;text-decoration:none;font-weight:900}.code-head{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-bottom:var(--space-3)}textarea{width:100%;min-height:160px;resize:vertical;border:1px solid var(--color-border);border-radius:var(--radius-lg);background:#111827;color:#e5e7eb;padding:1rem;font-family:var(--font-mono);line-height:1.55}@media(max-width:900px){.workspace{grid-template-columns:1fr}.actions button{width:100%}}@media(max-width:560px){.web-icons-tool{margin-inline:-.35rem}.icons-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.code-head{display:block}.code-head button{width:100%;margin-top:var(--space-3)}}
+    .web-icons-page{padding:clamp(2.5rem,6vw,4rem) 0}.web-icons-tool{margin-top:2rem;padding:clamp(1rem,3vw,1.35rem)}.workspace{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(0,1.15fr);gap:var(--space-4)}.settings-card,.preview-card,.result-card,.code-card{border:1px solid var(--color-border);border-radius:var(--radius-xl);background:color-mix(in srgb,var(--color-surface) 94%,transparent);box-shadow:var(--shadow-xs);padding:var(--space-4)}h2{margin:0 0 .25rem;font-size:1.2rem}.settings-card p,.preview-card p{margin:.25rem 0 var(--space-4);color:var(--color-text-muted)}.upload-zone{display:grid;gap:.35rem;place-items:center;text-align:center;margin:var(--space-4) 0;padding:var(--space-6);border:1px dashed var(--color-border-strong);border-radius:var(--radius-xl);background:var(--color-surface-soft);cursor:pointer;transition:border-color var(--transition-base),background var(--transition-base),box-shadow var(--transition-base),transform var(--transition-base)}.upload-zone:hover,.upload-zone:focus-within,.upload-zone.is-dragover{border-color:var(--color-primary);background:color-mix(in srgb,var(--color-primary-soft) 42%,var(--color-surface-soft));box-shadow:var(--shadow-sm)}.upload-zone.is-dragover{transform:translateY(-1px)}.upload-zone input{position:absolute;width:1px;height:1px;opacity:0}.upload-zone strong{color:var(--color-text)}.upload-zone span{color:var(--color-text-muted)}.control-label{display:block;margin-top:var(--space-4);font-weight:900}.check-label{display:flex;align-items:center;gap:.55rem;margin-top:var(--space-4);color:var(--color-text-muted);font-weight:800}.check-label input,#zoomRange{accent-color:var(--color-primary)}#zoomRange{width:100%}.actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:var(--space-5)}button{min-height:2.55rem;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface);color:var(--color-text);padding:.65rem .95rem;font-weight:900;cursor:pointer;box-shadow:var(--shadow-xs);transition:border-color var(--transition-fast),transform var(--transition-fast),opacity var(--transition-fast),background var(--transition-fast)}button:hover:not(:disabled){border-color:var(--color-border-strong);transform:translateY(-1px)}button:disabled{cursor:not-allowed;opacity:.55}button.primary{background:var(--color-primary);border-color:transparent;color:#fff}button.secondary{background:var(--color-primary-soft);border-color:transparent;color:var(--color-primary)}[data-theme='dark'] button.primary{color:#020617}.status{margin:var(--space-4) 0 0!important;white-space:pre-wrap}.canvas-frame{display:grid;place-items:center;padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-xl);background:repeating-conic-gradient(from 45deg,#e5e7eb 0% 25%,#f8fafc 0% 50%) 50%/28px 28px}[data-theme='dark'] .canvas-frame{background:repeating-conic-gradient(from 45deg,#1f2937 0% 25%,#111827 0% 50%) 50%/28px 28px}.canvas-frame canvas{width:min(100%,512px);height:auto;aspect-ratio:1;border-radius:22%;box-shadow:var(--shadow-md);touch-action:none;cursor:grab}.canvas-frame canvas:active{cursor:grabbing}.result-card,.code-card{margin-top:var(--space-4)}.result-head,.code-head{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-bottom:var(--space-3)}.icons-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:var(--space-3);margin-top:var(--space-4)}.icon-card{display:grid;gap:.55rem;justify-items:center;padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface-soft);text-align:center}.icon-card img{width:72px;height:72px;border-radius:18%;background:#fff}.icon-card strong{font-size:.9rem;word-break:break-word}.icon-card small{color:var(--color-text-muted)}.icon-card a{display:inline-flex;align-items:center;justify-content:center;min-height:2.25rem;border-radius:var(--radius-full);background:var(--color-primary);color:#fff;padding:.5rem .8rem;text-decoration:none;font-weight:900}textarea{width:100%;min-height:160px;resize:vertical;border:1px solid var(--color-border);border-radius:var(--radius-lg);background:#111827;color:#e5e7eb;padding:1rem;font-family:var(--font-mono);line-height:1.55}@media(max-width:900px){.workspace{grid-template-columns:1fr}.actions button{width:100%}}@media(max-width:560px){.web-icons-tool{margin-inline:-.35rem}.icons-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.result-head,.code-head{display:block}.result-head button,.code-head button{width:100%;margin-top:var(--space-3)}}
   </style>
 
   <script define:vars={{ copy: ui }}>
     window.addEventListener('DOMContentLoaded',()=>{
-      const input=document.getElementById('imageInput'),canvas=document.getElementById('editorCanvas'),ctx=canvas.getContext('2d'),zoom=document.getElementById('zoomRange'),whiteBg=document.getElementById('whiteBg'),status=document.getElementById('status'),grid=document.getElementById('iconsGrid'),code=document.getElementById('codeOutput');
-      let img=null,url='',base=1,z=1,off={x:0,y:0},drag=false,last={x:0,y:0};
+      const input=document.getElementById('imageInput'),uploadZone=document.getElementById('uploadZone'),uploadTitle=document.getElementById('uploadTitle'),canvas=document.getElementById('editorCanvas'),ctx=canvas.getContext('2d'),zoom=document.getElementById('zoomRange'),whiteBg=document.getElementById('whiteBg'),status=document.getElementById('status'),grid=document.getElementById('iconsGrid'),code=document.getElementById('codeOutput'),downloadAllBtn=document.getElementById('downloadAllBtn'),downloadAllTopBtn=document.getElementById('downloadAllTopBtn');
+      let img=null,url='',base=1,z=1,off={x:0,y:0},drag=false,last={x:0,y:0},generated=[];
       const sizes=copy.sizes.map(([name,size])=>({name,size}));
       const setStatus=(m,e=false)=>{status.textContent=m;status.style.color=e?'var(--color-danger)':'var(--color-text-muted)'};
       const point=e=>{const r=canvas.getBoundingClientRect(),s=canvas.width/r.width;return{x:(e.clientX-r.left)*s,y:(e.clientY-r.top)*s}};
@@ -88,17 +98,24 @@ const ui = {
       const render=()=>draw(canvas,canvas.width);
       const center=()=>{if(!img)return;base=Math.max(canvas.width/img.naturalWidth,canvas.height/img.naturalHeight);z=1;off={x:0,y:0};zoom.value='1';render()};
       const snippet=()=>{code.value='<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">\n<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">\n<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">\n<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">\n<link rel="manifest" href="/manifest.webmanifest">'};
-      const makeIcon=({name,size})=>new Promise(resolve=>{const c=document.createElement('canvas');draw(c,size);c.toBlob(blob=>resolve({name,size,src:URL.createObjectURL(blob)}),'image/png')});
-      const generate=async()=>{if(!img){setStatus(copy.noImage,true);return}grid.innerHTML='';for(const item of await Promise.all(sizes.map(makeIcon))){const card=document.createElement('article');card.className='icon-card';card.innerHTML='<img alt=""><strong></strong><small></small><a>Download</a>';card.querySelector('img').src=item.src;card.querySelector('img').alt=item.name;card.querySelector('strong').textContent=item.name;card.querySelector('small').textContent=item.size+' × '+item.size+'px';const a=card.querySelector('a');a.href=item.src;a.download=item.name;grid.append(card)}snippet();setStatus(copy.done)};
-      input.onchange=()=>{const file=input.files&&input.files[0];if(!file)return;if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(file);img=new Image();img.onload=()=>{center();setStatus(copy.loaded);generate()};img.src=url};
+      const makeIcon=({name,size})=>new Promise(resolve=>{const c=document.createElement('canvas');draw(c,size);c.toBlob(blob=>resolve({name,size,blob,src:URL.createObjectURL(blob)}),'image/png')});
+      const setDownloadReady=(ready)=>{downloadAllBtn.disabled=!ready;downloadAllTopBtn.disabled=!ready};
+      const revokeGenerated=()=>{for(const item of generated){URL.revokeObjectURL(item.src)}generated=[];setDownloadReady(false)};
+      const generate=async()=>{if(!img){setStatus(copy.noImage,true);return}revokeGenerated();grid.innerHTML='';generated=await Promise.all(sizes.map(makeIcon));for(const item of generated){const card=document.createElement('article');card.className='icon-card';card.innerHTML='<img alt=""><strong></strong><small></small><a></a>';card.querySelector('img').src=item.src;card.querySelector('img').alt=item.name;card.querySelector('strong').textContent=item.name;card.querySelector('small').textContent=item.size+' × '+item.size+'px';const a=card.querySelector('a');a.href=item.src;a.download=item.name;a.textContent=copy.download;grid.append(card)}snippet();setDownloadReady(true);setStatus(copy.done)};
+      const loadFile=(file)=>{if(!file)return;if(!file.type.startsWith('image/')){setStatus(copy.badFile,true);return}if(url)URL.revokeObjectURL(url);revokeGenerated();grid.innerHTML='';url=URL.createObjectURL(file);img=new Image();img.onload=()=>{center();setStatus(copy.loaded);generate()};img.src=url};
+      const downloadAll=async()=>{if(!img){setStatus(copy.noImage,true);return}if(!generated.length)await generate();generated.forEach((item,index)=>{window.setTimeout(()=>{const a=document.createElement('a');a.href=item.src;a.download=item.name;document.body.append(a);a.click();a.remove()},index*150)});setStatus(copy.allDone)};
+      input.onchange=()=>loadFile(input.files&&input.files[0]);
+      ['dragenter','dragover'].forEach(type=>uploadZone.addEventListener(type,e=>{e.preventDefault();uploadZone.classList.add('is-dragover');uploadTitle.textContent=copy.dropActive}));
+      ['dragleave','drop'].forEach(type=>uploadZone.addEventListener(type,e=>{e.preventDefault();uploadZone.classList.remove('is-dragover');uploadTitle.textContent=copy.drop}));
+      uploadZone.addEventListener('drop',e=>loadFile(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]));
       canvas.onpointerdown=e=>{if(!img)return;drag=true;last=point(e);canvas.setPointerCapture(e.pointerId)};
       canvas.onpointermove=e=>{if(!drag||!img)return;const p=point(e);off.x+=p.x-last.x;off.y+=p.y-last.y;last=p;render()};
       canvas.onpointerup=e=>{drag=false;try{canvas.releasePointerCapture(e.pointerId)}catch{}generate()};
       canvas.onpointercancel=()=>{drag=false};
       zoom.oninput=()=>{z=Number(zoom.value);render()};zoom.onchange=generate;whiteBg.onchange=()=>{render();generate()};
-      document.getElementById('centerBtn').onclick=()=>{center();generate()};document.getElementById('generateBtn').onclick=generate;
+      document.getElementById('centerBtn').onclick=()=>{center();generate()};document.getElementById('generateBtn').onclick=generate;downloadAllBtn.onclick=downloadAll;downloadAllTopBtn.onclick=downloadAll;
       document.getElementById('copyBtn').onclick=async()=>{snippet();try{await navigator.clipboard.writeText(code.value);setStatus(copy.copied)}catch{code.focus();code.select()}};
-      snippet();render();
+      snippet();render();setDownloadReady(false);
     });
   </script>
 </Layout>
