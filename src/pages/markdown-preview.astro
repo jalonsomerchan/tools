@@ -1,24 +1,28 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl } from '../i18n/ui';
 
-const title = 'Markdown writer & preview';
+const lang = getLangFromUrl(Astro.url);
+const es = lang === 'es';
+const title = es ? 'Editor Markdown con vista previa' : 'Markdown editor with live preview';
+const description = es ? 'Escribe Markdown, previsualiza títulos, listas, tablas y código y descarga el resultado localmente, sin CDNs ni subir contenido.' : 'Write Markdown, preview headings, lists, tables and code, and download it locally without CDNs or content uploads.';
 ---
 
-<Layout title={title}>
+<Layout title={`${title} — Alon Tools`} description={description} lang={lang} path="/markdown-preview/" translated={true}>
   <section style="padding: 4rem 0;">
     <div class="eyebrow">Alon Tools</div>
 
     <h1>{title}</h1>
 
     <p class="hero-text">
-      Escribe Markdown y visualiza el resultado en tiempo real con soporte para títulos, tablas, listas, bloques de código y más.
+      {es ? 'Escribe Markdown y visualiza el resultado en tiempo real con soporte para títulos, tablas, listas, bloques de código y más.' : 'Write Markdown and preview the result in real time with headings, tables, lists, code blocks and more.'}
     </p>
 
     <section class="tool-card">
       <div class="toolbar">
-        <button class="primary" id="copyBtn">Copiar markdown</button>
-        <button id="downloadBtn">Descargar .md</button>
-        <button id="clearBtn">Limpiar</button>
+        <button class="primary" id="copyBtn">{es ? 'Copiar Markdown' : 'Copy Markdown'}</button>
+        <button id="downloadBtn">{es ? 'Descargar .md' : 'Download .md'}</button>
+        <button id="clearBtn">{es ? 'Limpiar' : 'Clear'}</button>
       </div>
 
       <div class="editor-grid">
@@ -45,14 +49,12 @@ console.log('Hola');
         </div>
 
         <div class="panel">
-          <span>Preview</span>
+          <span>{es ? 'Vista previa' : 'Preview'}</span>
           <div id="preview"></div>
         </div>
       </div>
     </section>
   </section>
-
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
     .toolbar {
@@ -293,8 +295,66 @@ console.log('Hola');
       const input = document.getElementById('markdownInput');
       const preview = document.getElementById('preview');
 
+      const escapeHtml = (value) => value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+      const inline = (value) => escapeHtml(value)
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label, href) => {
+          const safeHref = /^(https?:\/\/|\/)/i.test(href) ? href : '#';
+          return `<a href="${safeHref}"${safeHref.startsWith('http') ? ' target="_blank" rel="noopener noreferrer"' : ''}>${label}</a>`;
+        });
+
+      const parseMarkdown = (markdown) => {
+        const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
+        const html = [];
+        let index = 0;
+        while (index < lines.length) {
+          const line = lines[index];
+          if (!line.trim()) { index += 1; continue; }
+          if (line.startsWith('```')) {
+            const language = escapeHtml(line.slice(3).trim());
+            const code = [];
+            index += 1;
+            while (index < lines.length && !lines[index].startsWith('```')) code.push(lines[index++]);
+            index += 1;
+            html.push(`<pre><code${language ? ` class="language-${language}"` : ''}>${escapeHtml(code.join('\n'))}</code></pre>`);
+            continue;
+          }
+          const heading = line.match(/^(#{1,6})\s+(.+)$/);
+          if (heading) { const level = heading[1].length; html.push(`<h${level}>${inline(heading[2])}</h${level}>`); index += 1; continue; }
+          if (line.startsWith('> ')) { html.push(`<blockquote>${inline(line.slice(2))}</blockquote>`); index += 1; continue; }
+          if (index + 1 < lines.length && line.includes('|') && /^\s*\|?\s*:?-{3,}/.test(lines[index + 1])) {
+            const cells = (row) => row.replace(/^\||\|$/g, '').split('|').map((cell) => cell.trim());
+            const headers = cells(line);
+            index += 2;
+            const rows = [];
+            while (index < lines.length && lines[index].includes('|') && lines[index].trim()) rows.push(cells(lines[index++]));
+            html.push(`<table><thead><tr>${headers.map((cell) => `<th>${inline(cell)}</th>`).join('')}</tr></thead><tbody>${rows.map((row) => `<tr>${row.map((cell) => `<td>${inline(cell)}</td>`).join('')}</tr>`).join('')}</tbody></table>`);
+            continue;
+          }
+          if (/^[-*+]\s+/.test(line)) {
+            const items = [];
+            while (index < lines.length && /^[-*+]\s+/.test(lines[index])) items.push(lines[index++].replace(/^[-*+]\s+/, ''));
+            html.push(`<ul>${items.map((item) => `<li>${inline(item)}</li>`).join('')}</ul>`);
+            continue;
+          }
+          if (/^\d+\.\s+/.test(line)) {
+            const items = [];
+            while (index < lines.length && /^\d+\.\s+/.test(lines[index])) items.push(lines[index++].replace(/^\d+\.\s+/, ''));
+            html.push(`<ol>${items.map((item) => `<li>${inline(item)}</li>`).join('')}</ol>`);
+            continue;
+          }
+          const paragraph = [line];
+          index += 1;
+          while (index < lines.length && lines[index].trim() && !/^(#{1,6})\s|^```|^[-*+]\s|^\d+\.\s|^>\s/.test(lines[index])) paragraph.push(lines[index++]);
+          html.push(`<p>${inline(paragraph.join(' '))}</p>`);
+        }
+        return html.join('');
+      };
+
       const render = () => {
-        preview.innerHTML = marked.parse(input.value);
+        preview.innerHTML = parseMarkdown(input.value);
       };
 
       render();

@@ -1,0 +1,37 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl, getLocalizedPath } from '../i18n/ui';
+const lang = getLangFromUrl(Astro.url);
+const es = lang === 'es';
+const c = es ? { title:'Generador de hashes SHA para texto y archivos', description:'Calcula SHA-1, SHA-256, SHA-384 y SHA-512 localmente con Web Crypto. Verifica textos y archivos sin subirlos.', intro:'Calcula una huella criptográfica de texto o archivos sin subir contenido a ningún servidor.', text:'Texto', file:'O selecciona un archivo', algorithm:'Algoritmo', format:'Formato', calculate:'Calcular hash', copy:'Copiar', clear:'Limpiar', result:'Resultado', ready:'Escribe texto o selecciona un archivo.', working:'Calculando…', done:'Hash calculado localmente.', copied:'Hash copiado.', empty:'Añade texto o selecciona un archivo.', how:'Para qué sirve un hash', privacy:'Procesamiento privado', related:'Herramientas relacionadas' } : { title:'SHA hash generator for text and files', description:'Calculate SHA-1, SHA-256, SHA-384 and SHA-512 locally with Web Crypto. Verify text and files without uploads.', intro:'Calculate a cryptographic fingerprint for text or files without uploading content to any server.', text:'Text', file:'Or select a file', algorithm:'Algorithm', format:'Format', calculate:'Calculate hash', copy:'Copy', clear:'Clear', result:'Result', ready:'Enter text or select a file.', working:'Calculating…', done:'Hash calculated locally.', copied:'Hash copied.', empty:'Enter text or select a file.', how:'What a hash is used for', privacy:'Private processing', related:'Related tools' };
+---
+<Layout title={`${c.title} — Alon Tools`} description={c.description} lang={lang} path="/hash-generator/" translated={true}>
+  <article class="tool-page">
+    <header class="tool-hero"><span class="badge">Web Crypto · Offline</span><h1>{c.title}</h1><p class="hero-text">{c.intro}</p></header>
+    <section class="tool-card hash-tool" aria-labelledby="hashWorkspaceTitle">
+      <h2 id="hashWorkspaceTitle">{es ? 'Generar huella' : 'Generate digest'}</h2>
+      <label>{c.text}<textarea id="hashInput" placeholder={es ? 'Escribe o pega contenido…' : 'Type or paste content…'}></textarea></label>
+      <label class="file-field">{c.file}<input id="fileInput" type="file" /><small id="fileInfo">{es ? 'Ningún archivo seleccionado' : 'No file selected'}</small></label>
+      <div class="options"><label>{c.algorithm}<select id="algorithm"><option>SHA-256</option><option>SHA-384</option><option>SHA-512</option><option>SHA-1</option></select></label><label>{c.format}<select id="format"><option value="hex">Hexadecimal</option><option value="base64">Base64</option></select></label></div>
+      <div class="actions"><button id="clearBtn" type="button">{c.clear}</button><button id="calculateBtn" class="primary" type="button">{c.calculate}</button></div>
+      <label>{c.result}<textarea id="hashOutput" class="output" readonly spellcheck="false"></textarea></label>
+      <button id="copyBtn" type="button" disabled>{c.copy}</button>
+      <p id="status" class="status" role="status" aria-live="polite">{c.ready}</p>
+    </section>
+    <section class="content-grid"><div><h2>{c.how}</h2><p>{es ? 'Una función hash convierte datos de cualquier tamaño en una huella de longitud fija. Es útil para comparar archivos, comprobar integridad o identificar contenido; no cifra ni permite recuperar el original.' : 'A hash function turns data of any size into a fixed-length fingerprint. It is useful for comparing files, checking integrity or identifying content; it is not encryption and cannot recover the original.'}</p></div><div><h2>{c.privacy}</h2><p>{es ? 'Se usa la API Web Crypto del navegador. Ni el texto ni el archivo seleccionado se envían por red.' : 'This uses your browser’s Web Crypto API. Neither typed text nor selected files are sent over the network.'}</p></div></section>
+    <section class="related"><h2>{c.related}</h2><p><a href={getLocalizedPath('/md5/',lang)}>MD5</a> · <a href={getLocalizedPath('/base64/',lang)}>Base64</a> · <a href={getLocalizedPath('/jwt-decoder/',lang)}>{es?'Decodificador JWT':'JWT decoder'}</a></p></section>
+  </article>
+  <script define:vars={{ c }}>
+    const input=document.getElementById('hashInput'),fileInput=document.getElementById('fileInput'),fileInfo=document.getElementById('fileInfo'),algorithm=document.getElementById('algorithm'),format=document.getElementById('format'),output=document.getElementById('hashOutput'),calculate=document.getElementById('calculateBtn'),copy=document.getElementById('copyBtn'),status=document.getElementById('status');
+    const toHex=(bytes)=>[...bytes].map((byte)=>byte.toString(16).padStart(2,'0')).join('');
+    const toBase64=(bytes)=>{let binary='';for(let index=0;index<bytes.length;index+=0x8000)binary+=String.fromCharCode(...bytes.subarray(index,index+0x8000));return btoa(binary)};
+    const setStatus=(message,error=false)=>{status.textContent=message;status.className=`status${error?' error':''}`};
+    fileInput.addEventListener('change',()=>{const file=fileInput.files?.[0];fileInfo.textContent=file?`${file.name} · ${(file.size/1024).toLocaleString(undefined,{maximumFractionDigits:1})} KB`:c.ready;if(file)input.value=''});
+    calculate.addEventListener('click',async()=>{const file=fileInput.files?.[0];if(!file&&!input.value){setStatus(c.empty,true);return}calculate.disabled=true;copy.disabled=true;setStatus(c.working);try{const data=file?await file.arrayBuffer():new TextEncoder().encode(input.value);const digest=await crypto.subtle.digest(algorithm.value,data);const bytes=new Uint8Array(digest);output.value=format.value==='hex'?toHex(bytes):toBase64(bytes);copy.disabled=false;setStatus(c.done)}catch(error){setStatus(error.message,true)}finally{calculate.disabled=false}});
+    copy.addEventListener('click',async()=>{await navigator.clipboard.writeText(output.value);setStatus(c.copied)});
+    document.getElementById('clearBtn').addEventListener('click',()=>{input.value='';fileInput.value='';fileInfo.textContent=c.ready;output.value='';copy.disabled=true;setStatus(c.ready);input.focus()});
+  </script>
+</Layout>
+<style>
+  .tool-page{padding-bottom:var(--space-8)}.tool-hero{display:grid;gap:var(--space-3);padding:clamp(1.5rem,5vw,3.5rem) 0}.tool-hero h1{font-size:clamp(2.15rem,5vw,3.8rem)}.hash-tool{display:grid;gap:var(--space-4);max-width:58rem;margin-inline:auto}.hash-tool h2{margin:0;font-size:1.45rem}.hash-tool label{display:grid;gap:.45rem}.hash-tool textarea{min-height:10rem}.file-field{padding:1rem;border:1px dashed var(--color-border-strong);border-radius:var(--radius-lg);background:var(--color-surface-soft)}.file-field small{color:var(--color-text-muted)}.options{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}.actions{display:flex;justify-content:flex-end;gap:.65rem}.actions button,#copyBtn{min-height:2.75rem;padding:.7rem 1rem;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface);font-weight:850;cursor:pointer}.output{min-height:8rem!important;background:#111827!important;color:#e5e7eb!important;font-family:var(--font-mono);overflow-wrap:anywhere}.status{min-height:1.5rem;margin:0}.content-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-8)}.content-grid h2,.related h2{font-size:1.55rem}.related a{font-weight:800}@media(max-width:700px){.options,.content-grid{grid-template-columns:1fr}.actions{display:grid}.actions button,#copyBtn{width:100%}}
+</style>

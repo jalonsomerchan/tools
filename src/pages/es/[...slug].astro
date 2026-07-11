@@ -30,6 +30,14 @@ import UrlInspector from '../url-inspector.astro';
 import UuidGenerator from '../uuid-generator.astro';
 import VatCalculator from '../vat-calculator.astro';
 import XmlFormatter from '../xml-formatter.astro';
+import CurrencyConverter from '../currency-converter.astro';
+import SimplePostman from '../simple-postman.astro';
+import ScreenshotEnhancer from '../screenshot-enhancer.astro';
+import PasswordGenerator from '../password-generator.astro';
+import RobotsSitemapGenerator from '../robots-sitemap-generator.astro';
+import MetaTagsGenerator from '../meta-tags-generator.astro';
+import YamlFormatter from '../yaml-formatter.astro';
+import WebIconGenerator from '../web-icon-generator.astro';
 
 type PageSlug =
   | 'app-icon-generator'
@@ -62,7 +70,15 @@ type PageSlug =
   | 'url-inspector'
   | 'uuid-generator'
   | 'vat-calculator'
-  | 'xml-formatter';
+  | 'xml-formatter'
+  | 'currency-converter'
+  | 'simple-postman'
+  | 'screenshot-enhancer'
+  | 'password-generator'
+  | 'robots-sitemap-generator'
+  | 'meta-tags-generator'
+  | 'yaml-formatter'
+  | 'web-icon-generator';
 
 const pages: Record<PageSlug, typeof AppIconGenerator> = {
   'app-icon-generator': AppIconGenerator,
@@ -95,7 +111,15 @@ const pages: Record<PageSlug, typeof AppIconGenerator> = {
   'url-inspector': UrlInspector,
   'uuid-generator': UuidGenerator,
   'vat-calculator': VatCalculator,
-  'xml-formatter': XmlFormatter
+  'xml-formatter': XmlFormatter,
+  'currency-converter': CurrencyConverter,
+  'simple-postman': SimplePostman,
+  'screenshot-enhancer': ScreenshotEnhancer,
+  'password-generator': PasswordGenerator,
+  'robots-sitemap-generator': RobotsSitemapGenerator,
+  'meta-tags-generator': MetaTagsGenerator,
+  'yaml-formatter': YamlFormatter,
+  'web-icon-generator': WebIconGenerator
 };
 
 const translatedTitles: Record<PageSlug, string> = {
@@ -129,7 +153,15 @@ const translatedTitles: Record<PageSlug, string> = {
   'url-inspector': 'Inspector de URLs',
   'uuid-generator': 'Generador de UUID y claves aleatorias',
   'vat-calculator': 'Calculadora de IVA',
-  'xml-formatter': 'Formateador y validador XML'
+  'xml-formatter': 'Formateador y validador XML',
+  'currency-converter': 'Conversor de divisas',
+  'simple-postman': 'Cliente HTTP sencillo',
+  'screenshot-enhancer': 'Mejorador de capturas',
+  'password-generator': 'Generador de contraseñas y frases seguras',
+  'robots-sitemap-generator': 'Generador de robots.txt y sitemap XML',
+  'meta-tags-generator': 'Generador de meta tags y Open Graph',
+  'yaml-formatter': 'Formateador y validador YAML',
+  'web-icon-generator': 'Generador de iconos para web'
 };
 
 export function getStaticPaths() {
@@ -164,7 +196,15 @@ export function getStaticPaths() {
     'url-inspector',
     'uuid-generator',
     'vat-calculator',
-    'xml-formatter'
+    'xml-formatter',
+    'currency-converter',
+    'simple-postman',
+    'screenshot-enhancer',
+    'password-generator',
+    'robots-sitemap-generator',
+    'meta-tags-generator',
+    'yaml-formatter',
+    'web-icon-generator'
   ].map((slug) => ({ params: { slug } }));
 }
 
@@ -325,14 +365,14 @@ const translatedTitle = translatedTitles[slug];
     const translateNode = (node) => {
       const text = normalize(node.textContent || '');
       const translated = dictionary[text];
-      if (translated) node.textContent = translated;
+      if (translated && node.textContent !== translated) node.textContent = translated;
     };
 
     const translateAll = () => {
       if (translatedTitle) {
-        document.title = translatedTitle;
+        if (document.title !== translatedTitle) document.title = translatedTitle;
         const h1 = document.querySelector('h1');
-        if (h1) h1.textContent = translatedTitle;
+        if (h1 && h1.textContent !== translatedTitle) h1.textContent = translatedTitle;
         document.querySelector('meta[property="og:title"]')?.setAttribute('content', translatedTitle);
         document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', translatedTitle);
       }

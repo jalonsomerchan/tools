@@ -11,7 +11,8 @@ const {
   description = t('site.description'),
   path = Astro.url.pathname.replace(/^\/es/, '') || '/',
   image = 'https://tools.alon.one/og-image.png',
-  translated = path === '/'
+  translated = path === '/',
+  robots = 'index, follow'
 } = Astro.props;
 
 const site = 'https://tools.alon.one';
@@ -19,6 +20,41 @@ const canonicalPath = getLocalizedPath(path, lang);
 const canonical = `${site}${canonicalPath}`;
 const enUrl = `${site}${getLocalizedPath(path, 'en')}`;
 const esUrl = `${site}${getLocalizedPath(path, 'es')}`;
+const isHome = path === '/';
+const isIndexable = String(robots).startsWith('index');
+const schemaGraph = [
+  {
+    '@type': 'WebSite',
+    '@id': `${site}/#website`,
+    url: `${site}/`,
+    name: 'Alon Tools',
+    description: t('site.description'),
+    inLanguage: ['en', 'es']
+  },
+  ...(isHome || !isIndexable ? [] : [{
+    '@type': 'WebApplication',
+    '@id': `${canonical}#application`,
+    name: title.replace(/\s+[—|-]\s+Alon Tools$/i, ''),
+    url: canonical,
+    description,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any',
+    browserRequirements: 'Requires a modern web browser',
+    isAccessibleForFree: true,
+    inLanguage: lang,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+    isPartOf: { '@id': `${site}/#website` }
+  }]),
+  ...(!isHome && isIndexable ? [{
+    '@type': 'BreadcrumbList',
+    '@id': `${canonical}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: lang === 'es' ? 'Herramientas' : 'Tools', item: lang === 'es' ? `${site}/es/` : `${site}/` },
+      { '@type': 'ListItem', position: 2, name: title.replace(/\s+[—|-]\s+Alon Tools$/i, ''), item: canonical }
+    ]
+  }] : [])
+];
+const structuredData = JSON.stringify({ '@context': 'https://schema.org', '@graph': schemaGraph }).replace(/</g, '\\u003c');
 ---
 
 <html lang={lang} data-theme="light">
@@ -26,7 +62,7 @@ const esUrl = `${site}${getLocalizedPath(path, 'es')}`;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content={robots} />
     <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)" />
 
@@ -59,6 +95,13 @@ const esUrl = `${site}${getLocalizedPath(path, 'es')}`;
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={image} />
+    <meta property="og:locale" content={lang === 'es' ? 'es_ES' : 'en_US'} />
+    <meta property="og:locale:alternate" content={lang === 'es' ? 'en_US' : 'es_ES'} />
+
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script type="application/ld+json" set:html={structuredData}></script>
 
     <style is:global>
       :root {
@@ -75,10 +118,10 @@ const esUrl = `${site}${getLocalizedPath(path, 'es')}`;
         --color-text-soft: #787d8d;
         --color-border: #dddfea;
         --color-border-strong: #cfd3df;
-        --color-primary: #f0523d;
-        --color-primary-hover: #dd3427;
+        --color-primary: #c93427;
+        --color-primary-hover: #a9251d;
         --color-primary-soft: #ffe4dd;
-        --color-secondary: #b9231b;
+        --color-secondary: #991f19;
         --color-secondary-soft: #fff4f1;
         --color-accent: #ff7358;
         --color-accent-soft: #ffcbbd;
@@ -152,8 +195,8 @@ const esUrl = `${site}${getLocalizedPath(path, 'es')}`;
         --color-text-soft: #94a3b8;
         --color-border: #1e293b;
         --color-border-strong: #334155;
-        --color-primary: #fb923c;
-        --color-primary-hover: #fdba74;
+        --color-primary: #fdba74;
+        --color-primary-hover: #fed7aa;
         --color-primary-soft: rgb(249 115 22 / 0.18);
         --color-secondary: #f87171;
         --color-secondary-soft: rgb(248 113 113 / 0.16);
@@ -195,7 +238,8 @@ const esUrl = `${site}${getLocalizedPath(path, 'es')}`;
 
       img, svg, video, canvas { display: block; max-width: 100%; }
       button, input, select, textarea { font: inherit; }
-      button { border: 0; }
+      button { border: 0; color: inherit; }
+      button:disabled, [aria-disabled="true"] { cursor: not-allowed; opacity: .58; }
       ::selection { background: var(--color-primary-soft); color: var(--color-secondary); }
       a { color: var(--color-primary-hover); text-decoration-thickness: 0.08em; text-underline-offset: 0.18em; transition: color var(--transition-fast), text-decoration-color var(--transition-fast); }
       a:hover { color: var(--color-primary); }
@@ -244,6 +288,7 @@ const esUrl = `${site}${getLocalizedPath(path, 'es')}`;
       .btn:hover:not(:disabled) { transform: translateY(-1px); }
       .btn-primary { background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color: #fff; box-shadow: var(--shadow-brand); }
       .btn-primary:hover { color: #fff; box-shadow: 0 22px 48px rgba(240,82,61,.34); }
+      [data-theme="dark"] .btn-primary { color: #190b05; }
       .btn-secondary { background: var(--color-surface); border-color: var(--color-border); color: var(--color-text); box-shadow: var(--shadow-xs); }
       .btn-ghost { background: transparent; color: var(--color-text-muted); }
       .btn-danger { background: var(--color-danger); color: #fff; }
@@ -266,6 +311,15 @@ const esUrl = `${site}${getLocalizedPath(path, 'es')}`;
       .alert-warning { border-color: var(--color-warning); background: var(--color-warning-soft); color: var(--color-warning); }
       .alert-danger { border-color: var(--color-danger); background: var(--color-danger-soft); color: var(--color-danger); }
 
+      .connection-status { position: fixed; z-index: var(--z-toast); right: var(--space-4); bottom: var(--space-4); max-width: min(24rem, calc(100vw - 2rem)); padding: .7rem .9rem; border: 1px solid var(--color-warning); border-radius: var(--radius-lg); background: var(--color-surface-raised); color: var(--color-text); box-shadow: var(--shadow-md); font-size: .875rem; font-weight: 800; }
+      .connection-status[hidden] { display: none; }
+
+      /* Legacy tools use .primary; keep their action contrast safe in both themes. */
+      main button.primary { background: var(--color-primary); color: #fff; border-color: transparent; }
+      [data-theme="dark"] main button.primary { color: #190b05; }
+      main .status.success { color: var(--color-success); }
+      main .status.error, main [data-error="true"] { color: var(--color-danger); }
+
       @media (max-width: 760px) { .page-shell, .container, .container-narrow, .container-wide { width: min(100% - 2rem, var(--container-xl)); } .hero { padding-top: var(--space-10); text-align: left; justify-items: start; } }
       @media (max-width: 520px) { .page-shell, .container, .container-narrow, .container-wide { width: min(100% - 1.5rem, var(--container-xl)); } }
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
@@ -276,10 +330,30 @@ const esUrl = `${site}${getLocalizedPath(path, 'es')}`;
     <a href="#main" class="skip-link">{lang === 'es' ? 'Saltar al contenido' : 'Skip to content'}</a>
     <Header lang={lang} path={path} />
 
+    <p class="connection-status" data-connection-status role="status" aria-live="polite" hidden>
+      {lang === 'es' ? 'Sin conexión. Las herramientas locales siguen disponibles.' : 'You are offline. Local tools remain available.'}
+    </p>
+
     <main id="main" class="page-shell">
       <slot />
     </main>
 
     <Footer lang={lang} />
+
+    <script is:inline>
+      (() => {
+        const banner = document.querySelector('[data-connection-status]');
+        const updateConnection = () => {
+          if (banner) banner.hidden = navigator.onLine;
+        };
+        window.addEventListener('online', updateConnection);
+        window.addEventListener('offline', updateConnection);
+        updateConnection();
+
+        if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+          window.addEventListener('load', () => navigator.serviceWorker.register('/service-worker.js').catch(() => {}), { once: true });
+        }
+      })();
+    </script>
   </body>
 </html>

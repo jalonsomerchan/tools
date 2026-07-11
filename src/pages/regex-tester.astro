@@ -1,0 +1,114 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl, getLocalizedPath } from '../i18n/ui';
+
+const lang = getLangFromUrl(Astro.url);
+const es = lang === 'es';
+const copy = es ? {
+  title: 'Probador de expresiones regulares online y offline',
+  description: 'Prueba expresiones regulares, revisa cada coincidencia y previsualiza reemplazos gratis y localmente, sin enviar el texto a servidores.',
+  intro: 'Escribe un patrón, elige sus flags y comprueba las coincidencias en tiempo real. Todo el texto se procesa en tu navegador.',
+  pattern: 'Expresión regular', flags: 'Flags', text: 'Texto de prueba', replacement: 'Reemplazo (opcional)', matches: 'Coincidencias', result: 'Resultado del reemplazo', clear: 'Limpiar', sample: 'Cargar ejemplo', copy: 'Copiar resultado', ready: 'Introduce un patrón y un texto para empezar.', noMatches: 'No hay coincidencias.', invalid: 'Expresión no válida', copied: 'Resultado copiado.', how: 'Cómo probar una expresión regular', privacy: 'Privacidad y funcionamiento offline', related: 'Herramientas relacionadas'
+} : {
+  title: 'Online and offline regular expression tester',
+  description: 'Test regular expressions, inspect every match and preview replacements locally for free, without sending your text to a server.',
+  intro: 'Enter a pattern, choose its flags and inspect matches in real time. All text is processed in your browser.',
+  pattern: 'Regular expression', flags: 'Flags', text: 'Test text', replacement: 'Replacement (optional)', matches: 'Matches', result: 'Replacement result', clear: 'Clear', sample: 'Load sample', copy: 'Copy result', ready: 'Enter a pattern and text to begin.', noMatches: 'No matches found.', invalid: 'Invalid regular expression', copied: 'Result copied.', how: 'How to test a regular expression', privacy: 'Privacy and offline use', related: 'Related tools'
+};
+---
+
+<Layout title={`${copy.title} — Alon Tools`} description={copy.description} lang={lang} path="/regex-tester/" translated={true}>
+  <article class="tool-page">
+    <header class="tool-hero">
+      <span class="badge">100% local · Offline</span>
+      <h1>{copy.title}</h1>
+      <p class="hero-text">{copy.intro}</p>
+    </header>
+
+    <section class="tool-card regex-tool" aria-labelledby="regexWorkspaceTitle">
+      <h2 id="regexWorkspaceTitle">{es ? 'Área de pruebas' : 'Test workspace'}</h2>
+      <div class="pattern-row">
+        <label for="patternInput">{copy.pattern}</label>
+        <div class="pattern-input"><span aria-hidden="true">/</span><input id="patternInput" value="\\b[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+\\b" spellcheck="false" autocomplete="off" /><span aria-hidden="true">/</span><input id="flagsInput" value="giu" maxlength="6" aria-label={copy.flags} spellcheck="false" /></div>
+      </div>
+      <div class="workspace">
+        <label>{copy.text}<textarea id="testInput" spellcheck="false">Alon Tools funciona en Madrid, Cáceres y cualquier navegador moderno.</textarea></label>
+        <section class="result-panel" aria-labelledby="matchesTitle">
+          <div class="panel-head"><h3 id="matchesTitle">{copy.matches}</h3><output id="matchCount">0</output></div>
+          <div id="highlightedText" class="highlighted-text" aria-live="polite"></div>
+          <ol id="matchList" class="match-list"></ol>
+        </section>
+      </div>
+      <label>{copy.replacement}<input id="replacementInput" value="[$&]" spellcheck="false" /></label>
+      <label>{copy.result}<textarea id="replacementOutput" readonly></textarea></label>
+      <div class="actions">
+        <button id="sampleBtn" type="button">{copy.sample}</button>
+        <button id="clearBtn" type="button">{copy.clear}</button>
+        <button id="copyBtn" class="primary" type="button">{copy.copy}</button>
+      </div>
+      <p id="status" class="status" role="status" aria-live="polite">{copy.ready}</p>
+    </section>
+
+    <section class="content-grid">
+      <div><h2>{copy.how}</h2><ol><li>{es ? 'Escribe el patrón sin las barras exteriores.' : 'Enter the pattern without surrounding slashes.'}</li><li>{es ? 'Activa flags como g, i, m, s, u o y.' : 'Enable flags such as g, i, m, s, u or y.'}</li><li>{es ? 'Revisa las coincidencias y prueba el reemplazo antes de usarlo en tu código.' : 'Inspect matches and test the replacement before using it in code.'}</li></ol></div>
+      <div><h2>{copy.privacy}</h2><p>{es ? 'El patrón y los textos no salen del dispositivo. La herramienta no necesita una API y, después de la primera visita, puede abrirse sin conexión.' : 'Your pattern and text never leave the device. The tool needs no API and can be opened offline after the first visit.'}</p></div>
+    </section>
+    <section class="related"><h2>{copy.related}</h2><p><a href={getLocalizedPath('/diff-checker/', lang)}>{es ? 'Comparador de textos' : 'Text diff checker'}</a> · <a href={getLocalizedPath('/code-formatter/', lang)}>{es ? 'Formateador de código' : 'Code formatter'}</a> · <a href={getLocalizedPath('/character-counter/', lang)}>{es ? 'Contador de caracteres' : 'Character counter'}</a></p></section>
+  </article>
+
+  <script define:vars={{ copy }}>
+    const pattern = document.getElementById('patternInput');
+    const flags = document.getElementById('flagsInput');
+    const input = document.getElementById('testInput');
+    const replacement = document.getElementById('replacementInput');
+    const output = document.getElementById('replacementOutput');
+    const highlighted = document.getElementById('highlightedText');
+    const list = document.getElementById('matchList');
+    const count = document.getElementById('matchCount');
+    const status = document.getElementById('status');
+    const escape = (value) => value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    const render = () => {
+      status.className = 'status';
+      list.replaceChildren();
+      try {
+        const uniqueFlags = [...new Set(flags.value.toLowerCase())].filter((flag) => 'dgimsuvy'.includes(flag)).join('');
+        if (flags.value !== uniqueFlags) flags.value = uniqueFlags;
+        const expression = new RegExp(pattern.value, uniqueFlags.includes('g') ? uniqueFlags : `${uniqueFlags}g`);
+        const source = input.value;
+        const matches = [...source.matchAll(expression)].slice(0, 500);
+        let cursor = 0;
+        highlighted.innerHTML = matches.map((match) => {
+          const index = match.index ?? 0;
+          const before = escape(source.slice(cursor, index));
+          const value = match[0];
+          cursor = index + value.length;
+          return `${before}<mark>${escape(value || '∅')}</mark>`;
+        }).join('') + escape(source.slice(cursor));
+        matches.forEach((match, index) => {
+          const item = document.createElement('li');
+          const groups = match.slice(1).filter((group) => group !== undefined);
+          item.textContent = `#${index + 1} · ${match.index ?? 0}: ${match[0] || '∅'}${groups.length ? ` · (${groups.join(', ')})` : ''}`;
+          list.append(item);
+        });
+        count.textContent = String(matches.length);
+        output.value = source.replace(expression, replacement.value);
+        status.textContent = matches.length ? `${matches.length} ${copy.matches.toLowerCase()}.` : copy.noMatches;
+      } catch (error) {
+        highlighted.textContent = input.value;
+        output.value = '';
+        count.textContent = '0';
+        status.className = 'status error';
+        status.textContent = `${copy.invalid}: ${error.message}`;
+      }
+    };
+    [pattern, flags, input, replacement].forEach((element) => element.addEventListener('input', render));
+    document.getElementById('sampleBtn').addEventListener('click', () => { pattern.value = '(?<user>[\\w.-]+)@(?<domain>[\\w.-]+\\.[a-z]{2,})'; flags.value = 'giu'; input.value = 'Contacta con hola@alon.one o soporte@example.org'; replacement.value = '$<user> [at] $<domain>'; render(); });
+    document.getElementById('clearBtn').addEventListener('click', () => { pattern.value = ''; input.value = ''; replacement.value = ''; render(); pattern.focus(); });
+    document.getElementById('copyBtn').addEventListener('click', async () => { await navigator.clipboard.writeText(output.value); status.textContent = copy.copied; });
+    render();
+  </script>
+</Layout>
+
+<style>
+  .tool-page{padding-bottom:var(--space-8)}.tool-hero{display:grid;gap:var(--space-3);padding:clamp(1.5rem,5vw,3.5rem) 0}.tool-hero h1{font-size:clamp(2.15rem,5vw,3.8rem)}.regex-tool{display:grid;gap:var(--space-4)}.regex-tool>h2{margin:0;font-size:1.45rem}.pattern-row{display:grid;gap:.45rem}.pattern-input{display:grid;grid-template-columns:auto minmax(0,1fr) auto 5rem;align-items:center;gap:.5rem;padding:0 .85rem;border:1px solid var(--color-border-strong);border-radius:var(--radius-md);background:var(--color-surface);color:var(--color-text-soft);font:700 1rem var(--font-mono)}.pattern-input input{min-height:2.9rem;padding-inline:.2rem;border:0!important;box-shadow:none!important}.workspace{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);align-items:stretch}.workspace>label{display:grid;gap:.45rem}.workspace textarea{min-height:20rem;font-family:var(--font-mono)}.result-panel{min-width:0;border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface-soft);overflow:hidden}.panel-head{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid var(--color-border)}.panel-head h3{margin:0;font-size:1rem}.panel-head output{padding:.2rem .55rem;border-radius:999px;background:var(--color-primary-soft);color:var(--color-primary-hover);font-weight:900}.highlighted-text{min-height:9rem;padding:1rem;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--color-text);font-family:var(--font-mono);line-height:1.65}.highlighted-text mark{border-radius:.25rem;background:var(--color-warning-soft);color:var(--color-text);box-shadow:0 0 0 1px color-mix(in srgb,var(--color-warning) 40%,transparent)}.match-list{max-height:10rem;margin:0;padding:1rem 1rem 1rem 2.5rem;border-top:1px solid var(--color-border);overflow:auto;font-family:var(--font-mono);font-size:.82rem}.match-list:empty{display:none}.regex-tool>label{display:grid;gap:.45rem}.regex-tool>label textarea{min-height:7rem;font-family:var(--font-mono)}.actions{display:flex;justify-content:flex-end;gap:.65rem;flex-wrap:wrap}.actions button{min-height:2.75rem;padding:.7rem 1rem;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface);font-weight:850;cursor:pointer}.status{min-height:1.5rem;margin:0}.content-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-8)}.content-grid h2,.related h2{font-size:1.55rem}.related a{font-weight:800}@media(max-width:800px){.workspace,.content-grid{grid-template-columns:1fr}.workspace textarea{min-height:14rem}}@media(max-width:560px){.pattern-input{grid-template-columns:auto minmax(0,1fr) auto 3.6rem}.actions{display:grid}.actions button{width:100%}}
+</style>

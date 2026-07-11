@@ -1,21 +1,32 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "Alon Tools — Browser utilities",
+  "short_name": "Alon Tools",
+  "description": "Fast privacy-first developer, image, text and internet tools.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "lang": "en",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     },
     {
       "src": "/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  "theme_color": "#c93427",
+  "background_color": "#f6f6fa",
+  "display": "standalone",
+  "categories": ["utilities", "developer", "productivity"],
+  "shortcuts": [
+    { "name": "JSON viewer", "url": "/json-viewer/" },
+    { "name": "Regex tester", "url": "/regex-tester/" },
+    { "name": "Hash generator", "url": "/hash-generator/" }
+  ]
 }
