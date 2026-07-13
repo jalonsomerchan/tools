@@ -525,11 +525,11 @@ export const toolCatalog: Record<ToolSlug, ToolCatalogEntry> = {
 
 export const homeTranslations = {
   en: {
-    title: 'Alon Tools — Privacy-first browser tools',
-    description: 'Fast developer, image and internet tools that run locally in your browser. No backend, no accounts, no cloud uploads.',
+    title: 'Free online tools for developers, images and text — Alon Tools',
+    description: 'Free online tools for developers, images, text, SEO and calculations. Fast, mobile friendly and mostly processed locally in your browser.',
     eyebrow: 'Privacy First',
-    heroTitle: 'Fast browser tools that respect your privacy',
-    heroText: 'No backend. No accounts. No cloud uploads. Most tools run entirely on your device.',
+    heroTitle: 'Free online tools, without accounts or unnecessary uploads',
+    heroText: 'Solve everyday tasks with fast utilities for development, images, text, SEO and calculations. Most run entirely on your device.',
     searchTitle: 'Find a tool',
     searchLabel: 'Search by name, description or shortcut',
     searchPlaceholder: 'Search: json, image, qr, timestamp...',
@@ -540,11 +540,11 @@ export const homeTranslations = {
     showing: (visible: number, total: number) => `Showing ${visible} of ${total} tools`
   },
   es: {
-    title: 'Alon Tools — Herramientas privadas para navegador',
-    description: 'Herramientas rápidas para desarrollo, imágenes e internet que funcionan localmente en tu navegador. Sin backend, sin cuentas y sin subir archivos a la nube.',
+    title: 'Herramientas online gratis para desarrollo, imágenes y texto — Alon Tools',
+    description: 'Herramientas online gratuitas para desarrollo, imágenes, texto, SEO y cálculos. Rápidas, adaptadas a móvil y mayoritariamente locales.',
     eyebrow: 'Privacy First',
-    heroTitle: 'Herramientas rápidas para el navegador que respetan tu privacidad',
-    heroText: 'Sin backend. Sin cuentas. Sin subir archivos a la nube. La mayoría de herramientas se ejecutan completamente en tu dispositivo.',
+    heroTitle: 'Herramientas online gratis, sin cuentas ni subidas innecesarias',
+    heroText: 'Resuelve tareas de desarrollo, imágenes, texto, SEO y cálculos con utilidades rápidas. La mayoría funciona por completo en tu dispositivo.',
     searchTitle: 'Buscar herramienta',
     searchLabel: 'Busca por nombre, descripción o etiqueta',
     searchPlaceholder: 'Buscar: json, imagen, qr, timestamp...',

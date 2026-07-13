@@ -1,4 +1,4 @@
-const CACHE_NAME = 'alon-tools-v3';
+const CACHE_NAME = 'alon-tools-v4';
 const CORE_URLS = [
   '/',
   '/es/',

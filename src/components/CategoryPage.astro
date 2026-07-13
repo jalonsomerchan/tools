@@ -1,0 +1,66 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getToolsByCategory, type ToolCategoryId } from '../data/tools';
+import { getLocalizedPath, type Lang } from '../i18n/ui';
+
+const { lang, category } = Astro.props as { lang: Lang; category: ToolCategoryId };
+const group = getToolsByCategory(lang).find((item) => item.id === category);
+if (!group) throw new Error(`Unknown category: ${category}`);
+const es = lang === 'es';
+const content = {
+  development: {
+    title: es ? 'Herramientas para desarrolladores online' : 'Online developer tools',
+    description: es ? 'Utilidades gratuitas para formatear, validar, convertir y probar código, APIs y datos directamente en el navegador.' : 'Free utilities to format, validate, convert and test code, APIs and data directly in your browser.',
+    intro: es ? 'Trabaja con JSON, XML, YAML, SQL, hashes, expresiones regulares, JWT y peticiones HTTP sin instalar software. La mayoría de operaciones se ejecutan localmente para mantener tus datos privados.' : 'Work with JSON, XML, YAML, SQL, hashes, regular expressions, JWTs and HTTP requests without installing software. Most operations run locally to keep your data private.',
+    tasks: es ? ['Formatear y validar datos estructurados', 'Generar hashes, UUID y claves seguras', 'Probar APIs, regex y expresiones cron'] : ['Format and validate structured data', 'Generate hashes, UUIDs and secure keys', 'Test APIs, regex and cron expressions']
+  },
+  images: {
+    title: es ? 'Herramientas de imagen online y privadas' : 'Private online image tools',
+    description: es ? 'Comprime, convierte, recorta y prepara imágenes, iconos y capturas desde el navegador sin subir archivos.' : 'Compress, convert, crop and prepare images, icons and screenshots in your browser without uploads.',
+    intro: es ? 'Optimiza imágenes y crea recursos visuales sin enviar tus archivos a servidores externos. Las herramientas usan Canvas y APIs del navegador para ofrecer resultados rápidos en móvil y escritorio.' : 'Optimize images and create visual assets without sending files to external servers. The tools use Canvas and browser APIs for fast results on mobile and desktop.',
+    tasks: es ? ['Reducir el peso de PNG, JPEG y WebP', 'Crear favicons e iconos para apps', 'Editar, censurar y mejorar capturas'] : ['Reduce PNG, JPEG and WebP size', 'Create favicons and app icons', 'Edit, censor and enhance screenshots']
+  },
+  internet: {
+    title: es ? 'Herramientas SEO, web y de red' : 'SEO, web and network tools',
+    description: es ? 'Analiza URLs, DNS, direcciones IP y metadatos SEO con utilidades claras y sin registros.' : 'Analyze URLs, DNS, IP addresses and SEO metadata with clear utilities and no accounts.',
+    intro: es ? 'Comprueba la información técnica de una web, genera metadatos y prepara archivos para buscadores. Las herramientas que necesitan consultar una API identifican siempre el proveedor.' : 'Check a website’s technical information, generate metadata and prepare search-engine files. Tools that need an API always identify the provider.',
+    tasks: es ? ['Crear meta tags, robots.txt y sitemaps', 'Consultar DNS, IP y coordenadas', 'Revisar URLs y vistas previas sociales'] : ['Create meta tags, robots.txt and sitemaps', 'Look up DNS, IP and coordinates', 'Inspect URLs and social previews']
+  },
+  writing: {
+    title: es ? 'Herramientas de texto y escritura online' : 'Online text and writing tools',
+    description: es ? 'Limpia, convierte, cuenta y prepara textos con herramientas rápidas que funcionan localmente.' : 'Clean, convert, count and prepare text with fast tools that run locally.',
+    intro: es ? 'Transforma textos, listas y Markdown sin copiar información sensible a servicios externos. Todas las utilidades de esta sección funcionan directamente en tu dispositivo.' : 'Transform text, lists and Markdown without copying sensitive content to external services. Every utility in this section runs directly on your device.',
+    tasks: es ? ['Cambiar mayúsculas, minúsculas y formato', 'Limpiar listas y contar contenido', 'Escribir Markdown y generar texto de muestra'] : ['Change case and text format', 'Clean lists and count content', 'Write Markdown and generate sample text']
+  },
+  finance: {
+    title: es ? 'Calculadoras y conversores online' : 'Online calculators and converters',
+    description: es ? 'Calcula porcentajes, IVA y conversiones de unidades o divisas con resultados claros y fáciles de copiar.' : 'Calculate percentages, VAT and unit or currency conversions with clear, copyable results.',
+    intro: es ? 'Resuelve cálculos cotidianos sin hojas de cálculo ni formularios complejos. Las fórmulas se muestran cuando aportan contexto y los conversores locales funcionan sin conexión.' : 'Solve everyday calculations without spreadsheets or complex forms. Formulas are shown when useful, and local converters work offline.',
+    tasks: es ? ['Calcular porcentajes, descuentos e IVA', 'Convertir unidades y medidas', 'Consultar cambios de divisas con fecha'] : ['Calculate percentages, discounts and VAT', 'Convert units and measurements', 'Check dated currency exchange rates']
+  }
+}[category];
+const faqs = [
+  { q: es ? '¿Estas herramientas son gratuitas?' : 'Are these tools free?', a: es ? 'Sí. Puedes utilizarlas sin crear una cuenta y sin límites artificiales de uso.' : 'Yes. You can use them without creating an account or artificial usage limits.' },
+  { q: es ? '¿Se suben mis datos o archivos?' : 'Are my data or files uploaded?', a: es ? 'Las herramientas marcadas como 100% local procesan todo en tu navegador. Si una utilidad necesita una API externa, se indica claramente antes de abrirla.' : 'Tools marked 100% local process everything in your browser. If a utility needs an external API, it is clearly identified before you open it.' },
+  { q: es ? '¿Funcionan en móvil y modo oscuro?' : 'Do they work on mobile and in dark mode?', a: es ? 'Sí. La interfaz está diseñada mobile first, es accesible mediante teclado y admite modos claro y oscuro.' : 'Yes. The interface is mobile first, keyboard accessible and supports both light and dark modes.' }
+];
+const faqSchema = { '@type': 'FAQPage', mainEntity: faqs.map((faq) => ({ '@type': 'Question', name: faq.q, acceptedAnswer: { '@type': 'Answer', text: faq.a } })) };
+---
+
+<Layout title={`${content.title} — Alon Tools`} description={content.description} lang={lang} path={`/tools/${category}/`} translated={true} pageType="collection" extraSchema={[faqSchema]}>
+  <article class="category-page">
+    <header class="category-hero">
+      <span class="eyebrow">{group.items.length} {es ? 'herramientas' : 'tools'} · {group.title}</span>
+      <h1>{content.title}</h1><p>{content.intro}</p>
+      <a class="btn btn-primary" href="#category-tools">{es ? 'Ver herramientas' : 'Browse tools'} ↓</a>
+    </header>
+    <section class="task-grid" aria-label={es ? 'Tareas habituales' : 'Common tasks'}>{content.tasks.map((task, index) => <article><span>0{index + 1}</span><strong>{task}</strong></article>)}</section>
+    <section id="category-tools" class="tools-section"><div class="section-copy"><span class="badge">{es ? 'Sin cuentas ni barreras' : 'No accounts or friction'}</span><h2>{es ? `Todas las herramientas de ${group.title.toLowerCase()}` : `All ${group.title.toLowerCase()} tools`}</h2><p>{es ? 'Abre cualquier utilidad y empieza a trabajar. La tarjeta indica si todo se procesa localmente o si necesita una API pública.' : 'Open any utility and start working. Each card tells you whether processing is local or requires a public API.'}</p></div><div class="category-tool-grid">{group.items.map((tool) => <a class="category-tool" href={tool.path}><span class="tool-icon">{tool.icon}</span><span><strong>{tool.title}</strong><small>{tool.description}</small><em>{tool.privacyLabel}</em></span><b aria-hidden="true">→</b></a>)}</div></section>
+    <section class="seo-copy"><div><h2>{es ? 'Herramientas sencillas para tareas reales' : 'Simple tools for real tasks'}</h2><p>{content.description}</p><p>{es ? 'Cada herramienta se centra en una tarea concreta, con la acción principal visible, ejemplos útiles y resultados que se pueden copiar o descargar. No hay paneles innecesarios ni procesos de registro.' : 'Each tool focuses on one task, with a visible primary action, useful examples and results you can copy or download. There are no unnecessary dashboards or registration flows.'}</p></div><aside><strong>{es ? 'Consejo de privacidad' : 'Privacy tip'}</strong><p>{es ? 'Busca la etiqueta “100% local” cuando trabajes con código, documentos o imágenes sensibles.' : 'Look for the “100% local” label when working with sensitive code, documents or images.'}</p><a href={getLocalizedPath('/guides/privacy-first-browser-tools/', lang)}>{es ? 'Cómo funcionan las herramientas privadas' : 'How private browser tools work'} →</a></aside></section>
+    <section class="faq"><h2>{es ? 'Preguntas frecuentes' : 'Frequently asked questions'}</h2>{faqs.map((faq) => <details><summary>{faq.q}</summary><p>{faq.a}</p></details>)}</section>
+  </article>
+</Layout>
+
+<style>
+  .category-page{max-width:76rem;margin:auto}.category-hero{display:grid;justify-items:center;gap:1rem;padding:clamp(2.4rem,7vw,5rem) 0 2rem;text-align:center}.category-hero h1{max-width:58rem}.category-hero p{max-width:50rem;font-size:clamp(1rem,2vw,1.2rem)}.task-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}.task-grid article{display:flex;align-items:center;gap:.8rem;padding:1rem;border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface)}.task-grid span{color:var(--color-primary);font:900 .78rem var(--font-mono)}.task-grid strong{line-height:1.3}.tools-section{padding-top:clamp(2.5rem,6vw,5rem)}.section-copy{max-width:46rem}.section-copy h2{margin:1rem 0 .6rem}.category-tool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-top:1.5rem}.category-tool{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.85rem;min-height:7rem;padding:1rem;border:1px solid var(--color-border);border-radius:var(--radius-xl);background:var(--color-surface);color:inherit;text-decoration:none;box-shadow:var(--shadow-xs);transition:transform var(--transition-base),border-color var(--transition-base),box-shadow var(--transition-base)}.category-tool:hover{transform:translateY(-2px);border-color:var(--color-primary);box-shadow:var(--shadow-sm);color:inherit}.tool-icon{display:grid;place-items:center;width:3.2rem;height:3.2rem;border-radius:var(--radius-md);background:var(--color-primary-soft);color:var(--color-primary-hover);font-size:.72rem;font-weight:950}.category-tool strong,.category-tool small,.category-tool em{display:block}.category-tool small{margin-top:.25rem;color:var(--color-text-muted);font-size:.84rem;line-height:1.4}.category-tool em{margin-top:.4rem;color:var(--color-success);font-size:.7rem;font-style:normal;font-weight:850}.category-tool>b{color:var(--color-primary)}.seo-copy{display:grid;grid-template-columns:1.5fr 1fr;gap:2rem;margin-top:clamp(3rem,7vw,6rem);padding:clamp(1.2rem,4vw,2.3rem);border:1px solid var(--color-border);border-radius:var(--radius-2xl);background:var(--color-surface)}.seo-copy h2{margin:0 0 1rem}.seo-copy aside{padding:1.2rem;border-radius:var(--radius-xl);background:var(--color-primary-soft)}.seo-copy aside strong{display:block;margin-bottom:.5rem}.seo-copy aside p{color:var(--color-text)}.faq{max-width:54rem;margin:clamp(3rem,7vw,5rem) auto 0}.faq h2{text-align:center}.faq details{margin:.65rem 0;border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface);padding:1rem}.faq summary{cursor:pointer;color:var(--color-text);font-weight:850}.faq details p{margin:.75rem 0 0}@media(max-width:760px){.category-hero{justify-items:start;text-align:left}.task-grid,.category-tool-grid,.seo-copy{grid-template-columns:1fr}.category-tool{grid-template-columns:auto 1fr}.category-tool>b{display:none}}
+</style>

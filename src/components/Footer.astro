@@ -13,10 +13,11 @@ const t = useTranslations(lang);
     </div>
 
     <nav aria-label={t('footer.links')}>
-      <a href={getLocalizedPath('/', lang)}>{t('nav.home')}</a>
-      <a href={getLocalizedPath('/json-viewer/', lang)}>{t('nav.json')}</a>
-      <a href={getLocalizedPath('/image-compressor/', lang)}>{t('nav.images')}</a>
-      <a href={getLocalizedPath('/curl-builder/', lang)}>{t('nav.curl')}</a>
+      <a href={getLocalizedPath('/', lang)}>{t('nav.tools')}</a>
+      <a href={getLocalizedPath('/tools/development/', lang)}>{lang === 'es' ? 'Desarrollo' : 'Development'}</a>
+      <a href={getLocalizedPath('/tools/images/', lang)}>{t('nav.images')}</a>
+      <a href={getLocalizedPath('/tools/writing/', lang)}>{lang === 'es' ? 'Texto' : 'Writing'}</a>
+      <a href={getLocalizedPath('/guides/', lang)}>{t('nav.guides')}</a>
     </nav>
   </div>
 </footer>
@@ -66,12 +67,6 @@ const t = useTranslations(lang);
 <style is:global>
   main.page-shell > section:first-child {
     padding-top: clamp(1.25rem, 2.75vw, 2.25rem) !important;
-  }
-
-  main.page-shell > section:first-child > .eyebrow,
-  main.page-shell .hero > .eyebrow,
-  main.page-shell .eyebrow {
-    display: none !important;
   }
 
   main.page-shell > section:first-child > h1,

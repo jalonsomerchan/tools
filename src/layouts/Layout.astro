@@ -2,6 +2,7 @@
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { getLangFromUrl, getLocalizedPath, useTranslations } from '../i18n/ui';
+import { tools, toolCategoryLabels } from '../data/tools';
 
 const lang = Astro.props.lang || getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -12,7 +13,9 @@ const {
   path = Astro.url.pathname.replace(/^\/es/, '') || '/',
   image = 'https://tools.alon.one/og-image.png',
   translated = path === '/',
-  robots = 'index, follow'
+  robots = 'index, follow',
+  pageType = 'tool',
+  extraSchema = []
 } = Astro.props;
 
 const site = 'https://tools.alon.one';
@@ -22,6 +25,21 @@ const enUrl = `${site}${getLocalizedPath(path, 'en')}`;
 const esUrl = `${site}${getLocalizedPath(path, 'es')}`;
 const isHome = path === '/';
 const isIndexable = String(robots).startsWith('index');
+const cleanPath = String(path).replace(/^\/es/, '').replace(/^\//, '').replace(/\/$/, '');
+const currentTool = tools.find((tool) => tool.slug === cleanPath);
+const categoryPath = currentTool ? getLocalizedPath(`/tools/${currentTool.category}/`, lang) : '';
+const categoryName = currentTool ? toolCategoryLabels[currentTool.category][lang] : '';
+const relatedTools = currentTool ? tools.filter((tool) => tool.category === currentTool.category && tool.id !== currentTool.id).slice(0, 3) : [];
+const pageSchema = pageType === 'tool' ? {
+  '@type': 'WebApplication', '@id': `${canonical}#application`, name: title.replace(/\s+[—|-]\s+Alon Tools$/i, ''), url: canonical,
+  description, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any', browserRequirements: 'Requires a modern web browser',
+  isAccessibleForFree: true, inLanguage: lang, offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' }, isPartOf: { '@id': `${site}/#website` }
+} : pageType === 'collection' ? {
+  '@type': 'CollectionPage', '@id': `${canonical}#collection`, name: title, url: canonical, description, inLanguage: lang, isPartOf: { '@id': `${site}/#website` }
+} : pageType === 'article' ? {
+  '@type': 'Article', '@id': `${canonical}#article`, headline: title, url: canonical, description, inLanguage: lang,
+  author: { '@type': 'Organization', name: 'Alon Tools' }, publisher: { '@type': 'Organization', name: 'Alon Tools' }, isPartOf: { '@id': `${site}/#website` }
+} : null;
 const schemaGraph = [
   {
     '@type': 'WebSite',
@@ -31,20 +49,7 @@ const schemaGraph = [
     description: t('site.description'),
     inLanguage: ['en', 'es']
   },
-  ...(isHome || !isIndexable ? [] : [{
-    '@type': 'WebApplication',
-    '@id': `${canonical}#application`,
-    name: title.replace(/\s+[—|-]\s+Alon Tools$/i, ''),
-    url: canonical,
-    description,
-    applicationCategory: 'UtilitiesApplication',
-    operatingSystem: 'Any',
-    browserRequirements: 'Requires a modern web browser',
-    isAccessibleForFree: true,
-    inLanguage: lang,
-    offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
-    isPartOf: { '@id': `${site}/#website` }
-  }]),
+  ...(isHome || !isIndexable || !pageSchema ? [] : [pageSchema]),
   ...(!isHome && isIndexable ? [{
     '@type': 'BreadcrumbList',
     '@id': `${canonical}#breadcrumb`,
@@ -52,7 +57,8 @@ const schemaGraph = [
       { '@type': 'ListItem', position: 1, name: lang === 'es' ? 'Herramientas' : 'Tools', item: lang === 'es' ? `${site}/es/` : `${site}/` },
       { '@type': 'ListItem', position: 2, name: title.replace(/\s+[—|-]\s+Alon Tools$/i, ''), item: canonical }
     ]
-  }] : [])
+  }] : []),
+  ...extraSchema
 ];
 const structuredData = JSON.stringify({ '@context': 'https://schema.org', '@graph': schemaGraph }).replace(/</g, '\\u003c');
 ---
@@ -240,6 +246,7 @@ const structuredData = JSON.stringify({ '@context': 'https://schema.org', '@grap
       button, input, select, textarea { font: inherit; }
       button { border: 0; color: inherit; }
       button:disabled, [aria-disabled="true"] { cursor: not-allowed; opacity: .58; }
+      [hidden] { display: none !important; }
       ::selection { background: var(--color-primary-soft); color: var(--color-secondary); }
       a { color: var(--color-primary-hover); text-decoration-thickness: 0.08em; text-underline-offset: 0.18em; transition: color var(--transition-fast), text-decoration-color var(--transition-fast); }
       a:hover { color: var(--color-primary); }
@@ -320,6 +327,13 @@ const structuredData = JSON.stringify({ '@context': 'https://schema.org', '@grap
       main .status.success { color: var(--color-success); }
       main .status.error, main [data-error="true"] { color: var(--color-danger); }
 
+      .tool-context { display:flex;align-items:center;gap:.5rem;min-height:2.7rem;padding-top:.7rem;color:var(--color-text-soft);font-size:.78rem;font-weight:800; }
+      .tool-context a { color:var(--color-text-muted);text-decoration:none; }
+      .tool-context a:hover { color:var(--color-primary); }
+      .tool-privacy { margin-left:auto;padding:.28rem .55rem;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface); }
+      .tool-privacy-local { color:var(--color-success);border-color:color-mix(in srgb,var(--color-success) 30%,var(--color-border)); }
+      .tool-privacy-external-api { color:var(--color-info);border-color:color-mix(in srgb,var(--color-info) 30%,var(--color-border)); }
+
       @media (max-width: 760px) { .page-shell, .container, .container-narrow, .container-wide { width: min(100% - 2rem, var(--container-xl)); } .hero { padding-top: var(--space-10); text-align: left; justify-items: start; } }
       @media (max-width: 520px) { .page-shell, .container, .container-narrow, .container-wide { width: min(100% - 1.5rem, var(--container-xl)); } }
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
@@ -335,7 +349,24 @@ const structuredData = JSON.stringify({ '@context': 'https://schema.org', '@grap
     </p>
 
     <main id="main" class="page-shell">
+      {currentTool && (
+        <nav class="tool-context" aria-label={lang === 'es' ? 'Ruta de navegación' : 'Breadcrumb'}>
+          <a href={getLocalizedPath('/', lang)}>{lang === 'es' ? 'Herramientas' : 'Tools'}</a>
+          <span aria-hidden="true">/</span>
+          <a href={categoryPath}>{categoryName}</a>
+          <span class={`tool-privacy tool-privacy-${currentTool.privacy}`}>{currentTool.privacy === 'local' ? '100% local' : (lang === 'es' ? 'Usa API externa' : 'Uses external API')}</span>
+        </nav>
+      )}
       <slot />
+      {currentTool && relatedTools.length > 0 && (
+        <aside class="global-related" aria-labelledby="globalRelatedTitle">
+          <div><span>{lang === 'es' ? 'También te puede servir' : 'You may also need'}</span><h2 id="globalRelatedTitle">{lang === 'es' ? 'Herramientas relacionadas' : 'Related tools'}</h2></div>
+          <div class="global-related-grid">
+            {relatedTools.map((tool) => <a href={getLocalizedPath(`/${tool.slug}/`, lang)}><strong>{tool.text[lang].title}</strong><small>{tool.text[lang].description}</small><span aria-hidden="true">→</span></a>)}
+          </div>
+          <a class="global-category-link" href={categoryPath}>{lang === 'es' ? `Ver toda la categoría ${categoryName}` : `Browse all ${categoryName.toLowerCase()} tools`} →</a>
+        </aside>
+      )}
     </main>
 
     <Footer lang={lang} />

@@ -1,0 +1,7 @@
+---
+import CategoryPage from '../../components/CategoryPage.astro';
+import { toolCategoryLabels, type ToolCategoryId } from '../../data/tools';
+export function getStaticPaths(){return Object.keys(toolCategoryLabels).map((category)=>({params:{category},props:{category}}));}
+const category=Astro.props.category as ToolCategoryId;
+---
+<CategoryPage lang="en" category={category} />

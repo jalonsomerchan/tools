@@ -10,6 +10,8 @@ export const defaultLang: Lang = 'en';
 export const ui = {
   en: {
     'nav.home': 'Home',
+    'nav.tools': 'All tools',
+    'nav.guides': 'Guides',
     'nav.images': 'Images',
     'nav.curl': 'cURL',
     'nav.json': 'JSON',
@@ -31,6 +33,8 @@ export const ui = {
   },
   es: {
     'nav.home': 'Inicio',
+    'nav.tools': 'Herramientas',
+    'nav.guides': 'Guías',
     'nav.images': 'Imágenes',
     'nav.curl': 'cURL',
     'nav.json': 'JSON',
