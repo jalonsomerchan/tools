@@ -1,0 +1,7 @@
+---
+import NewUtilityPage from '../components/NewUtilityPage.astro';
+import { newUtilitySlugs } from '../data/new-utilities';
+export function getStaticPaths(){return newUtilitySlugs.map((utility)=>({params:{utility},props:{utility}}));}
+const utility=Astro.props.utility;
+---
+<NewUtilityPage slug={utility} />

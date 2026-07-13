@@ -38,6 +38,8 @@ import RobotsSitemapGenerator from '../robots-sitemap-generator.astro';
 import MetaTagsGenerator from '../meta-tags-generator.astro';
 import YamlFormatter from '../yaml-formatter.astro';
 import WebIconGenerator from '../web-icon-generator.astro';
+import NewUtilityPage from '../../components/NewUtilityPage.astro';
+import { newUtilitySlugs } from '../../data/new-utilities';
 
 type PageSlug =
   | 'app-icon-generator'
@@ -204,16 +206,18 @@ export function getStaticPaths() {
     'robots-sitemap-generator',
     'meta-tags-generator',
     'yaml-formatter',
-    'web-icon-generator'
+    'web-icon-generator',
+    ...newUtilitySlugs
   ].map((slug) => ({ params: { slug } }));
 }
 
-const slug = Astro.params.slug as PageSlug;
-const Page = pages[slug];
-const translatedTitle = translatedTitles[slug];
+const slug = Astro.params.slug as string;
+const isNewUtility = newUtilitySlugs.includes(slug as (typeof newUtilitySlugs)[number]);
+const Page = pages[slug as PageSlug];
+const translatedTitle = translatedTitles[slug as PageSlug];
 ---
 
-<Page />
+{isNewUtility ? <NewUtilityPage slug={slug} /> : <Page />}
 
 <script is:inline define:vars={{ translatedTitle }}>
   (() => {
