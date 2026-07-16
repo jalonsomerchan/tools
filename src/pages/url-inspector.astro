@@ -17,8 +17,8 @@ const title = 'Inspector de URLs';
 
     <section class="tool-card">
       <div class="toolbar">
-        <input id="urlInput" type="text" aria-describedby="urlMessage" placeholder="https://example.com/path?query=test#fragment" />
-        <button class="primary" id="analyzeBtn">Analizar URL</button>
+        <input id="urlInput" type="text" aria-label="URL para analizar" aria-describedby="urlMessage" placeholder="https://example.com/path?query=test#fragment" />
+        <button type="button" class="primary" id="analyzeBtn">Analizar URL</button>
       </div>
 
       <ToolMessage id="urlMessage" type="error" />

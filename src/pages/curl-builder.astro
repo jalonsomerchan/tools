@@ -18,12 +18,12 @@ const title = 'Configurador cURL';
       <div class="form-grid">
         <div class="field">
           <label>URL</label>
-          <input id="url" type="text" placeholder="https://api.example.com/users" />
+          <input id="url" type="text" aria-label="URL" placeholder="https://api.example.com/users" />
         </div>
 
         <div class="field">
           <label>Método</label>
-          <select id="method">
+          <select id="method" aria-label="Método HTTP">
             <option>GET</option>
             <option>POST</option>
             <option>PUT</option>
@@ -34,26 +34,26 @@ const title = 'Configurador cURL';
 
         <div class="field">
           <label>User-Agent</label>
-          <input id="agent" type="text" placeholder="Mozilla/5.0" />
+          <input id="agent" type="text" aria-label="User-Agent" placeholder="Mozilla/5.0" />
         </div>
 
         <div class="field">
           <label>Authorization Bearer</label>
-          <input id="auth" type="text" placeholder="token..." />
+          <input id="auth" type="text" aria-label="Token de autorización" placeholder="token..." />
         </div>
       </div>
 
       <div class="field">
         <label>Headers personalizados</label>
-        <textarea id="headers" placeholder="Accept: application/json&#10;X-Test: demo"></textarea>
+        <textarea id="headers" aria-label="Cabeceras HTTP" placeholder="Accept: application/json&#10;X-Test: demo"></textarea>
       </div>
 
       <div class="field">
         <label>Body</label>
-        <textarea id="body" placeholder='{"hello":"world"}'></textarea>
+        <textarea id="body" aria-label="Cuerpo de la petición" placeholder='{"hello":"world"}'></textarea>
       </div>
 
-      <button class="generate-btn" id="generateBtn">Generar código</button>
+      <button type="button" class="generate-btn" id="generateBtn">Generar código</button>
 
       <div class="code-grid" id="results" hidden>
         <div class="code-panel">

@@ -2,7 +2,7 @@ import type { Lang } from '../i18n/ui';
 import { extraUtilities } from './extra-utilities';
 
 export type ToolPrivacy = 'local' | 'external-api';
-export type ToolCategoryId = 'development' | 'images' | 'internet' | 'writing' | 'finance';
+export type ToolCategoryId = 'development' | 'images' | 'internet' | 'writing' | 'finance' | 'calculators' | 'converters';
 export type LocalizedToolText = { title: string; description: string };
 export type ToolDefinition = { id: string; slug: string; category: ToolCategoryId; icon: string; privacy: ToolPrivacy; apiProvider?: string; search?: string; text: Record<Lang, LocalizedToolText> };
 
@@ -11,7 +11,9 @@ export const toolCategoryLabels: Record<ToolCategoryId, Record<Lang, string>> = 
   images: { en: 'Images', es: 'Imágenes' },
   internet: { en: 'Internet & maps', es: 'Internet y mapas' },
   writing: { en: 'Text & writing', es: 'Texto y escritura' },
-  finance: { en: 'Finance', es: 'Finanzas' }
+  finance: { en: 'Finance', es: 'Finanzas' },
+  calculators: { en: 'Calculators', es: 'Calculadoras' },
+  converters: { en: 'Converters', es: 'Conversores' }
 };
 export const privacyLabels: Record<ToolPrivacy, Record<Lang, string>> = { local: { en: '100% local', es: '100% local' }, 'external-api': { en: 'External API', es: 'API externa' } };
 

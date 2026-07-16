@@ -16,17 +16,17 @@ const title = 'Generador MD5';
 
     <section class="tool-card">
       <div class="toolbar">
-        <button class="primary" id="generateBtn">Generar MD5</button>
-        <button id="uppercaseBtn">Mayúsculas</button>
-        <button id="lowercaseBtn">Minúsculas</button>
-        <button id="clearBtn">Limpiar</button>
-        <button id="copyBtn">Copiar hash</button>
+        <button type="button" class="primary" id="generateBtn">Generar MD5</button>
+        <button type="button" id="uppercaseBtn">Mayúsculas</button>
+        <button type="button" id="lowercaseBtn">Minúsculas</button>
+        <button type="button" id="clearBtn">Limpiar</button>
+        <button type="button" id="copyBtn">Copiar hash</button>
       </div>
 
       <div class="workspace">
-        <textarea id="input" placeholder="Texto para calcular MD5..."></textarea>
+        <textarea id="input" aria-label="Texto de entrada" placeholder="Texto para calcular MD5..."></textarea>
 
-        <textarea id="output" readonly placeholder="Hash MD5..."></textarea>
+        <textarea id="output" aria-label="Hash MD5" readonly placeholder="Hash MD5..."></textarea>
       </div>
 
       <p class="status" id="status">Listo para generar.</p>

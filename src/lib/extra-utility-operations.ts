@@ -1,3 +1,5 @@
+import { executeMoreUtility } from './more-utility-operations';
+
 type Values = Record<string, string>;
 
 const num = (values: Values, key: string) => {
@@ -156,6 +158,6 @@ export function executeExtraUtility(operation: string, values: Values, locale = 
     case 'speed-converter': { const factors:Record<string,number>={kmh:1,ms:3.6,mph:1.609344,knot:1.852},result=num(values,'input')*factors[values.from]/factors[values.to];return `${f(num(values,'input'))} ${values.from} = ${f(result)} ${values.to}`; }
     case 'pressure-converter': { const factors:Record<string,number>={pa:1,kpa:1000,bar:100000,psi:6894.757293,atm:101325},result=num(values,'input')*factors[values.from]/factors[values.to];return `${f(num(values,'input'))} ${values.from} = ${f(result,8)} ${values.to}`; }
     case 'energy-converter': { const factors:Record<string,number>={j:1,kj:1000,cal:4.184,kcal:4184,wh:3600,kwh:3600000},result=num(values,'input')*factors[values.from]/factors[values.to];return `${f(num(values,'input'))} ${values.from} = ${f(result,8)} ${values.to}`; }
-    default: throw new Error(`Unknown operation: ${operation}`);
+    default: return executeMoreUtility(operation, values, locale);
   }
 }

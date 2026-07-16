@@ -17,6 +17,7 @@ const copy = {
   calculate: es ? 'Obtener resultado' : 'Get result',
   example: es ? 'Cargar ejemplo' : 'Load example',
   clear: es ? 'Limpiar' : 'Clear',
+  swap: es ? 'Intercambiar unidades' : 'Swap units',
   copy: es ? 'Copiar' : 'Copy',
   ready: es ? 'La herramienta está lista. Tus datos no salen del dispositivo.' : 'The utility is ready. Your data stays on this device.',
   done: es ? 'Resultado actualizado.' : 'Result updated.',
@@ -26,6 +27,7 @@ const copy = {
   privacyTitle: es ? 'Privada, rápida y sin dependencias' : 'Private, fast and dependency-free',
   privacyText: es ? 'Esta utilidad funciona con JavaScript estándar en tu navegador. No necesita enviar el contenido a una API ni crear una cuenta.' : 'This utility uses standard browser JavaScript. It does not need to send your content to an API or create an account.'
 };
+const hasSwap = utility.fields.some((field) => field.id === 'from') && utility.fields.some((field) => field.id === 'to');
 ---
 
 <Layout title={`${title} — Alon Tools`} description={description} lang={lang} path={`/${utility.slug}/`} translated={true}>
@@ -77,6 +79,7 @@ const copy = {
         </div>
         <div class="actions">
           <button class="btn btn-primary" type="submit">{copy.calculate}</button>
+          {hasSwap && <button class="btn btn-secondary" type="button" data-swap>{copy.swap}</button>}
           <button class="btn btn-secondary" type="button" data-clear>{copy.clear}</button>
         </div>
       </form>
@@ -126,6 +129,15 @@ const copy = {
     };
 
     form.addEventListener('submit', (event) => { event.preventDefault(); run(); });
+    let inputTimer;
+    form.addEventListener('input', (event) => {
+      window.clearTimeout(inputTimer);
+      inputTimer = window.setTimeout(run, event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLInputElement && event.target.type === 'text' ? 320 : 80);
+    });
+    form.addEventListener('change', run);
+    form.addEventListener('keydown', (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') { event.preventDefault(); run(); }
+    });
     root.querySelector('[data-example-button]')?.addEventListener('click', () => {
       const example = JSON.parse(root.dataset.example || '{}');
       Object.entries(example).forEach(([name, value]) => {
@@ -138,11 +150,18 @@ const copy = {
       form.reset(); output.value = ''; copyButton.disabled = true; setStatus(root.dataset.ready || '');
       const first = form.querySelector('textarea, input, select'); if (first instanceof HTMLElement) first.focus();
     });
+    root.querySelector('[data-swap]')?.addEventListener('click', () => {
+      const from = form.elements.namedItem('from'); const to = form.elements.namedItem('to');
+      if ((from instanceof HTMLInputElement || from instanceof HTMLSelectElement) && (to instanceof HTMLInputElement || to instanceof HTMLSelectElement)) {
+        const value = from.value; from.value = to.value; to.value = value; run(); from.focus();
+      }
+    });
     copyButton.addEventListener('click', async () => {
       if (!output.value) return setStatus(root.dataset.empty || '', 'error');
       try { await navigator.clipboard.writeText(output.value); setStatus(root.dataset.copied || '', 'success'); }
       catch { output.select(); document.execCommand('copy'); setStatus(root.dataset.copied || '', 'success'); }
     });
+    run();
   });
 </script>
 

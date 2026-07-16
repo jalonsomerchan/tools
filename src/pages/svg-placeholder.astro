@@ -5,7 +5,7 @@ const title = 'Generador de placeholders SVG';
 const description = 'Genera placeholders SVG ligeros, data URLs y snippets HTML/CSS directamente en el navegador.';
 ---
 
-<Layout title={title} description={description} path="/svg-placeholder/" translated={false}>
+<Layout title={title} description={description} path="/svg-placeholder/" translated={true}>
   <section class="placeholder-page">
     <div class="eyebrow">100% local</div>
 
@@ -80,7 +80,7 @@ const description = 'Genera placeholders SVG ligeros, data URLs y snippets HTML/
           <h2>SVG inline</h2>
           <button data-copy-target="svgOutput" type="button">Copiar</button>
         </div>
-        <textarea id="svgOutput" readonly spellcheck="false"></textarea>
+        <textarea id="svgOutput" aria-label="Código SVG" readonly spellcheck="false"></textarea>
       </div>
 
       <div class="output-panel">
@@ -88,7 +88,7 @@ const description = 'Genera placeholders SVG ligeros, data URLs y snippets HTML/
           <h2>Data URL</h2>
           <button data-copy-target="dataUrlOutput" type="button">Copiar</button>
         </div>
-        <textarea id="dataUrlOutput" readonly spellcheck="false"></textarea>
+        <textarea id="dataUrlOutput" aria-label="Data URL" readonly spellcheck="false"></textarea>
       </div>
 
       <div class="output-panel">
@@ -96,7 +96,7 @@ const description = 'Genera placeholders SVG ligeros, data URLs y snippets HTML/
           <h2>HTML</h2>
           <button data-copy-target="htmlOutput" type="button">Copiar</button>
         </div>
-        <textarea id="htmlOutput" readonly spellcheck="false"></textarea>
+        <textarea id="htmlOutput" aria-label="Código HTML" readonly spellcheck="false"></textarea>
       </div>
 
       <div class="output-panel">
@@ -104,7 +104,7 @@ const description = 'Genera placeholders SVG ligeros, data URLs y snippets HTML/
           <h2>CSS</h2>
           <button data-copy-target="cssOutput" type="button">Copiar</button>
         </div>
-        <textarea id="cssOutput" readonly spellcheck="false"></textarea>
+        <textarea id="cssOutput" aria-label="Código CSS" readonly spellcheck="false"></textarea>
       </div>
     </section>
   </section>

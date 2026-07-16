@@ -20,15 +20,15 @@ const description = es ? 'Escribe Markdown, previsualiza títulos, listas, tabla
 
     <section class="tool-card">
       <div class="toolbar">
-        <button class="primary" id="copyBtn">{es ? 'Copiar Markdown' : 'Copy Markdown'}</button>
-        <button id="downloadBtn">{es ? 'Descargar .md' : 'Download .md'}</button>
-        <button id="clearBtn">{es ? 'Limpiar' : 'Clear'}</button>
+        <button type="button" class="primary" id="copyBtn">{es ? 'Copiar Markdown' : 'Copy Markdown'}</button>
+        <button type="button" id="downloadBtn">{es ? 'Descargar .md' : 'Download .md'}</button>
+        <button type="button" id="clearBtn">{es ? 'Limpiar' : 'Clear'}</button>
       </div>
 
       <div class="editor-grid">
         <div class="panel">
           <span>Markdown</span>
-          <textarea id="markdownInput"># Hola mundo
+          <textarea id="markdownInput" aria-label="Markdown"># Hola mundo
 
 Escribe aquí tu markdown.
 

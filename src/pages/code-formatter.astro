@@ -5,7 +5,7 @@ const title = 'Minificador y formateador de HTML, CSS y JS';
 const description = 'Formatea y minifica snippets de HTML, CSS y JavaScript localmente en el navegador, sin ejecutar el código.';
 ---
 
-<Layout title={title} description={description} path="/code-formatter/" translated={false}>
+<Layout title={title} description={description} path="/code-formatter/" translated={true}>
   <section class="code-page">
     <div class="eyebrow">100% local</div>
 
@@ -75,14 +75,14 @@ const description = 'Formatea y minifica snippets de HTML, CSS y JavaScript loca
         <div class="panel-heading">
           <h2>Entrada</h2>
         </div>
-        <textarea id="input" spellcheck="false" placeholder="Pega aquí tu HTML, CSS o JavaScript..."><div class="card"><h2>Hola mundo</h2><p>Texto de ejemplo</p></div></textarea>
+        <textarea id="input" aria-label="Código de entrada" spellcheck="false" placeholder="Pega aquí tu HTML, CSS o JavaScript..."><div class="card"><h2>Hola mundo</h2><p>Texto de ejemplo</p></div></textarea>
       </div>
 
       <div class="editor-panel">
         <div class="panel-heading">
           <h2>Salida</h2>
         </div>
-        <textarea id="output" readonly spellcheck="false" placeholder="Aquí aparecerá el resultado..."></textarea>
+        <textarea id="output" aria-label="Código formateado" readonly spellcheck="false" placeholder="Aquí aparecerá el resultado..."></textarea>
       </div>
     </section>
   </section>

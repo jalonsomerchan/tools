@@ -5,7 +5,7 @@ const title = 'Generador de Lorem Ipsum';
 const description = 'Genera texto Lorem Ipsum por letras, párrafos o páginas, cópialo o expórtalo a PDF desde el navegador.';
 ---
 
-<Layout title={title} description={description} path="/lorem-ipsum/" translated={false}>
+<Layout title={title} description={description} path="/lorem-ipsum/" translated={true}>
   <section class="lorem-page">
     <div class="eyebrow">100% local</div>
 
@@ -71,7 +71,7 @@ const description = 'Genera texto Lorem Ipsum por letras, párrafos o páginas, 
         </div>
       </div>
 
-      <textarea id="output" spellcheck="false" placeholder="Aquí aparecerá el Lorem Ipsum generado..."></textarea>
+      <textarea id="output" aria-label="Lorem Ipsum generado" spellcheck="false" placeholder="Aquí aparecerá el Lorem Ipsum generado..."></textarea>
     </section>
   </section>
 

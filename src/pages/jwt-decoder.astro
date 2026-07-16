@@ -21,12 +21,12 @@ const title = 'JWT decoder';
 
     <section class="tool-card">
       <div class="toolbar">
-        <button class="primary" id="decodeBtn">Decodificar JWT</button>
-        <button id="clearBtn">Limpiar</button>
-        <button id="exampleBtn">Cargar ejemplo</button>
+        <button type="button" class="primary" id="decodeBtn">Decodificar JWT</button>
+        <button type="button" id="clearBtn">Limpiar</button>
+        <button type="button" id="exampleBtn">Cargar ejemplo</button>
       </div>
 
-      <textarea id="jwtInput" aria-describedby="jwtMessage" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
+      <textarea id="jwtInput" aria-label="Token JWT" aria-describedby="jwtMessage" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
       <ToolMessage id="jwtMessage" type="error" />
 
       <div class="results-grid" id="results" hidden>

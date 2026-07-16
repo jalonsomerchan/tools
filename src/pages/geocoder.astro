@@ -16,9 +16,9 @@ const title = 'Coordenadas de direcciones';
 
     <section class="tool-card">
       <div class="toolbar">
-        <input id="searchInput" type="text" placeholder="Buscar dirección o lugar..." />
-        <button class="primary" id="searchBtn">Buscar</button>
-        <button id="locationBtn">Usar mi ubicación</button>
+        <input id="searchInput" type="text" aria-label="Dirección o lugar" placeholder="Buscar dirección o lugar..." />
+        <button type="button" class="primary" id="searchBtn">Buscar</button>
+        <button type="button" id="locationBtn">Usar mi ubicación</button>
       </div>
 
       <p class="status" id="status" role="status" aria-live="polite">Busca una dirección, haz clic en el mapa o usa tu ubicación actual.</p>
@@ -43,8 +43,8 @@ const title = 'Coordenadas de direcciones';
       </div>
 
       <div class="buttons-row">
-        <button id="copyBtn">Copiar coordenadas</button>
-        <button id="googleBtn">Abrir en Google Maps</button>
+        <button type="button" id="copyBtn">Copiar coordenadas</button>
+        <button type="button" id="googleBtn">Abrir en Google Maps</button>
       </div>
     </section>
   </section>

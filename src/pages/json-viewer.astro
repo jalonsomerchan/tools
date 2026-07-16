@@ -68,7 +68,7 @@ const ui = {
               <button id="sampleBtn" type="button">{ui.actions.sample}</button>
             </div>
           </div>
-          <textarea id="input" spellcheck="false" placeholder={t.placeholders.input}></textarea>
+          <textarea id="input" aria-label={t.placeholders.input} spellcheck="false" placeholder={t.placeholders.input}></textarea>
         </section>
 
         <section class="result-pane" aria-label={ui.output}>
@@ -94,7 +94,7 @@ const ui = {
 
       <details class="output-details">
         <summary>{ui.stats}</summary>
-        <textarea id="output" readonly spellcheck="false" placeholder={t.placeholders.output}></textarea>
+        <textarea id="output" aria-label={t.placeholders.output} readonly spellcheck="false" placeholder={t.placeholders.output}></textarea>
         <dl class="stats-grid">
           <div><dt>Nodos</dt><dd id="statNodes">0</dd></div>
           <div><dt>Objetos</dt><dd id="statObjects">0</dd></div>

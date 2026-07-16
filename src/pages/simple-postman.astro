@@ -63,14 +63,14 @@ const t = {
           <details open>
             <summary>✍️ {t.body}</summary>
             <label>{t.bodyType}<select id="bodyType"><option value="none">{t.noBody}</option><option value="json" selected>JSON</option><option value="text">Text</option><option value="form">x-www-form-urlencoded</option></select></label>
-            <textarea id="body" spellcheck="false" placeholder={t.bodyPlaceholder}></textarea>
+            <textarea id="body" aria-label={t.body} spellcheck="false" placeholder={t.bodyPlaceholder}></textarea>
           </details>
 
           <details>
             <summary>🧾 {t.curl}</summary>
-            <textarea id="curlIn" class="code small" spellcheck="false" placeholder="curl -X GET https://api.example.com"></textarea>
+            <textarea id="curlIn" aria-label={t.importCurl} class="code small" spellcheck="false" placeholder="curl -X GET https://api.example.com"></textarea>
             <div class="actions"><button id="parseCurl" type="button">📥 {t.parseCurl}</button><button id="copyCurl" type="button">📋 {t.copy} cURL</button></div>
-            <textarea id="curlOut" class="code small" readonly spellcheck="false"></textarea>
+            <textarea id="curlOut" aria-label={t.curl} class="code small" readonly spellcheck="false"></textarea>
           </details>
 
           <ul id="warnings" class="warnings"></ul>
@@ -100,7 +100,7 @@ const t = {
       const validUrl=v=>{try{const u=new URL(v);return ['http:','https:'].includes(u.protocol)}catch{return false}};
       const bytes=n=>n<1024?`${n} B`:n<1048576?`${(n/1024).toFixed(1)} KB`:`${(n/1048576).toFixed(2)} MB`;
       const quote=v=>`'${String(v).replaceAll("'","'\\''")}'`;
-      const addHeader=(name='',value='')=>{const row=document.createElement('div');row.className='header-row';row.innerHTML='<input data-name placeholder="Content-Type"><input data-value placeholder="application/json"><button type="button" aria-label="Remove">×</button>';row.querySelector('[data-name]').value=name;row.querySelector('[data-value]').value=value;row.querySelector('button').onclick=()=>{row.remove();makeCurl()};row.querySelectorAll('input').forEach(i=>i.oninput=makeCurl);headers.append(row)};
+      const addHeader=(name='',value='')=>{const row=document.createElement('div');row.className='header-row';row.innerHTML='<input data-name aria-label="Header name" placeholder="Content-Type"><input data-value aria-label="Header value" placeholder="application/json"><button type="button" aria-label="Remove">×</button>';row.querySelector('[data-name]').value=name;row.querySelector('[data-value]').value=value;row.querySelector('button').onclick=()=>{row.remove();makeCurl()};row.querySelectorAll('input').forEach(i=>i.oninput=makeCurl);headers.append(row)};
       const readHeaders=()=>[...headers.querySelectorAll('.header-row')].map(r=>({name:r.querySelector('[data-name]').value.trim(),value:r.querySelector('[data-value]').value.trim()})).filter(h=>h.name);
       const setHeader=(n,v)=>{const row=[...headers.querySelectorAll('.header-row')].find(r=>r.querySelector('[data-name]').value.trim().toLowerCase()===n.toLowerCase());row?row.querySelector('[data-value]').value=v:addHeader(n,v)};
       const updateAuth=()=>document.querySelectorAll('[data-auth-field]').forEach(el=>el.dataset.hidden=String(el.dataset.authField!==auth.value));

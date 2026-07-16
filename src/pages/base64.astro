@@ -17,17 +17,17 @@ const t = getToolTranslations('base64', lang) as ToolTranslationsMap['base64']['
 
     <section class="tool-card">
       <div class="toolbar">
-        <button class="primary" id="encodeBtn">{t.actions.encode}</button>
-        <button id="decodeBtn">{t.actions.decode}</button>
-        <button id="swapBtn">{t.actions.swap}</button>
-        <button id="clearBtn">{t.actions.clear}</button>
-        <button id="copyBtn">{t.actions.copy}</button>
+        <button type="button" class="primary" id="encodeBtn">{t.actions.encode}</button>
+        <button type="button" id="decodeBtn">{t.actions.decode}</button>
+        <button type="button" id="swapBtn">{t.actions.swap}</button>
+        <button type="button" id="clearBtn">{t.actions.clear}</button>
+        <button type="button" id="copyBtn">{t.actions.copy}</button>
       </div>
 
       <div class="workspace">
-        <textarea id="input" placeholder={t.placeholders.input}></textarea>
+        <textarea id="input" aria-label={t.placeholders.input} placeholder={t.placeholders.input}></textarea>
 
-        <textarea id="output" readonly placeholder={t.placeholders.output}></textarea>
+        <textarea id="output" aria-label={t.placeholders.output} readonly placeholder={t.placeholders.output}></textarea>
       </div>
 
       <p class="status" id="status" role="status" aria-live="polite">{t.messages.ready}</p>

@@ -1,5 +1,6 @@
 import type { Lang } from '../i18n/ui';
 import type { ToolCategoryId } from './tools';
+import { moreUtilities } from './more-utilities';
 
 export type UtilityField = {
   id: string;
@@ -37,7 +38,7 @@ const U = (slug: string, category: ToolCategoryId, icon: string, en: string, es:
   fields, example
 });
 
-export const extraUtilities: ExtraUtility[] = [
+const originalExtraUtilities: ExtraUtility[] = [
   U('reverse-text','writing','↶','Reverse text','Invertir texto',[textarea()],{input:'Alon Tools'}),
   U('remove-line-breaks','writing','↵','Remove line breaks','Eliminar saltos de línea',[textarea()],{input:'First line\nSecond line\nThird line'}),
   U('whitespace-normalizer','writing','SP','Whitespace normalizer','Normalizador de espacios',[textarea()],{input:'  Too    many   spaces.  \n\n Next line. '}),
@@ -143,5 +144,6 @@ export const extraUtilities: ExtraUtility[] = [
   U('energy-converter','finance','J','Energy converter','Conversor de energía',[number('input','Value','Valor','1'),select('from','From','Desde',[['j','Joules','Julios'],['kj','Kilojoules','Kilojulios'],['cal','Calories','Calorías'],['kcal','Kilocalories','Kilocalorías'],['wh','Watt-hours','Vatios-hora'],['kwh','Kilowatt-hours','Kilovatios-hora']]),select('to','To','Hasta',[['j','Joules','Julios'],['kj','Kilojoules','Kilojulios'],['cal','Calories','Calorías'],['kcal','Kilocalories','Kilocalorías'],['wh','Watt-hours','Vatios-hora'],['kwh','Kilowatt-hours','Kilovatios-hora']])],{input:'1',from:'kwh',to:'kj'})
 ];
 
+export const extraUtilities: ExtraUtility[] = [...originalExtraUtilities, ...moreUtilities];
 export const extraUtilitySlugs = extraUtilities.map((utility) => utility.slug);
 export const getExtraUtility = (slug: string) => extraUtilities.find((utility) => utility.slug === slug);

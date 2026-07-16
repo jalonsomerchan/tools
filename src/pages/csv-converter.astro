@@ -5,7 +5,7 @@ const title = 'Parser y conversor de CSV';
 const description = 'Pega o carga CSV localmente y conviértelo a JSON, Markdown o HTML desde el navegador.';
 ---
 
-<Layout title={title} description={description} path="/csv-converter/" translated={false}>
+<Layout title={title} description={description} path="/csv-converter/" translated={true}>
   <section class="csv-page">
     <div class="eyebrow">100% local</div>
 
@@ -87,7 +87,7 @@ salto de línea"</textarea>
         </div>
       </div>
 
-      <textarea id="output" readonly spellcheck="false" placeholder="Aquí aparecerá el resultado convertido..."></textarea>
+      <textarea id="output" aria-label="Resultado convertido" readonly spellcheck="false" placeholder="Aquí aparecerá el resultado convertido..."></textarea>
     </section>
   </section>
 

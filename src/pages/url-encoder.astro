@@ -16,21 +16,21 @@ const title = 'URL encoder & decoder';
 
     <section class="tool-card">
       <div class="toolbar">
-        <button class="primary" id="encodeBtn">Codificar</button>
-        <button id="decodeBtn">Decodificar</button>
-        <button id="swapBtn">Intercambiar</button>
-        <button id="clearBtn">Limpiar</button>
+        <button type="button" class="primary" id="encodeBtn">Codificar</button>
+        <button type="button" id="decodeBtn">Decodificar</button>
+        <button type="button" id="swapBtn">Intercambiar</button>
+        <button type="button" id="clearBtn">Limpiar</button>
       </div>
 
       <div class="editor-grid">
         <div class="panel">
           <span>Texto original</span>
-          <textarea id="inputText" placeholder="https://example.com/?q=hola mundo&test=áéíóú"></textarea>
+          <textarea id="inputText" aria-label="URL o texto de entrada" placeholder="https://example.com/?q=hola mundo&test=áéíóú"></textarea>
         </div>
 
         <div class="panel">
           <span>Resultado</span>
-          <textarea id="outputText" readonly placeholder="Resultado codificado o decodificado..."></textarea>
+          <textarea id="outputText" aria-label="Resultado codificado o decodificado" readonly placeholder="Resultado codificado o decodificado..."></textarea>
         </div>
       </div>
 
@@ -38,15 +38,15 @@ const title = 'URL encoder & decoder';
         <h2>Ejemplos útiles</h2>
 
         <div class="example-grid">
-          <button class="example-btn" data-example="https://google.com/search?q=hola mundo">
+          <button type="button" class="example-btn" data-example="https://google.com/search?q=hola mundo">
             URL con espacios
           </button>
 
-          <button class="example-btn" data-example="nombre=Jorge Alonso&ciudad=Móstoles">
+          <button type="button" class="example-btn" data-example="nombre=Jorge Alonso&ciudad=Móstoles">
             Parámetros GET
           </button>
 
-          <button class="example-btn" data-example="áéíóú ñ % & ? = /">
+          <button type="button" class="example-btn" data-example="áéíóú ñ % & ? = /">
             Caracteres especiales
           </button>
         </div>
