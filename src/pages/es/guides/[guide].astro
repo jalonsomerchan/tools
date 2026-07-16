@@ -1,9 +1,9 @@
 ---
 import GuidePage from '../../../components/GuidePage.astro';
-import { guideSlugs, type GuideSlug } from '../../../data/guides';
+import { getGuideStaticPaths, type GuideSlug } from '../../../data/guides';
 
 export function getStaticPaths() {
-  return guideSlugs.map((guide) => ({ params: { guide }, props: { guide } }));
+  return getGuideStaticPaths('es');
 }
 
 const guide = Astro.props.guide as GuideSlug;

@@ -1,18 +1,96 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getGuide } from '../data/guides';
+import { getGuide, getGuidePath, getGuideSlug, guides } from '../data/guides';
 import { getLocalizedPath, type Lang } from '../i18n/ui';
-import { getLocalizedTools } from '../data/tools';
-const {lang,slug}=Astro.props as {lang:Lang;slug:string};const guide=getGuide(slug);if(!guide)throw new Error(`Unknown guide: ${slug}`);const c=guide.copy[lang],es=lang==='es',catalog=getLocalizedTools(lang);const related=(slugs:string[])=>slugs.map((slug)=>catalog.find((tool)=>tool.slug===slug)).filter(Boolean);
+import { getLocalizedTools, toolCategoryLabels } from '../data/tools';
+
+const {lang,slug}=Astro.props as {lang:Lang;slug:string};
+const guide=getGuide(slug);
+if(!guide)throw new Error(`Unknown guide: ${slug}`);
+const c=guide.copy[lang],es=lang==='es',catalog=getLocalizedTools(lang);
+const related=(slugs:string[])=>slugs.map((toolSlug)=>catalog.find((tool)=>tool.slug===toolSlug)).filter(Boolean);
+const primaryTool=guide.primaryTool?catalog.find((tool)=>tool.slug===guide.primaryTool):undefined;
+const categoryName=guide.category==='foundations'?(es?'Fundamentos':'Foundations'):toolCategoryLabels[guide.category][lang];
+const topicPath=getLocalizedPath(`/guides/topics/${guide.category}/`,lang);
+const candidates=guides.filter((item)=>item.slug!==guide.slug&&item.category===guide.category);
+const offset=Math.max(0,guides.findIndex((item)=>item.slug===guide.slug))%Math.max(1,candidates.length);
+const relatedGuides=[...candidates.slice(offset),...candidates.slice(0,offset)].slice(0,3);
+const localizedPaths={en:`/guides/${getGuideSlug(guide,'en')}/`,es:`/es/guides/${getGuideSlug(guide,'es')}/`};
+const dateLabel=new Intl.DateTimeFormat(es?'es-ES':'en-US',{dateStyle:'long'}).format(new Date(`${guide.modified}T12:00:00Z`));
+const breadcrumbs=[
+  {name:es?'Herramientas':'Tools',path:getLocalizedPath('/',lang)},
+  {name:es?'Guías':'Guides',path:getLocalizedPath('/guides/',lang)},
+  {name:categoryName,path:topicPath},
+  {name:c.title,path:localizedPaths[lang]}
+];
 ---
-<Layout title={`${c.title} — Alon Tools`} description={c.description} lang={lang} path={`/guides/${slug}/`} translated={true} pageType="article">
+<Layout
+  title={`${c.seoTitle||c.title} — Alon Tools`}
+  description={c.description}
+  lang={lang}
+  path={`/guides/${getGuideSlug(guide,'en')}/`}
+  localizedPaths={localizedPaths}
+  translated={true}
+  pageType="article"
+  publishedTime={guide.published}
+  modifiedTime={guide.modified}
+  breadcrumbs={breadcrumbs}
+>
   <article class="guide-page">
-    <nav class="guide-breadcrumb"><a href={getLocalizedPath('/guides/',lang)}>{es?'Guías':'Guides'}</a><span>/</span><span>{c.reading}</span></nav>
-    <header><span class="eyebrow">{es?'Guía práctica':'Practical guide'} · {c.reading}</span><h1>{c.title}</h1><p class="lead">{c.intro}</p></header>
-    <div class="article-layout"><div class="article-content">{c.sections.map((section,index)=><section id={`section-${index+1}`}><span class="section-number">0{index+1}</span><h2>{section.title}</h2>{section.paragraphs.map((paragraph)=><p>{paragraph}</p>)}{section.tools&&<div class="inline-tools"><strong>{es?'Herramientas recomendadas':'Recommended tools'}</strong>{related(section.tools).map((tool)=><a href={tool.path}>{tool.title} <span>→</span></a>)}</div>}</section>)}<aside class="takeaway"><strong>{es?'Idea clave':'Key takeaway'}</strong><p>{c.takeaway}</p></aside></div><aside class="guide-aside"><div><strong>{es?'En esta guía':'In this guide'}</strong><ol>{c.sections.map((section,index)=><li><a href={`#section-${index+1}`}>{section.title}</a></li>)}</ol></div><a class="btn btn-primary" href={getLocalizedPath('/',lang)}>{es?'Buscar herramienta':'Find a tool'}</a></aside></div>
-    <section class="more-guides"><h2>{es?'Sigue aprendiendo':'Keep learning'}</h2><a href={getLocalizedPath('/guides/',lang)}>{es?'Ver todas las guías y recursos':'Browse all guides and resources'} →</a></section>
+    <nav class="guide-breadcrumb" aria-label={es?'Ruta de navegación':'Breadcrumb'}>
+      <a href={getLocalizedPath('/guides/',lang)}>{es?'Guías':'Guides'}</a><span>/</span>
+      <a href={topicPath}>{categoryName}</a><span>/</span><span>{c.reading}</span>
+    </nav>
+
+    <header class="guide-header">
+      <span class="eyebrow">{es?'Guía práctica':'Practical guide'} · {categoryName}</span>
+      <h1>{c.title}</h1>
+      <p class="lead">{c.intro}</p>
+      <div class="guide-meta">
+        <span>{es?'Por Alon Tools':'By Alon Tools'}</span>
+        <span>·</span><time datetime={guide.modified}>{es?'Actualizada el':'Updated'} {dateLabel}</time>
+        <span>·</span><span>{c.reading}</span>
+      </div>
+      {primaryTool&&<a class="btn btn-primary" href={primaryTool.path}>{es?'Abrir':'Open'} {primaryTool.title} <span aria-hidden="true">→</span></a>}
+    </header>
+
+    <div class="article-layout">
+      <div class="article-content">
+        {c.sections.map((section,index)=><section id={`section-${index+1}`}>
+          <span class="section-number">{String(index+1).padStart(2,'0')}</span>
+          <h2>{section.title}</h2>
+          {section.paragraphs.map((paragraph)=><p>{paragraph}</p>)}
+          {section.steps&&<ol class="steps">{section.steps.map((step)=><li>{step}</li>)}</ol>}
+          {section.tools&&<div class="inline-tools"><strong>{es?'Herramientas recomendadas':'Recommended tools'}</strong>{related(section.tools).map((tool)=><a href={tool!.path}>{tool!.title} <span aria-hidden="true">→</span></a>)}</div>}
+        </section>)}
+
+        <aside class="takeaway"><strong>{es?'Idea clave':'Key takeaway'}</strong><p>{c.takeaway}</p></aside>
+
+        {c.faq&&<section class="faq" aria-labelledby="faq-title">
+          <span class="section-number">FAQ</span><h2 id="faq-title">{es?'Preguntas frecuentes':'Frequently asked questions'}</h2>
+          {c.faq.map((item)=><details><summary>{item.question}</summary><p>{item.answer}</p></details>)}
+        </section>}
+
+        {c.methodology&&<aside class="methodology" aria-label={es?'Metodología editorial':'Editorial methodology'}>
+          <strong>{es?'Cómo se ha preparado esta guía':'How this guide was prepared'}</strong><p>{c.methodology}</p>
+        </aside>}
+      </div>
+
+      <aside class="guide-aside">
+        <div><strong>{es?'En esta guía':'In this guide'}</strong><ol>{c.sections.map((section,index)=><li><a href={`#section-${index+1}`}>{section.title}</a></li>)}</ol>{c.faq&&<a href="#faq-title">{es?'Preguntas frecuentes':'Frequently asked questions'}</a>}</div>
+        {primaryTool&&<a class="btn btn-primary" href={primaryTool.path}>{es?'Usar herramienta':'Use tool'}</a>}
+        <a class="btn btn-secondary" href={topicPath}>{es?'Más guías de':'More guides about'} {categoryName}</a>
+      </aside>
+    </div>
+
+    {relatedGuides.length>0&&<section class="related-guides" aria-labelledby="related-title">
+      <div><span class="eyebrow">{es?'Siguiente paso':'Next step'}</span><h2 id="related-title">{es?'Guías relacionadas':'Related guides'}</h2></div>
+      <div class="related-grid">{relatedGuides.map((item)=>{const copy=item.copy[lang];return <a href={getGuidePath(item,lang)}><span>{copy.reading}</span><h3>{copy.title}</h3><p>{copy.description}</p><strong>{es?'Leer guía':'Read guide'} →</strong></a>})}</div>
+    </section>}
   </article>
 </Layout>
+
 <style>
-  .guide-page{max-width:72rem;margin:auto}.guide-breadcrumb{display:flex;gap:.5rem;padding-top:1rem;color:var(--color-text-soft);font-size:.8rem;font-weight:800}.guide-breadcrumb a{color:var(--color-text-muted);text-decoration:none}.guide-page>header{display:grid;gap:1rem;padding:clamp(2rem,6vw,4.5rem) 0 2rem}.guide-page>header h1{max-width:58rem}.lead{max-width:48rem;font-size:clamp(1.05rem,2vw,1.25rem)}.article-layout{display:grid;grid-template-columns:minmax(0,1fr) 17rem;gap:clamp(2rem,5vw,5rem);align-items:start}.article-content section{position:relative;padding:0 0 2.5rem}.article-content h2{margin:.35rem 0 1rem}.article-content p{max-width:68ch;font-size:1.04rem;line-height:1.75}.section-number{color:var(--color-primary);font:900 .78rem var(--font-mono)}.inline-tools{display:grid;grid-template-columns:repeat(2,1fr);gap:.55rem;margin-top:1.3rem;padding:1rem;border:1px solid var(--color-border);border-radius:var(--radius-xl);background:var(--color-surface)}.inline-tools>strong{grid-column:1/-1}.inline-tools a{display:flex;justify-content:space-between;padding:.7rem;border-radius:var(--radius-md);background:var(--color-surface-soft);color:var(--color-text);font-size:.88rem;font-weight:800;text-decoration:none}.takeaway{padding:1.2rem;border-left:4px solid var(--color-primary);border-radius:0 var(--radius-lg) var(--radius-lg) 0;background:var(--color-primary-soft)}.takeaway strong{color:var(--color-text)}.takeaway p{margin:.4rem 0 0;color:var(--color-text)}.guide-aside{position:sticky;top:6rem;display:grid;gap:1rem}.guide-aside>div{padding:1rem;border:1px solid var(--color-border);border-radius:var(--radius-xl);background:var(--color-surface)}.guide-aside ol{margin:.75rem 0 0;padding-left:1.3rem}.guide-aside li{margin:.55rem 0}.guide-aside a:not(.btn){color:var(--color-text-muted);font-size:.84rem;text-decoration:none}.more-guides{margin-top:4rem;padding:1.2rem;border-top:1px solid var(--color-border)}.more-guides h2{margin:0 0 .6rem}@media(max-width:800px){.article-layout{grid-template-columns:1fr}.guide-aside{position:static;grid-row:1}.inline-tools{grid-template-columns:1fr}.inline-tools>strong{grid-column:auto}}
+  .guide-page{max-width:72rem;margin:auto}.guide-breadcrumb{display:flex;flex-wrap:wrap;gap:.5rem;padding-top:1rem;color:var(--color-text-soft);font-size:.8rem;font-weight:800}.guide-breadcrumb a{color:var(--color-text-muted);text-decoration:none}.guide-header{display:grid;justify-items:start;gap:1rem;padding:clamp(2rem,6vw,4.5rem) 0 2.5rem}.guide-header h1{max-width:61rem}.lead{max-width:52rem;font-size:clamp(1.05rem,2vw,1.25rem);line-height:1.65}.guide-meta{display:flex;flex-wrap:wrap;gap:.45rem;color:var(--color-text-soft);font-size:.85rem;font-weight:750}.article-layout{display:grid;grid-template-columns:minmax(0,1fr) 18rem;gap:clamp(2rem,5vw,5rem);align-items:start}.article-content section{position:relative;padding:0 0 2.7rem;scroll-margin-top:6rem}.article-content h2{margin:.35rem 0 1rem}.article-content p{max-width:68ch;font-size:1.04rem;line-height:1.78}.section-number{color:var(--color-primary);font:900 .78rem var(--font-mono)}.steps{display:grid;gap:.7rem;max-width:68ch;margin:1.2rem 0;padding:0;list-style:none;counter-reset:steps}.steps li{position:relative;padding:1rem 1rem 1rem 3.4rem;border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface);counter-increment:steps}.steps li::before{content:counter(steps);position:absolute;left:1rem;top:.85rem;display:grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:50%;background:var(--color-primary-soft);color:var(--color-primary);font-weight:900}.inline-tools{display:grid;grid-template-columns:repeat(2,1fr);gap:.55rem;max-width:68ch;margin-top:1.3rem;padding:1rem;border:1px solid var(--color-border);border-radius:var(--radius-xl);background:var(--color-surface)}.inline-tools>strong{grid-column:1/-1}.inline-tools a{display:flex;justify-content:space-between;padding:.7rem;border-radius:var(--radius-md);background:var(--color-surface-soft);color:var(--color-text);font-size:.88rem;font-weight:800;text-decoration:none}.takeaway,.methodology{max-width:68ch;padding:1.2rem;border-left:4px solid var(--color-primary);border-radius:0 var(--radius-lg) var(--radius-lg) 0;background:var(--color-primary-soft)}.takeaway p,.methodology p{margin:.4rem 0 0;color:var(--color-text)}.methodology{margin-top:1rem;border-left-color:var(--color-info);background:var(--color-info-soft)}.faq{margin-top:3rem}.faq details{max-width:68ch;border-bottom:1px solid var(--color-border)}.faq summary{padding:1rem 2rem 1rem 0;color:var(--color-text);font-weight:850;cursor:pointer}.faq details p{padding:0 0 1rem}.guide-aside{position:sticky;top:6rem;display:grid;gap:1rem}.guide-aside>div{padding:1rem;border:1px solid var(--color-border);border-radius:var(--radius-xl);background:var(--color-surface)}.guide-aside ol{margin:.75rem 0;padding-left:1.3rem}.guide-aside li{margin:.6rem 0}.guide-aside a:not(.btn){color:var(--color-text-muted);font-size:.84rem;text-decoration:none}.guide-aside>div>a{display:inline-block;margin-top:.6rem}.related-guides{margin-top:4rem;padding-top:2rem;border-top:1px solid var(--color-border)}.related-guides h2{margin:.8rem 0 1.2rem}.related-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}.related-grid>a{display:flex;min-height:14rem;flex-direction:column;padding:1.2rem;border:1px solid var(--color-border);border-radius:var(--radius-xl);background:var(--color-surface);color:inherit;text-decoration:none}.related-grid span{color:var(--color-primary);font-size:.75rem;font-weight:900}.related-grid h3{margin:.8rem 0}.related-grid p{font-size:.9rem}.related-grid strong{margin-top:auto;color:var(--color-primary)}
+  @media(max-width:800px){.article-layout{grid-template-columns:1fr}.guide-aside{position:static;grid-row:1}.inline-tools,.related-grid{grid-template-columns:1fr}.inline-tools>strong{grid-column:auto}.guide-aside .btn{width:100%}}
 </style>

@@ -1,0 +1,7 @@
+---
+import GuideTopicPage from '../../../../components/GuideTopicPage.astro';
+import {guides,type GuideCategoryId} from '../../../../data/guides';
+export function getStaticPaths(){return [...new Set(guides.map((guide)=>guide.category))].map((topic)=>({params:{topic},props:{topic}}));}
+const topic=Astro.props.topic as GuideCategoryId;
+---
+<GuideTopicPage lang="es" category={topic}/>

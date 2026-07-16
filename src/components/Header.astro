@@ -1,12 +1,12 @@
 ---
 import { getLocalizedPath, useTranslations } from '../i18n/ui';
 
-const { lang = 'en', path = '/' } = Astro.props;
+const { lang = 'en', path = '/', localizedPaths } = Astro.props;
 const t = useTranslations(lang);
 const pathWithoutLocale = String(path).replace(/^\/es(?=\/|$)/, '') || '/';
 const currentPath = pathWithoutLocale.startsWith('/') ? pathWithoutLocale : `/${pathWithoutLocale}`;
-const enPath = getLocalizedPath(currentPath, 'en');
-const esPath = getLocalizedPath(currentPath, 'es');
+const enPath = localizedPaths?.en || getLocalizedPath(currentPath, 'en');
+const esPath = localizedPaths?.es || getLocalizedPath(currentPath, 'es');
 const themeLabel = t('nav.toggleTheme');
 const menuLabel = t('nav.menu');
 ---

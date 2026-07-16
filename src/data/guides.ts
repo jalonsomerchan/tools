@@ -1,10 +1,34 @@
 import type { Lang } from '../i18n/ui';
+import type { ToolCategoryId } from './tools';
+import { generatedGuides } from './generated-guides';
 
-export const guideSlugs = ['format-and-convert-data', 'optimize-images-in-browser', 'technical-seo-checklist', 'privacy-first-browser-tools'] as const;
-export type GuideSlug = (typeof guideSlugs)[number];
-type GuideCopy = { title:string; description:string; intro:string; reading:string; sections:Array<{title:string; paragraphs:string[]; tools?:string[]}>; takeaway:string };
-export type Guide = { slug:GuideSlug; copy:Record<Lang,GuideCopy> };
-export const guides:Guide[] = [
+export type GuideCategoryId = ToolCategoryId | 'foundations';
+export type GuideKind = 'foundational' | 'how-to' | 'troubleshooting';
+export type GuideSection = { title:string; paragraphs:string[]; tools?:string[]; steps?:string[] };
+export type GuideFaq = { question:string; answer:string };
+export type GuideCopy = {
+  title:string;
+  seoTitle?:string;
+  description:string;
+  intro:string;
+  reading:string;
+  sections:GuideSection[];
+  takeaway:string;
+  methodology?:string;
+  faq?:GuideFaq[];
+};
+export type Guide = {
+  slug:string;
+  localizedSlugs?:Partial<Record<Lang,string>>;
+  category:GuideCategoryId;
+  kind:GuideKind;
+  primaryTool?:string;
+  published:string;
+  modified:string;
+  copy:Record<Lang,GuideCopy>;
+};
+export type GuideSlug = string;
+const editorialGuideCopies:Array<Pick<Guide,'slug'|'copy'>> = [
   { slug:'format-and-convert-data', copy:{
     en:{title:'How to format, validate and convert structured data',description:'A practical workflow for cleaning JSON, YAML, XML, CSV and SQL safely in your browser.',intro:'Structured data often fails because of one missing comma, inconsistent indentation or a format mismatch. This guide shows a repeatable way to inspect, validate and convert data without sending it to a remote service.',reading:'6 min read',sections:[{title:'Validate before transforming',paragraphs:['Start by validating the original input. Formatting invalid data can hide the location of the real problem or create a result that looks correct but cannot be parsed. Keep an untouched copy until the conversion is complete.','For JSON, XML and YAML, use a validator that reports syntax errors before applying indentation. For tabular data, verify the delimiter, headers and quoting rules before converting CSV to JSON or HTML.'],tools:['json-viewer','yaml-formatter','xml-formatter']},{title:'Choose the target format by use case',paragraphs:['JSON is a strong default for APIs and browser applications. YAML is easier to edit by hand for configuration files. XML remains common in feeds and enterprise integrations, while CSV is suitable for flat tables and spreadsheet exchange.','SQL formatters improve readability but do not execute or guarantee a query is valid for a specific database. Treat formatting as a review aid, not as a database test.'],tools:['csv-converter','sql-formatter','json-to-typescript']},{title:'Protect real payloads',paragraphs:['API responses and configuration files may contain tokens, email addresses or internal identifiers. Local browser tools reduce exposure because the content stays on the device. Remove secrets before sharing the formatted output with another person or service.']}],takeaway:'Validate first, transform second and compare the result with the original before using it in production.'},
     es:{title:'Cómo formatear, validar y convertir datos estructurados',description:'Flujo práctico para limpiar JSON, YAML, XML, CSV y SQL de forma segura en el navegador.',intro:'Los datos estructurados suelen fallar por una coma, un sangrado inconsistente o un formato incorrecto. Esta guía propone un proceso repetible para revisar, validar y convertir datos sin enviarlos a servicios remotos.',reading:'6 min de lectura',sections:[{title:'Valida antes de transformar',paragraphs:['Empieza validando la entrada original. Formatear datos incorrectos puede ocultar el problema real o producir un resultado que parece válido pero no se puede interpretar. Conserva una copia sin modificar hasta terminar.','En JSON, XML y YAML, utiliza un validador que muestre los errores antes de aplicar sangrado. En datos tabulares, comprueba el separador, las cabeceras y las comillas antes de convertir CSV a JSON o HTML.'],tools:['json-viewer','yaml-formatter','xml-formatter']},{title:'Elige el formato según el uso',paragraphs:['JSON es una opción habitual para APIs y aplicaciones web. YAML resulta cómodo para configuración editable. XML sigue presente en feeds e integraciones y CSV funciona bien para tablas planas e intercambio con hojas de cálculo.','Un formateador SQL mejora la lectura, pero no ejecuta ni garantiza que una consulta sea válida para una base concreta. Úsalo como ayuda de revisión.'],tools:['csv-converter','sql-formatter','json-to-typescript']},{title:'Protege los datos reales',paragraphs:['Las respuestas de API y archivos de configuración pueden contener tokens, correos o identificadores internos. Las herramientas locales reducen la exposición porque el contenido permanece en el dispositivo. Elimina secretos antes de compartir el resultado.']}],takeaway:'Valida primero, transforma después y compara el resultado con el original antes de utilizarlo en producción.'}
@@ -22,4 +46,41 @@ export const guides:Guide[] = [
     es:{title:'Cómo funcionan las herramientas privadas del navegador',description:'Comprende el procesamiento local, las APIs externas y qué revisar antes de pegar datos sensibles en una herramienta.',intro:'Una herramienta online puede funcionar por completo dentro del navegador o enviar datos a un servidor. La interfaz puede parecer idéntica, por lo que conviene conocer el modelo antes de usar archivos o textos confidenciales.',reading:'5 min de lectura',sections:[{title:'Procesamiento local',paragraphs:['Las herramientas locales usan funciones como Web Crypto, Canvas, FileReader y parsers de texto. Tras cargar la página, la transformación ocurre en el dispositivo. Esto reduce la exposición y permite que muchas utilidades sigan funcionando sin conexión.','El procesamiento local no elimina todos los riesgos: extensiones, un dispositivo comprometido o código malicioso pueden acceder a los datos. Usa software de confianza y mantén el navegador actualizado.']},{title:'Cuándo hace falta una API externa',paragraphs:['Los cambios de divisas, registros DNS, geocodificación y datos de IP requieren información que no existe en el navegador. En esos casos, la consulta se envía a un proveedor identificado. No incluyas datos personales que no sean necesarios.'],tools:['currency-converter','dns-lookup','geocoder','ip-info']},{title:'Comprobación rápida de privacidad',paragraphs:['Busca una etiqueta clara de procesamiento local o API externa. Comprueba si la utilidad sigue funcionando al perder la conexión. Evita servicios que exigen una cuenta para una conversión sencilla y elimina secretos de los ejemplos.']}],takeaway:'Usa herramientas locales para transformaciones sensibles y reserva los servicios externos para consultas que realmente necesitan la red.'}
   }}
 ];
-export const getGuide=(slug:string)=>guides.find((guide)=>guide.slug===slug);
+
+const editorialSeo:Record<string,Record<Lang,{seoTitle:string;description:string}>> = {
+  'format-and-convert-data':{
+    en:{seoTitle:'Format and convert structured data',description:'Learn a reliable workflow to validate, format and convert JSON, YAML, XML, CSV and SQL locally without exposing private payloads.'},
+    es:{seoTitle:'Formatear y convertir datos estructurados',description:'Aprende a validar, formatear y convertir JSON, YAML, XML, CSV y SQL localmente con un proceso fiable que protege los datos privados.'}
+  },
+  'optimize-images-in-browser':{
+    en:{seoTitle:'Optimize images without uploading them',description:'Choose the right format, resize and compress images, and prepare complete web icon sets locally without uploading private files.'},
+    es:{seoTitle:'Optimizar imágenes sin subir archivos',description:'Elige formato, redimensiona y comprime imágenes, y prepara iconos web completos localmente sin subir archivos privados a servidores.'}
+  },
+  'technical-seo-checklist':{
+    en:{seoTitle:'Technical SEO checklist for web pages',description:'Review titles, descriptions, canonicals, structured data, internal links, robots.txt and sitemaps before publishing a new web page.'},
+    es:{seoTitle:'Checklist de SEO técnico para páginas web',description:'Revisa títulos, descripciones, canonical, datos estructurados, enlazado interno, robots.txt y sitemap antes de publicar una página.'}
+  },
+  'privacy-first-browser-tools':{
+    en:{seoTitle:'How private browser tools process data',description:'Understand local browser processing, when an external API is necessary and what to check before entering confidential data into a web tool.'},
+    es:{seoTitle:'Cómo procesan datos las herramientas privadas',description:'Comprende el procesamiento local, cuándo hace falta una API externa y qué revisar antes de introducir datos confidenciales en una herramienta.'}
+  }
+};
+
+const editorialGuides:Guide[] = editorialGuideCopies.map((guide) => ({
+  ...guide,
+  category:'foundations',
+  kind:'foundational',
+  published:'2026-07-16',
+  modified:'2026-07-16',
+  copy:{
+    en:{...guide.copy.en,...editorialSeo[guide.slug].en},
+    es:{...guide.copy.es,...editorialSeo[guide.slug].es}
+  }
+}));
+
+export const guides:Guide[] = [...editorialGuides, ...generatedGuides];
+export const guideSlugs = guides.map((guide) => guide.slug);
+export const getGuide=(slug:string, lang?:Lang)=>guides.find((guide)=>guide.slug===slug || (lang && guide.localizedSlugs?.[lang]===slug));
+export const getGuideSlug=(guide:Guide,lang:Lang)=>guide.localizedSlugs?.[lang] || guide.slug;
+export const getGuidePath=(guide:Guide,lang:Lang)=>`${lang==='es'?'/es':''}/guides/${getGuideSlug(guide,lang)}/`;
+export const getGuideStaticPaths=(lang:Lang)=>guides.map((guide)=>({params:{guide:getGuideSlug(guide,lang)},props:{guide:guide.slug}}));
