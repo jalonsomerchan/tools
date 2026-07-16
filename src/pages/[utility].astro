@@ -1,7 +1,10 @@
 ---
 import NewUtilityPage from '../components/NewUtilityPage.astro';
 import { newUtilitySlugs } from '../data/new-utilities';
-export function getStaticPaths(){return newUtilitySlugs.map((utility)=>({params:{utility},props:{utility}}));}
+import ExtraUtilityPage from '../components/ExtraUtilityPage.astro';
+import { extraUtilitySlugs } from '../data/extra-utilities';
+export function getStaticPaths(){return [...newUtilitySlugs,...extraUtilitySlugs].map((utility)=>({params:{utility},props:{utility}}));}
 const utility=Astro.props.utility;
+const isExtra=extraUtilitySlugs.includes(utility);
 ---
-<NewUtilityPage slug={utility} />
+{isExtra ? <ExtraUtilityPage slug={utility} /> : <NewUtilityPage slug={utility} />}

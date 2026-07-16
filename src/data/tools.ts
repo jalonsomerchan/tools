@@ -1,4 +1,5 @@
 import type { Lang } from '../i18n/ui';
+import { extraUtilities } from './extra-utilities';
 
 export type ToolPrivacy = 'local' | 'external-api';
 export type ToolCategoryId = 'development' | 'images' | 'internet' | 'writing' | 'finance';
@@ -68,7 +69,18 @@ export const tools: ToolDefinition[] = [
   tool('chmod-calculator', 'development', '755', 'local', 'Unix chmod calculator', 'Build Unix file permissions visually and copy numeric or symbolic values.', 'Calculadora chmod de Unix', 'Crea permisos de archivos Unix visualmente y copia valores numéricos o simbólicos.', { search: 'chmod unix linux file permission rwx permisos archivo 755' }),
   tool('cron-expression-builder', 'development', 'CRON', 'local', 'Cron expression builder', 'Build standard five-field cron expressions from readable schedule controls.', 'Constructor de expresiones cron', 'Crea expresiones cron de cinco campos mediante controles fáciles de entender.', { search: 'cron schedule crontab expression job tarea programada expresion' }),
   tool('percentage-calculator', 'finance', '%', 'local', 'Percentage calculator', 'Calculate percentages, changes, increases and discounts with clear formulas.', 'Calculadora de porcentajes', 'Calcula porcentajes, variaciones, aumentos y descuentos con fórmulas claras.', { search: 'percentage percent change increase discount porcentaje variacion aumento descuento' }),
-  tool('aspect-ratio-calculator', 'images', '16:9', 'local', 'Aspect ratio calculator', 'Resize images and video proportionally or simplify width-to-height ratios.', 'Calculadora de relación de aspecto', 'Redimensiona imágenes y vídeo proporcionalmente o simplifica relaciones de aspecto.', { search: 'aspect ratio image video resize dimensions relacion aspecto dimensiones redimensionar' })
+  tool('aspect-ratio-calculator', 'images', '16:9', 'local', 'Aspect ratio calculator', 'Resize images and video proportionally or simplify width-to-height ratios.', 'Calculadora de relación de aspecto', 'Redimensiona imágenes y vídeo proporcionalmente o simplifica relaciones de aspecto.', { search: 'aspect ratio image video resize dimensions relacion aspecto dimensiones redimensionar' }),
+  ...extraUtilities.map((utility) => tool(
+    utility.slug,
+    utility.category,
+    utility.icon,
+    'local',
+    utility.title.en,
+    utility.description.en,
+    utility.title.es,
+    utility.description.es,
+    { search: `${utility.slug.replaceAll('-', ' ')} offline local utility herramienta utilidad` }
+  ))
 ];
 
 export type LocalizedTool = ToolDefinition & { title: string; description: string; categoryLabel: string; privacyLabel: string; path: `/${string}/` };

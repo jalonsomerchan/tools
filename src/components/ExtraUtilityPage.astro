@@ -1,0 +1,151 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getLangFromUrl } from '../i18n/ui';
+import { getExtraUtility } from '../data/extra-utilities';
+
+const lang = getLangFromUrl(Astro.url);
+const utility = getExtraUtility(Astro.props.slug);
+if (!utility) throw new Error(`Unknown extra utility: ${Astro.props.slug}`);
+const title = utility.title[lang];
+const description = utility.description[lang];
+const es = lang === 'es';
+const copy = {
+  eyebrow: es ? 'Herramienta local y gratuita' : 'Free local utility',
+  intro: es ? 'Introduce los datos, obtén el resultado al instante y cópialo con un clic. Todo se procesa dentro de tu navegador.' : 'Enter your data, get an instant result and copy it in one click. Everything is processed inside your browser.',
+  input: es ? 'Datos de entrada' : 'Input data',
+  result: es ? 'Resultado' : 'Result',
+  calculate: es ? 'Obtener resultado' : 'Get result',
+  example: es ? 'Cargar ejemplo' : 'Load example',
+  clear: es ? 'Limpiar' : 'Clear',
+  copy: es ? 'Copiar' : 'Copy',
+  ready: es ? 'La herramienta está lista. Tus datos no salen del dispositivo.' : 'The utility is ready. Your data stays on this device.',
+  done: es ? 'Resultado actualizado.' : 'Result updated.',
+  invalid: es ? 'Revisa los datos. Hay un valor vacío o no válido.' : 'Check the input. A value is empty or invalid.',
+  copied: es ? 'Resultado copiado.' : 'Result copied.',
+  empty: es ? 'Todavía no hay ningún resultado.' : 'There is no result yet.',
+  privacyTitle: es ? 'Privada, rápida y sin dependencias' : 'Private, fast and dependency-free',
+  privacyText: es ? 'Esta utilidad funciona con JavaScript estándar en tu navegador. No necesita enviar el contenido a una API ni crear una cuenta.' : 'This utility uses standard browser JavaScript. It does not need to send your content to an API or create an account.'
+};
+---
+
+<Layout title={`${title} — Alon Tools`} description={description} lang={lang} path={`/${utility.slug}/`} translated={true}>
+  <article
+    class="extra-utility"
+    data-extra-utility
+    data-operation={utility.operation}
+    data-example={JSON.stringify(utility.example)}
+    data-ready={copy.ready}
+    data-done={copy.done}
+    data-invalid={copy.invalid}
+    data-copied={copy.copied}
+    data-empty={copy.empty}
+    data-locale={lang}
+  >
+    <header class="utility-hero">
+      <span class="eyebrow">{copy.eyebrow}</span>
+      <h1>{title}</h1>
+      <p>{copy.intro}</p>
+      <ul aria-label={es ? 'Características' : 'Features'}>
+        <li>✓ {es ? 'Procesamiento local' : 'Local processing'}</li>
+        <li>✓ {es ? 'Funciona sin conexión' : 'Works offline'}</li>
+        <li>✓ {es ? 'Sin registro' : 'No sign-up'}</li>
+      </ul>
+    </header>
+
+    <section class="tool-panel" aria-labelledby="input-heading">
+      <div class="panel-heading">
+        <div><span aria-hidden="true">01</span><h2 id="input-heading">{copy.input}</h2></div>
+        <button class="btn btn-quiet" type="button" data-example-button>{copy.example}</button>
+      </div>
+
+      <form data-utility-form novalidate>
+        <div class:list={["field-grid", utility.fields.some((field) => field.type === 'textarea') && 'has-textarea']}>
+          {utility.fields.map((field) => (
+            <label class:list={['field', field.type === 'textarea' && 'field-wide']}>
+              <span>{field.label[lang]}</span>
+              {field.type === 'textarea' ? (
+                <textarea name={field.id} placeholder={field.placeholder?.[lang]} spellcheck="false">{field.value}</textarea>
+              ) : field.type === 'select' ? (
+                <select name={field.id}>
+                  {field.options?.map((option) => <option value={option.value} selected={field.value === option.value}>{option.label[lang]}</option>)}
+                </select>
+              ) : (
+                <input name={field.id} type={field.type} value={field.value} placeholder={field.placeholder?.[lang]} min={field.min} max={field.max} step={field.step} />
+              )}
+            </label>
+          ))}
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">{copy.calculate}</button>
+          <button class="btn btn-secondary" type="button" data-clear>{copy.clear}</button>
+        </div>
+      </form>
+
+      <section class="result-card" aria-labelledby="result-heading">
+        <div class="panel-heading">
+          <div><span aria-hidden="true">02</span><h2 id="result-heading">{copy.result}</h2></div>
+          <button class="btn btn-secondary" type="button" data-copy disabled>{copy.copy}</button>
+        </div>
+        <label class="sr-only" for={`result-${utility.slug}`}>{copy.result}</label>
+        <textarea id={`result-${utility.slug}`} data-output readonly placeholder={copy.empty}></textarea>
+        <p class="status" data-status role="status" aria-live="polite">{copy.ready}</p>
+      </section>
+    </section>
+
+    <section class="privacy-card" aria-labelledby="privacy-heading">
+      <span aria-hidden="true">03</span>
+      <div><h2 id="privacy-heading">{copy.privacyTitle}</h2><p>{copy.privacyText}</p></div>
+    </section>
+  </article>
+</Layout>
+
+<script>
+  import { executeExtraUtility } from '../lib/extra-utility-operations';
+
+  document.querySelectorAll('[data-extra-utility]').forEach((root) => {
+    if (!(root instanceof HTMLElement) || root.dataset.initialized) return;
+    root.dataset.initialized = 'true';
+    const form = root.querySelector('[data-utility-form]');
+    const output = root.querySelector('[data-output]');
+    const status = root.querySelector('[data-status]');
+    const copyButton = root.querySelector('[data-copy]');
+    if (!(form instanceof HTMLFormElement) || !(output instanceof HTMLTextAreaElement) || !(status instanceof HTMLElement) || !(copyButton instanceof HTMLButtonElement)) return;
+
+    const values = () => Object.fromEntries([...new FormData(form).entries()].map(([key, value]) => [key, String(value)]));
+    const setStatus = (message, state = '') => { status.textContent = message; status.dataset.state = state; };
+    const run = () => {
+      try {
+        output.value = executeExtraUtility(root.dataset.operation || '', values(), root.dataset.locale || 'en');
+        copyButton.disabled = !output.value;
+        setStatus(root.dataset.done || '', 'success');
+      } catch {
+        output.value = '';
+        copyButton.disabled = true;
+        setStatus(root.dataset.invalid || '', 'error');
+      }
+    };
+
+    form.addEventListener('submit', (event) => { event.preventDefault(); run(); });
+    root.querySelector('[data-example-button]')?.addEventListener('click', () => {
+      const example = JSON.parse(root.dataset.example || '{}');
+      Object.entries(example).forEach(([name, value]) => {
+        const field = form.elements.namedItem(name);
+        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) field.value = String(value);
+      });
+      run();
+    });
+    root.querySelector('[data-clear]')?.addEventListener('click', () => {
+      form.reset(); output.value = ''; copyButton.disabled = true; setStatus(root.dataset.ready || '');
+      const first = form.querySelector('textarea, input, select'); if (first instanceof HTMLElement) first.focus();
+    });
+    copyButton.addEventListener('click', async () => {
+      if (!output.value) return setStatus(root.dataset.empty || '', 'error');
+      try { await navigator.clipboard.writeText(output.value); setStatus(root.dataset.copied || '', 'success'); }
+      catch { output.select(); document.execCommand('copy'); setStatus(root.dataset.copied || '', 'success'); }
+    });
+  });
+</script>
+
+<style>
+  .extra-utility{width:min(100%,68rem);margin-inline:auto}.utility-hero{display:grid;justify-items:center;padding:clamp(2.75rem,7vw,5.75rem) 0 clamp(1.5rem,4vw,3rem);text-align:center}.utility-hero h1{max-width:18ch;margin:.75rem auto 0;font-size:clamp(2.35rem,7vw,4.8rem)}.utility-hero>p{max-width:47rem;margin:1rem auto 0;font-size:clamp(1rem,2vw,1.18rem);color:var(--color-text-muted)}.utility-hero ul{display:flex;flex-wrap:wrap;justify-content:center;gap:.55rem;margin:1.25rem 0 0;padding:0;list-style:none}.utility-hero li{padding:.42rem .72rem;border:1px solid color-mix(in srgb,var(--color-success) 32%,var(--color-border));border-radius:var(--radius-full);background:var(--color-success-soft);color:var(--color-success);font-size:.8rem;font-weight:800}.tool-panel{padding:clamp(1rem,3vw,2rem);border:1px solid var(--color-border);border-radius:var(--radius-2xl);background:var(--color-surface);box-shadow:var(--shadow-md)}.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}.panel-heading>div,.privacy-card{display:flex;align-items:center;gap:.7rem}.panel-heading span,.privacy-card>span{display:grid;place-items:center;width:2rem;height:2rem;flex:none;border-radius:.65rem;background:var(--color-primary-soft);color:var(--color-primary-hover);font:900 .72rem var(--font-mono)}h2{margin:0;font-size:clamp(1.18rem,2vw,1.45rem)}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem}.field-grid.has-textarea{grid-template-columns:repeat(2,minmax(0,1fr))}.field{display:grid;align-content:start;gap:.42rem;color:var(--color-text);font-size:.88rem;font-weight:800}.field-wide{grid-column:1/-1}.field textarea,.field input,.field select,.result-card textarea{width:100%;border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface);color:var(--color-text);padding:.8rem .9rem}.field textarea{min-height:13rem;resize:vertical;font:400 .9rem/1.55 var(--font-mono)}.field input,.field select{min-height:2.85rem}.field textarea:focus,.field input:focus,.field select:focus,.result-card textarea:focus{outline:0;border-color:var(--color-primary);box-shadow:var(--shadow-focus)}.actions{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:1rem}.btn{min-height:2.75rem;padding:.7rem 1rem;border:1px solid transparent;border-radius:var(--radius-lg);font-weight:850;cursor:pointer;transition:transform var(--transition-fast),background-color var(--transition-base),border-color var(--transition-base)}.btn:hover:not(:disabled){transform:translateY(-1px)}.btn-primary{background:var(--color-primary);color:#fff}.btn-primary:hover{background:var(--color-primary-hover)}.btn-secondary,.btn-quiet{border-color:var(--color-border);background:var(--color-surface);color:var(--color-text)}.btn-quiet{background:transparent}.result-card{margin-top:1.35rem;padding:1rem;border:1px solid var(--color-border);border-radius:var(--radius-xl);background:var(--color-surface-soft)}.result-card textarea{min-height:10rem;resize:vertical;font:500 .9rem/1.55 var(--font-mono)}.status{min-height:1.35rem;margin:.65rem 0 0;color:var(--color-text-muted);font-size:.85rem}.status[data-state="success"]{color:var(--color-success)}.status[data-state="error"]{color:var(--color-danger);font-weight:750}.privacy-card{align-items:flex-start;margin-top:1.2rem;padding:1.25rem;border:1px solid var(--color-border);border-radius:var(--radius-xl);background:var(--color-surface)}.privacy-card p{max-width:65ch;margin:.4rem 0 0;color:var(--color-text-muted)}.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}@media(max-width:640px){.utility-hero{justify-items:start;text-align:left}.utility-hero h1{margin-inline:0;font-size:clamp(2.15rem,12vw,3.25rem)}.utility-hero ul{justify-content:start}.tool-panel{border-radius:var(--radius-xl)}.field-grid,.field-grid.has-textarea{grid-template-columns:1fr}.field-wide{grid-column:auto}.panel-heading{align-items:flex-start}.actions .btn{width:100%}}@media(prefers-reduced-motion:reduce){.btn{transition:none}}
+</style>
